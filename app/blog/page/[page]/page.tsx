@@ -61,7 +61,7 @@ export default async function BlogPageRoute({
         <header className="mb-12 border-b-4 border-text pb-8">
           <h1 className="text-5xl font-bold mb-4">Blog</h1>
           <p className="text-xl text-muted max-w-2xl">
-            Thoughts on engineering, performance, and building great software.
+            15 years of shipping production systems and leading engineering teams. Real code, real metrics, and the tradeoffs behind every decision.
           </p>
           {paginationData.totalPages > 1 && (
             <p className="text-sm text-muted mt-4">
