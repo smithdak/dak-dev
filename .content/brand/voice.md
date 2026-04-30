@@ -7,7 +7,7 @@
 ## Brand Identity
 
 ### Who I Am
-- Builder who teaches. I share what I build and how — backed by 14 years of shipping production systems.
+- Builder who teaches. I share what I build and how — backed by 15 years of shipping production systems.
 - My work is my best marketing. Every post shows working implementations, not theory.
 - Track record of shipping 30+ production-ready projects across enterprise and personal work.
 - "M-shaped" skill set: multiple technical domains + leadership + project management.
