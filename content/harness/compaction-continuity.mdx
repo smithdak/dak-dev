@@ -1,0 +1,51 @@
+---
+title: "Compaction & Continuity"
+slug: "compaction-continuity"
+number: "03"
+description: "What survives a context-overflow boundary: summarization fidelity, the handoff contract, and designing work to survive it."
+relatedPatterns: ["anchor-point", "checkpoint-loop", "memory-layer"]
+relatedTopics: ["memory", "agents"]
+published: true
+keywords: ["context compaction", "auto-compaction", "context overflow", "agent continuity", "summarization fidelity"]
+---
+
+# Compaction & Continuity
+
+Compaction is what happens when the [agent loop](/learn/harness/agent-loop) would otherwise overflow the window: the harness summarizes the conversation so far and replaces the history with that summary. It is not a feature you opt into — it is a survival mechanism that fires automatically, and it is lossy by definition. The question is never "will I lose context." It is "did I lose the context that mattered." Engineering for that answer is continuity design.
+
+## What Compaction Does
+
+At a capacity threshold (Claude Code defaults to ~95%, tunable via `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`), the harness:
+
+1. Sends the conversation to the model with a summarization instruction.
+2. Receives a condensed summary — decisions, state, open threads.
+3. Starts a fresh window seeded with that summary plus pinned anchors.
+4. Continues the loop as if nothing happened. The model has no episodic memory of the pre-compaction turns; it has only the summary's account of them.
+
+The critical reframe: **after compaction, the summary _is_ the past.** Anything the summarizer omitted did not happen, as far as the post-compaction agent is concerned. A subtle constraint mentioned once at turn 4 and not re-stated is gone at turn 60.
+
+## The Fidelity Problem
+
+Summarization quality is uneven in predictable ways:
+
+| Survives well | Survives poorly |
+|---------------|-----------------|
+| Explicit decisions ("we chose Postgres") | Implicit constraints ("the client hates magic") |
+| The current file/task in focus | Why a *rejected* approach was rejected |
+| Recently discussed state | Early, load-bearing setup details |
+| Things stated as rules | Things demonstrated by example only |
+
+The failure pattern: an agent re-introduces a bug it already fixed, or re-proposes an approach it already rejected, because the *fix* survived compaction but the *reason* did not. This is not the model being unreliable. It is the harness discarding the rationale and keeping only the outcome.
+
+## Designing for the Boundary
+
+You cannot stop compaction. You can make your work survive it:
+
+- **Externalize durable facts.** Anything that must outlive the window belongs in the [Memory System](/learn/toolkit/memory), not in the chat. Memory is read back *after* compaction; conversation is not. This is the [Memory Layer](/learn/patterns/memory-layer) pattern doing exactly its job.
+- **Write durable [Anchor Points](/learn/patterns/anchor-point).** A committed file, a checked-in plan, a written decision record is immune to summarization loss. The summary can mangle the discussion; it cannot mangle a file on disk.
+- **Segment the work.** The [Checkpoint Loop](/learn/patterns/checkpoint-loop) pattern keeps each segment short enough that it completes and verifies *before* a compaction boundary, so the boundary lands between units of work, not through the middle of one.
+- **Restate load-bearing constraints.** A constraint that must hold for the whole task should be in CLAUDE.md or memory, not stated once in turn 4. Persisted instructions are re-read; chat is not.
+
+## The Tradeoff
+
+Earlier, more frequent compaction keeps each window sharp but multiplies summarization passes — more cost, more cumulative fidelity loss, more boundaries to design around. Later compaction preserves raw history longer but means each pass condenses more and loses more in one shot. Neither setting saves a workflow that keeps load-bearing state only in chat. The durable fix is architectural: treat the conversation as volatile cache and the [Memory System](/learn/toolkit/memory) plus committed artifacts as the system of record. Then compaction is an optimization, not a risk.

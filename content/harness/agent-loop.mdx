@@ -1,0 +1,56 @@
+---
+title: "The Agent Loop"
+slug: "agent-loop"
+number: "01"
+description: "The core agent run loop — prompt, model, tool calls, results, repeat — and the stop conditions that end it."
+relatedPatterns: ["checkpoint-loop", "anchor-point", "scope-fence"]
+relatedTopics: ["agents", "hooks"]
+published: true
+keywords: ["agent loop", "agentic loop", "agent runtime", "tool use loop", "harness engineering"]
+---
+
+# The Agent Loop
+
+Every agent is a `while` loop around a stateless model. The model does not "run." It is called once per turn with the full conversation, returns text and tool calls, and forgets everything. The harness is the loop that calls it again. Understand the loop and you understand why agents behave the way they do — including the failures.
+
+## The Five Steps
+
+One iteration of the loop:
+
+1. **Assemble** — The harness builds the request: system prompt, tool definitions, and the full message history (including every prior tool result).
+2. **Call** — The model returns an assistant message: text, tool-use blocks, or both. It also returns a `stop_reason`.
+3. **Dispatch** — The harness executes each tool call. This is the harness's code, not the model's — file reads, shell commands, subagent spawns.
+4. **Append** — Each result becomes a `tool_result` message appended to history. This is the only way the model "sees" what happened.
+5. **Repeat or stop** — If the model requested tools, loop back to step 1 with the larger history. Otherwise, stop.
+
+The model is pure. All state, all side effects, all memory live in the harness and the message array it carries.
+
+## Stop Conditions
+
+The loop ends on one of these. Conflating them is a common source of "the agent quit early" bugs:
+
+| `stop_reason` | Meaning | Harness action |
+|---------------|---------|----------------|
+| `end_turn` | Model finished, no tools requested | Exit loop, return to user |
+| `tool_use` | Model wants tool results | Execute, append, continue |
+| `max_tokens` | Output hit the token cap mid-message | Continue the message, or fail |
+| `stop_sequence` | A configured stop string appeared | Exit per harness policy |
+| `pause_turn` | Long-running server tool not done | Re-send to continue |
+
+A well-built harness also imposes its *own* stop conditions the model cannot see: a turn cap, a wall-clock budget, a cost ceiling. Without them, a model that keeps requesting tools loops until the context window fills. That is not a hypothetical — it is the default failure mode of a naive loop.
+
+## Why This Shapes Behavior
+
+Three consequences fall directly out of the loop structure:
+
+- **Every turn re-reads everything.** Cost and latency grow with history length, not with task difficulty. A 40-turn task pays for turn 1's context 40 times. This is why [Context Window Economics](/learn/harness/context-economics) is the next chapter, not an afterthought.
+- **The model only knows what is in the array.** A side effect with no `tool_result` is invisible. If your harness runs a command and discards the output, the model is blind to it and will repeat or contradict it.
+- **Control points are between steps, not inside the model.** You cannot edit the model's reasoning. You *can* gate step 3 (which tools run) and shape step 4 (what the result looks like). That is the entire surface area of [Hooks](/learn/toolkit/hooks) and of [Tool Result Curation](/learn/harness/tool-result-curation).
+
+## The Tradeoff
+
+A tighter loop — aggressive turn caps, hard tool gating — is safer and cheaper but caps the work the agent can complete autonomously. A looser loop completes more in one shot but degrades as context fills and costs scale superlinearly. There is no universal setting. The [Checkpoint Loop](/learn/patterns/checkpoint-loop) pattern exists because the right answer is usually neither extreme: break long work into verified segments, each a short loop with a durable [Anchor Point](/learn/patterns/anchor-point) between them.
+
+## When Not to Build Your Own
+
+If you are calling Claude Code or the managed agent, this loop already exists, tuned. Reimplement it only when you need control the managed loop does not expose — custom stop conditions, a bespoke dispatch layer, or an embedded runtime. [Building a Harness](/learn/harness/building-a-harness) covers exactly where that line is.

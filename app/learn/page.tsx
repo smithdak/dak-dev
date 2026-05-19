@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { getAllPatterns, CHAPTERS } from '@/lib/patterns';
 import { TOOLKIT_TOPICS } from '@/lib/toolkit';
+import { HARNESS_CHAPTERS } from '@/lib/harness';
+import { SECURITY_CHAPTERS } from '@/lib/security';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { LearnHero } from '@/components/learn/LearnHero';
 import { ConnectionsMap } from '@/components/learn/ConnectionsMap';
@@ -27,11 +29,11 @@ export default function LearnPage() {
         patternCount={allPatterns.length}
         chapterCount={CHAPTERS.length}
         toolkitTopicCount={TOOLKIT_TOPICS.length}
+        harnessChapterCount={HARNESS_CHAPTERS.length}
+        securityChapterCount={SECURITY_CHAPTERS.length}
       />
 
-      <div className="mx-auto max-w-7xl">
-        <ConnectionsMap />
-      </div>
+      <ConnectionsMap />
     </PageTransition>
   );
 }

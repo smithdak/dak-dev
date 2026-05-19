@@ -1,0 +1,62 @@
+---
+title: "Building a Harness"
+slug: "building-a-harness"
+number: "06"
+description: "Rolling your own loop with the Claude Agent SDK — when it pays off, and when the managed harness wins."
+relatedPatterns: ["scaffold-first", "safety-net", "checkpoint-loop"]
+relatedTopics: ["agents", "agent-teams", "mcp"]
+published: true
+keywords: ["claude agent sdk", "build agent harness", "custom agent loop", "agent infrastructure", "harness engineering"]
+---
+
+# Building a Harness
+
+The previous five chapters describe a loop you mostly should not write. Claude Code and the managed agent already implement the [agent loop](/learn/harness/agent-loop), [context economics](/learn/harness/context-economics), [compaction](/learn/harness/compaction-continuity), [result curation](/learn/harness/tool-result-curation), and [prompt architecture](/learn/harness/system-prompt-architecture) — tuned, hardened, and maintained by people whose job is exactly that. Building your own is justified only when you need control those harnesses do not expose. This chapter is about where that line is.
+
+## What the Agent SDK Gives You
+
+The Claude Agent SDK is the same harness Claude Code runs, exposed as a library. You get the loop, tool dispatch, compaction, and the system-prompt stack — and you supply the parts that are *yours*:
+
+```typescript
+import { query } from "@anthropic-ai/claude-agent-sdk";
+
+const result = query({
+  prompt: "Triage the failing CI run and open a fix PR",
+  options: {
+    systemPrompt: { type: "preset", preset: "claude_code" }, // keep the tuned preamble
+    allowedTools: ["Read", "Edit", "Bash", "mcp__github"],
+    permissionMode: "acceptEdits",
+    maxTurns: 25,                 // your stop condition, not the model's
+  },
+});
+
+for await (const msg of result) {
+  // your dispatch, logging, cost accounting, side effects
+}
+```
+
+The point of the `preset` system prompt is the lesson of [System Prompt Architecture](/learn/harness/system-prompt-architecture) made concrete: keep the harness preamble you did not write, append the layers you control, and do not reimplement what is already tuned.
+
+## When Building Pays Off
+
+| Build a custom harness when | Use the managed harness when |
+|-----------------------------|------------------------------|
+| You need a bespoke stop condition or cost ceiling per run | Default turn/cost controls are enough |
+| The loop must embed in another runtime (a service, a CI job, a queue worker) | You are working in a terminal or IDE |
+| You need custom dispatch — your own tool execution, sandboxing, audit log | Built-in tools plus [MCP](/learn/toolkit/mcp) cover your tools |
+| You are orchestrating [agent teams](/learn/toolkit/agent-teams) with non-standard coordination | [Subagents](/learn/toolkit/agents) cover your delegation |
+| You need the loop itself observable and replayable | The session UI is sufficient observability |
+
+If none of the left column applies, building your own loop is undifferentiated work that you will maintain forever and that Anthropic will out-improve on every release.
+
+## The Parts You Own
+
+Even with the SDK doing the loop, three responsibilities are irreducibly yours, and skipping any one is the common failure of hand-built harnesses:
+
+- **Stop conditions the model cannot see.** Turn caps, wall-clock budgets, cost ceilings. The SDK gives the hooks; the *policy* is yours. A loop without an owner-imposed ceiling is a runaway by default.
+- **A [Safety Net](/learn/patterns/safety-net).** Custom dispatch means custom blast radius. Sandbox the tools, gate destructive actions, log every side effect — the managed harness does this for you; your harness does not until you build it.
+- **Scaffolding before autonomy.** Stand the loop up with logging, replay, and a kill switch *before* you let it run unattended. This is [Scaffold First](/learn/patterns/scaffold-first) at the infrastructure layer: the observability is not a follow-up, it is the precondition.
+
+## The Tradeoff
+
+A custom harness buys total control and costs you the entire surface area this section describes — forever, across every model version, including the bugs. The managed harness costs you control at the edges and gives you a loop that gets better while you sleep. The honest default is: use the managed harness, reach for the SDK at the *first* concrete requirement it cannot meet, and even then keep the preset preamble. Most "we need our own agent infrastructure" decisions are the [Checkpoint Loop](/learn/patterns/checkpoint-loop) lesson unlearned — solving for imagined generality instead of the next verified step. Build the harness when the requirement is real and named. Not before.

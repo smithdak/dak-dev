@@ -1,75 +1,139 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageTransition } from '@/components/ui/PageTransition';
-import { TOOLKIT_TOPICS, getToolkitPage } from '@/lib/toolkit';
+import { LearnSectionHero } from '@/components/learn/LearnSectionHero';
+import { SectionCard } from '@/components/learn/SectionCard';
+import { SectionConnects } from '@/components/learn/SectionConnects';
+import { ToolkitLensLegend } from '@/components/learn/ToolkitLensLegend';
+import { ScrollReveal, ScrollRevealItem } from '@/components/ui/ScrollReveal';
+import {
+  TOOLKIT_TOPICS,
+  getToolkitPage,
+  getToolkitTopicPages,
+  getAllToolkitPages,
+  SUB_PAGE_META,
+} from '@/lib/toolkit';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
 
 export const metadata: Metadata = {
   title: 'Claude Code Toolkit',
-  description: 'Expert\'s guide to agentic engineering with Claude Code — 9 deep-dives into hooks, skills, agents, MCP, and more.',
+  description:
+    "Expert's guide to agentic engineering with Claude Code — 9 deep-dives into hooks, skills, agents, MCP, and more.",
   openGraph: {
-    title: 'Claude Code Toolkit — Expert\'s Guide',
-    description: '9 deep-dives into Claude Code features for expert agentic engineering.',
+    title: "Claude Code Toolkit — Expert's Guide",
+    description:
+      '9 deep-dives into Claude Code features for expert agentic engineering.',
     url: `${siteUrl}/learn/toolkit`,
   },
   alternates: { canonical: '/learn/toolkit' },
 };
 
+// Every topic is a Claude Code feature that implements a portable pattern.
+// Mirrors the Patterns ↔ Toolkit pairs on the Learn connections map so the
+// four pillars stay one system (condition: integrate, don't graft).
+const CONNECTS = [
+  { label: 'Convention File', href: '/learn/patterns/convention-file', kind: 'Pattern' },
+  { label: 'Safety Net', href: '/learn/patterns/safety-net', kind: 'Pattern' },
+  { label: 'Memory Layer', href: '/learn/patterns/memory-layer', kind: 'Pattern' },
+  { label: 'Parallel Fan-Out', href: '/learn/patterns/parallel-fan-out', kind: 'Pattern' },
+  { label: 'Progressive Disclosure', href: '/learn/patterns/progressive-disclosure', kind: 'Pattern' },
+  { label: 'Agent-Friendly Architecture', href: '/learn/patterns/agent-friendly-architecture', kind: 'Pattern' },
+];
+
 export default function ToolkitIndexPage() {
-  const topicsWithStatus = TOOLKIT_TOPICS.map((topic) => ({
+  const topics = TOOLKIT_TOPICS.map((topic) => ({
     ...topic,
     hasContent: getToolkitPage(topic.slug) !== null,
+    chips: getToolkitTopicPages(topic.slug)
+      .map((p) => p.frontmatter.subPage)
+      .filter((s): s is NonNullable<typeof s> => Boolean(s))
+      .map((s) => SUB_PAGE_META[s].label),
   }));
+
+  const totalPages = getAllToolkitPages().length;
 
   return (
     <PageTransition className="min-h-screen pb-16">
-      <nav className="mb-6 pt-4 px-4 sm:px-6 lg:px-0" aria-label="Breadcrumb">
-        <ol className="flex items-center gap-2 text-xs text-muted font-mono">
-          <li><Link href="/learn" className="hover:text-text hover:underline underline-offset-2">Learn</Link></li>
-          <li aria-hidden="true">/</li>
-          <li aria-current="page"><span className="text-text font-semibold">Toolkit</span></li>
-        </ol>
-      </nav>
+      <LearnSectionHero
+        section="Toolkit"
+        color="cyan"
+        eyebrow={`Reference · ${TOOLKIT_TOPICS.length} Deep-Dives`}
+        title="Claude Code Toolkit"
+        description="Expert's guide to agentic engineering. Not documentation — mental models, production architectures, and the pitfalls the docs don't warn about."
+      />
 
-      <header className="mb-12 px-4 sm:px-6 lg:px-0">
-        <div className="inline-block border-4 border-accent bg-surface px-6 py-2 mb-6">
-          <p className="text-sm font-bold uppercase tracking-wider text-accent">
-            Reference &middot; {TOOLKIT_TOPICS.length} Deep-Dives
-          </p>
-        </div>
-        <h1 className="text-5xl md:text-6xl font-bold mb-4 tracking-tight">Claude Code Toolkit</h1>
-        <p className="text-xl text-muted max-w-2xl leading-relaxed">
-          Expert&apos;s guide to agentic engineering. Not documentation — mental models, production architectures, and the pitfalls the docs don&apos;t warn about.
-        </p>
-      </header>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0">
+        {/* Quick-jump — same idiom as the Patterns section, kept consistent */}
+        <nav
+          aria-label="Jump to section"
+          className="flex flex-wrap gap-4 mb-12"
+        >
+          {[
+            { num: '01', label: 'Topics', href: '#topics' },
+            { num: '02', label: 'How to Read', href: '#how-to-read' },
+            { num: '03', label: 'Connections', href: '#connects' },
+          ].map((j) => (
+            <Link
+              key={j.href}
+              href={j.href}
+              className="inline-flex items-center gap-3 px-6 py-3 border-2 border-text/30 bg-transparent text-muted font-bold text-sm uppercase tracking-wider hover:border-text hover:text-text hover:bg-surface hover:shadow-[4px_4px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+            >
+              <span className="text-accent/60 font-mono" aria-hidden="true">
+                {j.num}
+              </span>
+              {j.label}
+            </Link>
+          ))}
+        </nav>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 sm:px-6 lg:px-0">
-        {topicsWithStatus.map((topic) => (
-          <Link
-            key={topic.slug}
-            href={topic.hasContent ? `/learn/toolkit/${topic.slug}` : '#'}
-            className={`group block border-4 p-6 transition-all ${
-              topic.hasContent
-                ? 'border-text hover:shadow-[6px_6px_0_0_var(--color-accent)] hover:-translate-x-px hover:-translate-y-px'
-                : 'border-text/20 opacity-50 cursor-not-allowed'
-            }`}
-            aria-disabled={!topic.hasContent}
-          >
-            <div className="flex items-start gap-3 mb-3">
-              <svg className="w-6 h-6 text-accent shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={topic.icon} />
-              </svg>
-              <div>
-                <h2 className="text-lg font-bold">{topic.name}</h2>
-                <span className="text-xs font-mono text-muted uppercase">
-                  {topic.hasContent ? 'Available' : 'Coming Soon'}
-                </span>
-              </div>
+        <ToolkitLensLegend className="mb-16" />
+
+        <section
+          id="topics"
+          aria-labelledby="topics-heading"
+          className="scroll-mt-20"
+        >
+          <div className="border-l-8 border-l-chapter-2 border-b-2 border-text/30 pl-5 pb-4 mb-8">
+            <h2
+              id="topics-heading"
+              className="text-2xl md:text-3xl font-bold tracking-tight"
+            >
+              The Nine Topics
+            </h2>
+            <p className="text-sm text-muted mt-2 max-w-3xl leading-relaxed">
+              Each is a self-contained deep-dive. Independent — start anywhere.
+            </p>
+          </div>
+
+          <ScrollReveal stagger>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {topics.map((topic) => (
+                <ScrollRevealItem key={topic.slug} className="h-full">
+                  <SectionCard
+                    href={`/learn/toolkit/${topic.slug}`}
+                    number={String(topic.order).padStart(2, '0')}
+                    name={topic.name}
+                    description={topic.description}
+                    icon={topic.icon}
+                    color="cyan"
+                    available={topic.hasContent}
+                    cta="Explore"
+                    chips={topic.chips}
+                  />
+                </ScrollRevealItem>
+              ))}
             </div>
-            <p className="text-sm text-muted leading-relaxed">{topic.description}</p>
-          </Link>
-        ))}
+          </ScrollReveal>
+        </section>
+
+        <SectionConnects
+          id="connects"
+          color="cyan"
+          heading="Where This Connects"
+          intro="Every topic here is a Claude Code feature — and each one implements a portable pattern. This is where the toolkit grounds out in technique."
+          links={CONNECTS}
+        />
       </div>
     </PageTransition>
   );

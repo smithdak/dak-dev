@@ -1,0 +1,86 @@
+---
+name: "Reproduction First"
+slug: "reproduction-first"
+chapter: 6
+number: "6.3"
+intent: "When fixes keep missing, stop requesting fixes and require a deterministic reproduction first — an agent patching a bug it cannot reproduce is guessing."
+difficulty: "intermediate"
+published: true
+keywords: ["reproduction", "debugging", "deterministic", "failing test", "recovery", "guess-driven fixes"]
+relatedPatterns:
+  - slug: "test-first-steering"
+    type: "composes"
+    note: "A reproduction is a failing test — the same mechanism Test-First uses, aimed at a bug instead of a feature."
+  - slug: "regression-guard"
+    type: "composes"
+    note: "Once the bug is fixed, the reproduction graduates into the permanent regression test."
+  - slug: "clean-slate"
+    type: "contrasts"
+    note: "Clean Slate resets a poisoned conversation; Reproduction First resets a guessing debug loop. Different failures, different recovery."
+---
+
+## Problem
+
+You report a bug: "Users occasionally get logged out mid-session." The agent reads the auth code and proposes a fix — extends the token refresh window. You deploy. It still happens. The agent proposes another fix — adds a retry on the refresh call. Still happens. A third: clock-skew tolerance. Each fix is plausible, each is wrong, and you are now three deploys into a bug that is exactly as alive as when you started.
+
+Every one of those fixes was a guess. The agent never reproduced the logout. It pattern-matched "intermittent auth failure" to common causes and proposed the textbook remedies for each. With no way to observe the actual failure, it could not tell which cause was *yours*, so it cycled through the catalog. Plausible-but-unverified is the defining texture of guess-driven debugging, and agents are extremely fluent at producing it.
+
+The loop is self-sustaining. Each failed fix changes the code, which changes what the next guess reasons about, which justifies the next plausible fix. You can stay in this loop indefinitely because it always produces a next thing to try. What it never produces is a fix that works, because nothing in the loop ever confronts the actual bug.
+
+## Solution
+
+Stop asking for fixes. Make the next deliverable a deterministic reproduction — a command, script, or failing test that triggers the bug on demand. No fix attempt is allowed until the bug can be summoned at will.
+
+**Change what you are asking for:**
+
+```
+Stop proposing fixes. The logout bug is not reproduced yet, so
+every fix is a guess.
+
+Next deliverable: a failing test (or a script) that reproduces
+the mid-session logout deterministically. It must fail for the
+real reason, not a mocked stand-in. Do not change application
+code in this step. If you cannot reproduce it, report what
+you need — logs, repro steps, the conditions — instead of
+guessing again.
+```
+
+**Reproduction is a step with its own gate.** Treat "can we trigger it on command?" as a hard checkpoint. Until it is green, debugging has not actually started:
+
+| Phase | The question | Exit condition |
+|-------|-------------|----------------|
+| Reproduce | Can we trigger it on demand? | A command that fails every time |
+| Diagnose | What does the repro reveal? | The mechanism, named from evidence |
+| Fix | Does the change flip the repro? | Was red, now green |
+| Guard | Can it silently come back? | Repro kept as a permanent test |
+
+**A real reproduction needs the real cause.** A test that mocks the suspected failure "reproduces" your assumption, not the bug — it will pass after a fix and the bug will still ship. The reproduction has to fail for the actual reason, which is exactly why producing it forces the understanding that guessing skips.
+
+**Keep the reproduction after the fix.** The artifact that proves the bug exists is, unchanged, the artifact that proves it never comes back. The reproduction graduates directly into a <PatternRef slug="regression-guard">Regression Guard</PatternRef> — debugging output becomes permanent protection at zero extra cost.
+
+<Callout type="critical" title="A Confident Fix Without a Reproduction Is Still a Guess">
+The danger is not that the agent refuses to help — it is that it produces a fluent, well-reasoned, entirely unverified fix and you, several failures deep and wanting to be done, accept it. Confidence in the explanation is not evidence about the bug. Hold the line: no reproduction, no fix. "I cannot reproduce it yet, here is what I need" is real progress. The fourth plausible patch is not.
+</Callout>
+
+## Signals
+
+- Multiple deployed "fixes" and the bug is still exactly as alive
+- Fixes are justified by plausible theory, never by an observed failure
+- Each attempt targets a different root cause than the last
+- Nobody can state the command that makes the bug happen
+- The debugging session generates endless next-things-to-try and no resolution
+
+## Consequences
+
+**Benefits:**
+- Converts guessing into diagnosis — fixes confront the bug, not a theory
+- A fix's success becomes verifiable: the repro flips red to green
+- The reproduction graduates into a permanent regression test for free
+- Ends the infinite plausible-fix loop with a hard, objective gate
+- Forces real understanding, because a true repro can't be faked into existence
+
+**Costs:**
+- Some bugs are genuinely hard to reproduce — heisenbugs, races, prod-only state
+- Reproduction-first feels slower right up until it is the only thing that worked
+- A mocked or approximate repro gives false confidence — it must fail for the real reason
+- Requires holding the line against an agent (and yourself) wanting to just try one more fix

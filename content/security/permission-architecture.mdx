@@ -1,0 +1,54 @@
+---
+title: "Permission & Capability Architecture"
+slug: "permission-architecture"
+number: "06"
+description: "Least-privilege tools, allow/deny, sandboxing, blast radius and reversibility tiers, human-in-the-loop gates, and SSRF via the agent fetch."
+relatedPatterns: ["constraint-over-instruction", "scope-fence"]
+relatedTopics: ["settings", "agents"]
+published: true
+keywords: ["agent permission architecture", "least privilege AI agent", "human in the loop AI", "agent blast radius", "agent SSRF"]
+---
+
+# Permission & Capability Architecture
+
+This is the only chapter about a control an attacker cannot talk their way through. Every defense in [prompt injection](/learn/security/prompt-injection) reduces probability. Permission architecture reduces *consequence* — and it works even when every other layer has already failed. Assume the model is fully compromised and acting against you. The only thing standing between that and damage is the set of tools it holds. Design that set as if the assumption were always true, because under injection it is.
+
+## Blast Radius Is the Tool Set
+
+The agent's maximum possible damage is the union of its tools' capabilities. Not what it is likely to do — what it *can* do. Shrinking that union is the highest-leverage security work in the entire stack, because it is the one control that does not depend on the model behaving.
+
+| Tool grant | Blast radius | Reversible? |
+|------------|--------------|-------------|
+| Read a scoped directory | Disclosure of that directory | n/a — already disclosed |
+| Write to a working branch | Recoverable via git | Yes — cheap |
+| Run arbitrary shell | Whatever the shell user can do | Maybe — depends on the command |
+| Network fetch | Disclosure + SSRF (below) | No — a sent request cannot be unsent |
+| Production credential | The credential's full grant | Usually not |
+
+Grant the narrowest capability that completes the task — [Scope Fence](/learn/patterns/scope-fence) and [Constraint over Instruction](/learn/patterns/constraint-over-instruction) at the tool layer, configured in [settings & permissions](/learn/toolkit/settings) as explicit allow/deny rather than a prompt request the model may ignore.
+
+## Reversibility Is the Axis That Matters
+
+Severity is not "how powerful" — it is "how hard to undo." A wrong file write on a branch is a `git checkout`. A wrong production migration, a sent email, money moved, a force-push over history — those have no undo, and an agent acting on poisoned input will reach for them as readily as the safe ones because it cannot feel the difference. **This is the failure mode that has no analogue in classic appsec: autonomy plus irreversibility on attacker-influenced input.**
+
+So gate on reversibility, not on a vague notion of "sensitive":
+
+- **Reversible:** let the agent run. Speed here is the point of autonomy.
+- **Expensive to reverse:** require a checkpoint or a dry run first.
+- **Irreversible:** a human-in-the-loop confirmation is mandatory, and the confirmation must show the *concrete* action, not "the agent would like to proceed." A gate the model can satisfy by asking nicely is not a gate.
+
+## SSRF: The Fetch Tool Is a Capability, Not a Convenience
+
+An agent that fetches a URL will fetch the URL an injected instruction gives it — including `169.254.169.254` and other internal endpoints. The agent fetch is server-side request forgery with a language model choosing the target. Treat it as a privileged capability: deny-list internal ranges and metadata endpoints at the tool, do not let fetched content re-enter the privileged context unsummarized, and never assume "it only browses public docs" survives contact with injection.
+
+## Multi-Agent Does Not Dilute This
+
+Splitting work across [agents and subagents](/learn/toolkit/agents) is good architecture and not, by itself, a security boundary. A subagent with a dangerous tool is a dangerous agent. The blast radius is the union across every agent the orchestration can invoke. Scope each one; do not assume the orchestrator's restraint contains the subagent's grant.
+
+## The Tradeoff
+
+This is the chapter where the cost is most visible. Every removed tool and every human gate is autonomy you gave up — the agent finishes less, slower, with more interruptions. A maximally safe agent that confirms every action is barely an agent. There is no configuration that is both fully autonomous and fully contained; the capability/safety tension is structural, and progress is choosing the operating point per task and stating it, not pretending the tension does not exist.
+
+## When Not To Lock Down
+
+A read-only agent in a sandbox with no network and no credentials has a blast radius near zero — adding confirmation gates there only trains the user to click through prompts, which actively erodes the gates that matter. Match the control to the radius. Where the radius is real, the residual question is what leaves even a contained agent: [Output & Exfiltration](/learn/security/exfiltration-and-output).

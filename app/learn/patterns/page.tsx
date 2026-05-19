@@ -3,7 +3,7 @@ import { getAllPatterns, CHAPTERS } from '@/lib/patterns';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { ChapterHeader } from '@/components/patterns/ChapterHeader';
 import { PatternCard } from '@/components/patterns/PatternCard';
-import { PatternsHero } from '@/components/patterns/PatternsHero';
+import { LearnSectionHero } from '@/components/learn/LearnSectionHero';
 import { DifficultyLegend } from '@/components/patterns/DifficultyLegend';
 import { ProblemIndex } from '@/components/patterns/ProblemIndex';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -54,13 +54,55 @@ export default function PatternsPage() {
     <PageTransition className="min-h-screen pb-16">
       <JsonLd data={collectionSchema} />
 
-      {/* Hero — full-bleed */}
-      <PatternsHero
-        patternCount={allPatterns.length}
-        chapterCount={CHAPTERS.length}
+      <LearnSectionHero
+        section="Patterns"
+        color="green"
+        eyebrow={`Reference · ${allPatterns.length} Patterns · ${CHAPTERS.length} Chapters`}
+        title="Agent Patterns"
+        description="Repeatable techniques for engineering with AI coding agents. A structured reference — not tips, not tricks, not a beginner's guide."
       />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 mt-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0">
+        {/* Quick-jump links — relocated from the hero so the section banner stays consistent across Learn sections */}
+        <nav aria-label="Jump to section" className="flex flex-wrap gap-4 mb-12">
+          <Link
+            href="#chapters"
+            className="inline-flex items-center gap-3 px-6 py-3 border-2 border-text/30 bg-transparent text-muted font-bold text-sm uppercase tracking-wider hover:border-text hover:text-text hover:bg-surface hover:shadow-[4px_4px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+          >
+            <span className="text-accent/60 font-mono" aria-hidden="true">
+              01
+            </span>
+            Chapters
+          </Link>
+          <Link
+            href="#problems"
+            className="inline-flex items-center gap-3 px-6 py-3 border-2 border-text/30 bg-transparent text-muted font-bold text-sm uppercase tracking-wider hover:border-text hover:text-text hover:bg-surface hover:shadow-[4px_4px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+          >
+            <span className="text-accent/60 font-mono" aria-hidden="true">
+              02
+            </span>
+            Problems
+          </Link>
+          <Link
+            href="/learn/patterns/graph"
+            className="inline-flex items-center gap-3 px-6 py-3 border-2 border-text/30 bg-transparent text-muted font-bold text-sm uppercase tracking-wider hover:border-text hover:text-text hover:bg-surface hover:shadow-[4px_4px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+          >
+            <span className="text-accent/60 font-mono" aria-hidden="true">
+              03
+            </span>
+            Language Map
+          </Link>
+          <Link
+            href="/learn/patterns/cards"
+            className="inline-flex items-center gap-3 px-6 py-3 border-2 border-text/30 bg-transparent text-muted font-bold text-sm uppercase tracking-wider hover:border-text hover:text-text hover:bg-surface hover:shadow-[4px_4px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+          >
+            <span className="text-accent/60 font-mono" aria-hidden="true">
+              04
+            </span>
+            Cards
+          </Link>
+        </nav>
+
         {/* Difficulty Legend */}
         <DifficultyLegend className="mb-12" />
 

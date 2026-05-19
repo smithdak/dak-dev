@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 import { getAllPatterns, CHAPTERS } from '@/lib/patterns';
 import { TOOLKIT_TOPICS, getToolkitTopicPages, type ToolkitSubPage } from '@/lib/toolkit';
+import { HARNESS_CHAPTERS } from '@/lib/harness';
+import { SECURITY_CHAPTERS } from '@/lib/security';
 import { LearnSidebar } from '@/components/learn/LearnSidebar';
 import { LearnMobileNav } from '@/components/learn/LearnMobileNav';
 
@@ -30,6 +32,8 @@ export default function LearnLayout({ children }: { children: ReactNode }) {
         patterns={sidebarPatterns}
         toolkitTopics={TOOLKIT_TOPICS}
         topicSubPages={topicSubPages}
+        harnessChapters={HARNESS_CHAPTERS}
+        securityChapters={SECURITY_CHAPTERS}
         className="px-4 sm:px-6 lg:hidden pt-4"
       />
 
@@ -41,6 +45,8 @@ export default function LearnLayout({ children }: { children: ReactNode }) {
             patterns={sidebarPatterns}
             toolkitTopics={TOOLKIT_TOPICS}
             topicSubPages={topicSubPages}
+            harnessChapters={HARNESS_CHAPTERS}
+            securityChapters={SECURITY_CHAPTERS}
           />
         </div>
 

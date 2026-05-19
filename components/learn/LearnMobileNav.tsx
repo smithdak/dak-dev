@@ -6,6 +6,8 @@ import Link from 'next/link';
 import type { ChapterMeta } from '@/lib/patterns';
 import type { ToolkitTopicMeta } from '@/lib/toolkit-types';
 import { SUB_PAGE_META, type ToolkitSubPage } from '@/lib/toolkit-types';
+import type { HarnessChapterMeta } from '@/lib/harness-types';
+import type { SecurityChapterMeta } from '@/lib/security-types';
 
 const TEXT_COLORS: Record<number, string> = {
   1: 'text-chapter-1', 2: 'text-chapter-2', 3: 'text-chapter-3',
@@ -29,6 +31,8 @@ interface LearnMobileNavProps {
   patterns: SidebarPattern[];
   toolkitTopics: ToolkitTopicMeta[];
   topicSubPages: Record<string, ToolkitSubPage[]>;
+  harnessChapters: HarnessChapterMeta[];
+  securityChapters: SecurityChapterMeta[];
   className?: string;
 }
 
@@ -37,18 +41,30 @@ export function LearnMobileNav({
   patterns,
   toolkitTopics,
   topicSubPages,
+  harnessChapters,
+  securityChapters,
   className = '',
 }: LearnMobileNavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState<'patterns' | 'toolkit'>(
-    pathname.startsWith('/learn/toolkit') ? 'toolkit' : 'patterns'
+  const [activeTab, setActiveTab] = useState<'patterns' | 'toolkit' | 'harness' | 'security'>(
+    pathname.startsWith('/learn/toolkit')
+      ? 'toolkit'
+      : pathname.startsWith('/learn/harness')
+      ? 'harness'
+      : pathname.startsWith('/learn/security')
+      ? 'security'
+      : 'patterns'
   );
 
   // Sync active tab on navigation
   useEffect(() => {
     if (pathname.startsWith('/learn/toolkit')) {
       setActiveTab('toolkit');
+    } else if (pathname.startsWith('/learn/harness')) {
+      setActiveTab('harness');
+    } else if (pathname.startsWith('/learn/security')) {
+      setActiveTab('security');
     } else if (pathname.startsWith('/learn/patterns')) {
       setActiveTab('patterns');
     }
@@ -75,6 +91,16 @@ export function LearnMobileNav({
     : null;
   const activeSubMeta = activeSubPage && SUB_PAGE_META[activeSubPage] ? SUB_PAGE_META[activeSubPage] : null;
 
+  const activeHarnessSlug = pathname.startsWith('/learn/harness/')
+    ? pathname.replace('/learn/harness/', '').split('/')[0]
+    : null;
+  const activeHarnessChapter = harnessChapters.find((c) => c.slug === activeHarnessSlug);
+
+  const activeSecuritySlug = pathname.startsWith('/learn/security/')
+    ? pathname.replace('/learn/security/', '').split('/')[0]
+    : null;
+  const activeSecurityChapter = securityChapters.find((c) => c.slug === activeSecuritySlug);
+
   const currentLabel = activePattern
     ? `${activePattern.number} ${activePattern.name}`
     : activeChapter
@@ -83,6 +109,10 @@ export function LearnMobileNav({
     ? activeSubMeta
       ? `${activeTopic.name} › ${activeSubMeta.label}`
       : activeTopic.name
+    : activeHarnessChapter
+    ? `${activeHarnessChapter.number} ${activeHarnessChapter.name}`
+    : activeSecurityChapter
+    ? `${activeSecurityChapter.number} ${activeSecurityChapter.name}`
     : 'Navigate Learn';
 
   return (
@@ -104,7 +134,7 @@ export function LearnMobileNav({
           <div className="flex border-b-2 border-text/20">
             <button
               onClick={() => setActiveTab('patterns')}
-              className={`flex-1 px-4 py-2.5 text-sm font-bold uppercase tracking-wider transition-colors ${
+              className={`flex-1 px-2 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
                 activeTab === 'patterns' ? 'bg-background text-text border-b-2 border-accent -mb-0.5' : 'text-muted hover:text-text'
               }`}
             >
@@ -112,11 +142,27 @@ export function LearnMobileNav({
             </button>
             <button
               onClick={() => setActiveTab('toolkit')}
-              className={`flex-1 px-4 py-2.5 text-sm font-bold uppercase tracking-wider transition-colors ${
+              className={`flex-1 px-2 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
                 activeTab === 'toolkit' ? 'bg-background text-text border-b-2 border-accent -mb-0.5' : 'text-muted hover:text-text'
               }`}
             >
               Toolkit
+            </button>
+            <button
+              onClick={() => setActiveTab('harness')}
+              className={`flex-1 px-2 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+                activeTab === 'harness' ? 'bg-background text-text border-b-2 border-accent -mb-0.5' : 'text-muted hover:text-text'
+              }`}
+            >
+              Harness
+            </button>
+            <button
+              onClick={() => setActiveTab('security')}
+              className={`flex-1 px-2 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+                activeTab === 'security' ? 'bg-background text-text border-b-2 border-accent -mb-0.5' : 'text-muted hover:text-text'
+              }`}
+            >
+              Security
             </button>
           </div>
 
@@ -214,6 +260,66 @@ export function LearnMobileNav({
                   </div>
                 );
               })}
+            </>
+          )}
+
+          {activeTab === 'harness' && (
+            <>
+              <Link
+                href="/learn/harness"
+                onClick={() => setIsOpen(false)}
+                className={`block px-4 py-3 text-sm font-bold uppercase tracking-wider border-b-2 border-muted/20 hover:bg-background ${
+                  pathname === '/learn/harness' ? 'text-text bg-background' : ''
+                }`}
+              >
+                Overview
+              </Link>
+              {harnessChapters.map((chapter) => (
+                <div key={chapter.slug} className="border-b border-muted/20 last:border-b-0">
+                  <Link
+                    href={`/learn/harness/${chapter.slug}`}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 hover:bg-background transition-colors ${
+                      activeHarnessSlug === chapter.slug ? 'font-semibold text-text bg-background' : 'text-muted'
+                    }`}
+                  >
+                    <span className="font-mono font-bold text-xs text-accent/60 shrink-0">{chapter.number}</span>
+                    <div className="min-w-0">
+                      <span className="text-sm block truncate">{chapter.name}</span>
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </>
+          )}
+
+          {activeTab === 'security' && (
+            <>
+              <Link
+                href="/learn/security"
+                onClick={() => setIsOpen(false)}
+                className={`block px-4 py-3 text-sm font-bold uppercase tracking-wider border-b-2 border-muted/20 hover:bg-background ${
+                  pathname === '/learn/security' ? 'text-text bg-background' : ''
+                }`}
+              >
+                Overview
+              </Link>
+              {securityChapters.map((chapter) => (
+                <div key={chapter.slug} className="border-b border-muted/20 last:border-b-0">
+                  <Link
+                    href={`/learn/security/${chapter.slug}`}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 hover:bg-background transition-colors ${
+                      activeSecuritySlug === chapter.slug ? 'font-semibold text-text bg-background' : 'text-muted'
+                    }`}
+                  >
+                    <span className="font-mono font-bold text-xs text-accent/60 shrink-0">{chapter.number}</span>
+                    <div className="min-w-0">
+                      <span className="text-sm block truncate">{chapter.name}</span>
+                    </div>
+                  </Link>
+                </div>
+              ))}
             </>
           )}
         </nav>

@@ -1,0 +1,56 @@
+---
+title: "Data Privacy & PII in the Context Window"
+slug: "data-and-pii"
+number: "02"
+description: "What enters the context window, provider retention and training exposure, data minimization, and redaction that survives the agent loop."
+relatedPatterns: ["context-priming"]
+relatedTopics: ["claude-md", "memory"]
+published: true
+keywords: ["LLM PII context window", "AI data privacy", "zero data retention", "prompt data redaction", "AI training data exposure"]
+---
+
+# Data Privacy & PII in the Context Window
+
+The context window is a disclosure boundary. Anything that enters it has been disclosed to the provider — not "might be," *has been*, the moment the request is sent. Privacy engineering for AI is therefore not about what you intend to share. It is about controlling what crosses that boundary, because the boundary does not care about your intent.
+
+Most teams reason about the prompt they wrote. The exposure is the prompt the *system assembled*.
+
+## What Actually Enters the Window
+
+A single agent turn assembles far more than your message. The [context window economics](/learn/harness/context-economics) chapter covers the cost of this; here the concern is disclosure:
+
+| Source | Enters the window? | PII risk |
+|--------|--------------------|----------|
+| Your typed prompt | Always | The part you control and think about |
+| File reads by tools | Yes, full contents | High — config files, fixtures, real exports |
+| Tool/command output | Yes | High — DB rows, logs, API responses |
+| Retrieved documents (RAG) | Yes | High — whatever the retriever matched |
+| Project instructions ([CLAUDE.md](/learn/toolkit/claude-md)) | Every turn | Low if reviewed, silent if not |
+
+The pattern: the highest-PII content is the content you did *not* type. An agent answering "why is this test flaky?" may read a fixture full of real customer rows you forgot were there. You disclosed them without ever seeing them.
+
+## Retention and Training Are Separate Questions
+
+Conflating these causes bad decisions. They are independent:
+
+- **Retention** — does the provider store the request, and for how long? Driven by the tier and contract. A zero-data-retention agreement means requests are not persisted past the response.
+- **Training** — could the content improve a future model? Enterprise and API tiers generally exclude this by contract; consumer tiers historically do not by default.
+
+A zero-retention API path can still be the wrong place for regulated data if the contract or region is wrong. "It is not used for training" does not answer "is it allowed to be there at all." Decide both, explicitly, before the first request — not after.
+
+## Minimize Before the Boundary, Not After
+
+Redaction only works if it happens *before* the token crosses the wire. Redacting a transcript afterward is theater — the disclosure already happened. The durable controls:
+
+- **Data minimization at the tool layer.** A tool that returns a customer record should return the fields the task needs, not `SELECT *`. This is [tool result curation](/learn/harness/tool-result-curation) applied to privacy, not just token budget.
+- **Synthetic and masked fixtures.** The single highest-leverage change: agents read fixtures constantly. If fixtures contain no real PII, the largest silent channel is closed at the source.
+- **Deliberate priming.** [Context priming](/learn/patterns/context-priming) is usually framed as a quality move; it is also a privacy move. Putting the right minimal context in on purpose means the agent does not go spelunking through the filesystem for it.
+- **Durable facts go to [memory](/learn/toolkit/memory), not the prompt.** Persisted state you control beats re-disclosing the same data every turn.
+
+## The Tradeoff
+
+Aggressive minimization degrades the agent. A model reasoning about masked data sometimes reasons about the mask — it cannot debug a date parser if every date is `[REDACTED]`. There is a real, unavoidable tension: the data that makes the agent useful is often the data you least want to disclose. Pretending otherwise produces either a leaky system or a useless one. The honest position is per-task: decide how much fidelity this specific task actually needs, and disclose exactly that.
+
+## When Not To Minimize
+
+Not all data is sensitive, and treating it as if it were has a cost: redaction pipelines fail, mask poorly, and add latency and bugs. For a public OSS codebase with no secrets and synthetic fixtures, an elaborate redaction layer is pure overhead protecting nothing. Spend the control budget where the disclosure is real. The mechanism for deciding *where* that is comes next — [A Threat Model for AI Systems](/learn/security/threat-model).

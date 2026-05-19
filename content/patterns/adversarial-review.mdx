@@ -1,0 +1,92 @@
+---
+name: "Adversarial Review"
+slug: "adversarial-review"
+chapter: 5
+number: "5.2"
+intent: "Have a separate agent or a fresh context attack the work, because the agent that produced it shares the blind spots that produced the bug."
+difficulty: "intermediate"
+published: true
+keywords: ["adversarial review", "critic agent", "multi-agent", "self-review bias", "code review", "verification"]
+relatedPatterns:
+  - slug: "parallel-fan-out"
+    type: "composes"
+    note: "Fan out the critique to a separate session that never saw the implementation reasoning."
+  - slug: "diff-review"
+    type: "composes"
+    note: "Adversarial Review produces the line-by-line diff critique you would otherwise do by hand."
+  - slug: "incremental-verification"
+    type: "contrasts"
+    note: "Incremental Verification trusts the author to self-check; Adversarial Review assumes the author is blind to its own errors."
+---
+
+## Problem
+
+You ask the agent to review its own implementation. It reads back the code it just wrote and reports: "The implementation is correct and handles the edge cases." It is wrong. The auth check it wrote treats an expired token and a malformed token identically, and its review missed this for the same reason the code has it: the agent's model of the problem doesn't distinguish those cases.
+
+Self-review by the author — human or agent — is structurally weak. The blind spot that produced the bug is the same blind spot reviewing for it. If the agent misunderstood the token lifecycle while writing, it misunderstands it while reviewing. The review inherits the bug's premise and confirms it.
+
+Agents have a second failure on top of this: a strong prior toward declaring their own work correct. Ask "is this right?" and the likely answer is yes, with fluent justification. The fluency is the danger. A confident, well-argued "looks correct" reads exactly like a real verification and is worth nothing when it comes from the context that wrote the code.
+
+## Solution
+
+Put the work in front of a reviewer that does not share the author's context, and give that reviewer an adversarial brief: find what is wrong, not confirm what is right.
+
+**Two things must both be true:**
+
+1. **Different context.** A fresh session, a separate agent, or a subagent that received only the spec and the diff — not the conversation that produced them. It must not have absorbed the author's reasoning, because that reasoning is what you are testing.
+2. **Adversarial framing.** "Confirm this is correct" invites agreement. "Find the bug; assume one exists" invites the search you actually want.
+
+**The brief that works:**
+
+```
+You are reviewing code written by a different agent. Assume it
+contains at least one correctness bug and at least one unhandled
+edge case — your job is to find them, not to validate the approach.
+
+Here is the spec: [spec]
+Here is the diff: [diff]
+
+For each issue: cite the exact line, state the input that breaks
+it, and explain the failure. If you cannot find a real bug, say
+so explicitly rather than inventing a weak one.
+```
+
+The last sentence matters. Without it, an adversarial prompt manufactures nitpicks to satisfy the framing. You want real defects or an honest "none found," not theater in the other direction.
+
+**Where it pays for itself:**
+
+| Use it for | Skip it for |
+|------------|-------------|
+| Auth, payments, data migrations, deletes | Copy changes, styling, config bumps |
+| Anything irreversible in production | Work already covered by strong tests |
+| Code the author was "confident" about | Throwaway spikes and prototypes |
+| Logic with subtle edge cases | Mechanical, verifiable transformations |
+
+**Compose it with fan-out.** When you split work across <PatternRef slug="parallel-fan-out">parallel sessions</PatternRef>, the reviewer is one more branch: one session implements, an independent one attacks. Neither inherits the other's context, which is exactly the property you want.
+
+<Callout type="warning" title="A Critic With the Author's Context Is the Author">
+The entire mechanism is independence. If you ask the same session that wrote the code to "now review it adversarially," you get adversarial *language* over the same flawed mental model — and a worse outcome than no review, because the confident "I checked it critically" buys false trust. New context is not optional polish here. It is the pattern.
+</Callout>
+
+## Signals
+
+- The agent reviews its own work and reliably declares it correct
+- Bugs that ship were "reviewed" — the review missed what the code missed
+- Reviews come back fluent and reassuring but never find anything real
+- The expensive failures are in code the author was most confident about
+- You trust agent self-assessment less than you'd trust no assessment
+
+## Consequences
+
+**Benefits:**
+- Defects are caught by a context that doesn't share the bug's premise
+- Breaks the author's confidence bias — the reviewer is briefed to disagree
+- Scales without you — the adversary is another agent, not your attention
+- Composes cleanly with fan-out and feeds a concrete diff review
+- Strongest exactly where it matters most: irreversible, high-confidence code
+
+**Costs:**
+- Doubles the agent cost for reviewed work — reserve it for what warrants it
+- Adversarial framing without an honest-null escape manufactures fake issues
+- A reviewer given the author's context silently degrades to self-review
+- Adds a round trip; wrong for fast, low-stakes, well-tested changes

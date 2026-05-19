@@ -1,0 +1,47 @@
+---
+title: "Supply Chain, Audit & Governance"
+slug: "supply-chain-and-audit"
+number: "08"
+description: "MCP, plugin, and model provenance; dependency and lockfile hardening; what to log and what never to log; traceability for autonomous actions."
+relatedPatterns: ["safety-net", "agent-friendly-architecture"]
+relatedTopics: ["mcp", "settings"]
+published: true
+keywords: ["AI supply chain security", "MCP server security", "agent audit log", "AI provenance", "autonomous agent governance"]
+---
+
+# Supply Chain, Audit & Governance
+
+Every prior chapter assumed the agent's own components are trustworthy. This one removes that assumption. An [MCP](/learn/toolkit/mcp) server, a plugin, a dependency, a model you did not train — each is third-party code with the agent's privileges. And after the fact, the only thing that lets you reconstruct what an autonomous system did is what you logged before you knew you needed it. Supply chain is the trust you imported. Audit is the trust you can prove afterward.
+
+## The Agent's Supply Chain Is Wider Than Your Lockfile
+
+Classic dependency risk still applies, and an agent adds new links to the chain — every one of them runs with the agent's reach:
+
+| Link | The risk | The control |
+|------|----------|-------------|
+| npm/pip dependencies | Malicious or typosquatted package in the build | Lockfile, pinned versions, provenance, audit in CI |
+| MCP servers | Third-party process with tool privileges and context access | Vet the source; pin it; scope what it can touch |
+| Plugins / skills | Executable instructions loaded into the agent | Review like code, not like config |
+| The model | Behavior you did not author and cannot fully inspect | Provider trust + the containment of every prior chapter |
+
+This is not abstract for this site. This repository's own recent [security-hardening work](/blog) — migrating to pnpm, pinning the Node engine, locking CI to a single Node version, eliminating a phantom dependency, hardening response headers — is exactly this row of the table, executed. The artifact is the argument: the supply-chain controls are in the commit history, not only in this chapter. An [agent-friendly architecture](/learn/patterns/agent-friendly-architecture) with pinned, reproducible builds is also a *securable* one — the same properties that help an agent navigate the repo are the ones that make its supply chain auditable.
+
+## Audit Is Designed In, Not Bolted On
+
+An autonomous agent makes decisions a human never explicitly approved. When something goes wrong — and across enough runs it will — "what did it do, on what input, and why" must be answerable from records that already exist. Retrofitting an audit trail after the incident is too late by definition. Log, as a [Safety Net](/learn/patterns/safety-net) the run cannot opt out of: every tool call with arguments, every external request and its destination, the decision points, and the inputs that drove them.
+
+## What You Must Not Log
+
+Audit logging is itself a disclosure boundary, and it is the one teams forget. A log that captures full context windows and tool arguments is now a durable, plaintext store of every secret and PII the agent ever touched — often less protected than the systems it came from, and retained far longer. The same discipline from [Data & PII in Context](/learn/security/data-and-pii) and [Secrets & Credential Hygiene](/learn/security/secrets-and-credentials) applies to the audit trail itself:
+
+- Log references and hashes, not raw secrets or full payloads.
+- Redact at write time — a scrubber that runs after retention is theater.
+- Scope and time-box log access exactly as you would the production data it mirrors.
+
+## The Tradeoff
+
+Complete audit and a locked supply chain have a standing cost. Pinned everything means a manual bump treadmill and slower adoption of fixes; vetting every MCP server and plugin caps how fast you can move; comprehensive logging creates the very high-value PII store this chapter just warned about. There is no version where total traceability and total privacy and frictionless dependency updates all hold at once — you are choosing which to relax, and the only wrong move is choosing by default instead of on purpose. Governance is making that choice explicit and revisitable, not pretending it was free.
+
+## When Not To Formalize
+
+A solo experiment on a throwaway branch does not need an audit pipeline or a dependency-vetting board — that ceremony would outweigh anything it protects. This chapter scales with autonomy, irreversibility, and how many people depend on the outcome. The instant an agent acts unattended on systems other people rely on, every control here stops being optional — and the discipline is the same one that opened this section in [The Real Risks](/learn/security/the-real-risks): name the exposure, trade against it on purpose.

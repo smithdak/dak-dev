@@ -1,0 +1,44 @@
+---
+title: "System Prompt Architecture"
+slug: "system-prompt-architecture"
+number: "05"
+description: "Where steering lives: the instruction hierarchy, the harness preamble, and layered precedence."
+relatedPatterns: ["constraint-over-instruction", "convention-file", "context-priming"]
+relatedTopics: ["claude-md", "settings", "skills"]
+published: true
+keywords: ["system prompt", "instruction hierarchy", "prompt architecture", "agent steering", "harness preamble"]
+---
+
+# System Prompt Architecture
+
+The system prompt is not "the instructions." It is a *stack* of instruction sources the harness composes, in a fixed precedence order, into the single block the model reads first on every turn of the [agent loop](/learn/harness/agent-loop). Most "the agent ignored my instruction" problems are not the model failing to follow orders. They are two layers of the stack giving conflicting orders — and the model resolving the conflict differently than you expected. You cannot steer a system you cannot see the layers of.
+
+## The Layered Stack
+
+A production harness composes the system context from roughly these layers, highest precedence first:
+
+| Layer | Source | Volatility | Cache behavior |
+|-------|--------|------------|----------------|
+| Harness preamble | Built into the runtime (loop rules, tool protocol, safety) | Fixed | Stable prefix |
+| Tool definitions | Registered tools + schemas | Fixed per session | Stable prefix |
+| Project instructions | [CLAUDE.md](/learn/toolkit/claude-md), layered configs | Fixed per session | Stable prefix |
+| Skill / role instructions | Active [skill](/learn/toolkit/skills) or agent definition | Changes on invocation | Breaks cache when it changes |
+| Conversation + memory | Message history, recalled memory | Every turn | Volatile suffix |
+
+Two design rules fall straight out of this table. **Order by volatility for cache efficiency** — stable layers first so the cached prefix from [Context Window Economics](/learn/harness/context-economics) stays valid. And **the model reads top-down**: the harness preamble frames how everything below it is interpreted. Your CLAUDE.md does not operate in a vacuum; it operates inside the constraints the preamble already set.
+
+## Precedence Is the Real Design
+
+When layers conflict, precedence decides — and the model is told the order. This is why placement matters more than wording:
+
+- A rule in the **harness preamble** (e.g., "confirm before destructive actions") cannot be overridden by a politely-worded CLAUDE.md line. Stop fighting it; design with it.
+- A **project convention** outranks a one-off chat instruction *if* it is in CLAUDE.md, and loses to it if it is only in chat history. This is the entire point of the [Convention File](/learn/patterns/convention-file) pattern: persisted instructions are re-read every turn; chat is summarized away by [compaction](/learn/harness/compaction-continuity).
+- A **constraint** ("never write to `/prod`") survives the stack far better than an **instruction** ("please be careful with prod"). The [Constraint Over Instruction](/learn/patterns/constraint-over-instruction) pattern works *because* of where it sits and how it is phrased — a hard boundary, high in the stack, not a request buried in prose.
+
+## The Preamble You Do Not Write
+
+When you use Claude Code or the managed agent, the harness preamble is already there: the loop contract, the tool-use protocol, the safety posture, the output conventions. You are appending to a system prompt, not authoring one. Effective steering means writing the layers you control to *cooperate* with the preamble — reinforcing its structure, not contradicting it. Fighting the preamble is the most common wasted effort in prompt work; it has higher precedence and it will win.
+
+## The Tradeoff
+
+A long, exhaustive instruction layer feels safer but has two real costs: it spends fixed budget on *every* turn (see [Context Window Economics](/learn/harness/context-economics)), and past a point it dilutes its own signal — the tenth "important" rule weakens the first nine. A terse layer is cheap and sharp but leans on the model's defaults, which drift across model versions. The resolution is structural, not a word count: put durable, load-bearing rules as high-precedence constraints in persisted config ([Settings](/learn/toolkit/settings), CLAUDE.md), and let everything situational live in the volatile layer where it belongs and costs nothing once resolved.

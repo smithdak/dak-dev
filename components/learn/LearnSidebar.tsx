@@ -6,6 +6,8 @@ import Link from 'next/link';
 import type { ChapterMeta } from '@/lib/patterns';
 import type { ToolkitTopicMeta } from '@/lib/toolkit-types';
 import { SUB_PAGE_META, type ToolkitSubPage } from '@/lib/toolkit-types';
+import type { HarnessChapterMeta } from '@/lib/harness-types';
+import type { SecurityChapterMeta } from '@/lib/security-types';
 
 const CHAPTER_BORDER_COLORS: Record<number, string> = {
   1: 'border-chapter-1', 2: 'border-chapter-2', 3: 'border-chapter-3',
@@ -33,6 +35,8 @@ interface LearnSidebarProps {
   patterns: SidebarPattern[];
   toolkitTopics: ToolkitTopicMeta[];
   topicSubPages: Record<string, ToolkitSubPage[]>;
+  harnessChapters: HarnessChapterMeta[];
+  securityChapters: SecurityChapterMeta[];
 }
 
 export function LearnSidebar({
@@ -40,13 +44,27 @@ export function LearnSidebar({
   patterns,
   toolkitTopics,
   topicSubPages,
+  harnessChapters,
+  securityChapters,
 }: LearnSidebarProps) {
   const pathname = usePathname();
   const isInPatterns = pathname.startsWith('/learn/patterns');
   const isInToolkit = pathname.startsWith('/learn/toolkit');
+  const isInHarness = pathname.startsWith('/learn/harness');
+  const isInSecurity = pathname.startsWith('/learn/security');
 
-  const [patternsOpen, setPatternsOpen] = useState(true);
-  const [toolkitOpen, setToolkitOpen] = useState(true);
+  const [patternsOpen, setPatternsOpen] = useState(false);
+  const [toolkitOpen, setToolkitOpen] = useState(false);
+  const [harnessOpen, setHarnessOpen] = useState(false);
+  const [securityOpen, setSecurityOpen] = useState(false);
+
+  const activeHarnessSlug = isInHarness
+    ? pathname.replace('/learn/harness/', '').split('/')[0] || null
+    : null;
+
+  const activeSecuritySlug = isInSecurity
+    ? pathname.replace('/learn/security/', '').split('/')[0] || null
+    : null;
 
   const activePatternSlug = isInPatterns && !pathname.startsWith('/learn/patterns/chapter/')
     ? pathname.replace('/learn/patterns/', '').split('/')[0]
@@ -92,7 +110,13 @@ export function LearnSidebar({
         setExpandedChapters(new Set([activeChapterNum]));
       }
     }
-  }, [pathname, isInToolkit, isInPatterns, activeTopicSlug, activeChapterNum]);
+    if (isInHarness) {
+      setHarnessOpen(true);
+    }
+    if (isInSecurity) {
+      setSecurityOpen(true);
+    }
+  }, [pathname, isInToolkit, isInPatterns, isInHarness, isInSecurity, activeTopicSlug, activeChapterNum]);
 
   const toggleChapter = (num: number) => {
     setExpandedChapters((prev) => {
@@ -283,10 +307,117 @@ export function LearnSidebar({
         </div>
       )}
 
+      {/* DIVIDER */}
+      <div className="border-t-2 border-text/20 my-4" />
+
+      {/* HARNESS SECTION */}
+      <SectionHeader
+        title="Harness"
+        isOpen={harnessOpen}
+        onToggle={() => setHarnessOpen(!harnessOpen)}
+        count={harnessChapters.length}
+        isActive={isInHarness}
+      />
+
+      {harnessOpen && (
+        <div className="mb-4">
+          <div className="space-y-0.5">
+            <Link
+              href="/learn/harness"
+              className={`flex items-center border-l-4 pl-3 pr-1 py-2.5 text-sm transition-colors ${
+                isInHarness && !activeHarnessSlug
+                  ? 'border-accent bg-accent/10 text-text font-semibold'
+                  : 'border-transparent text-muted hover:text-text hover:border-text/20'
+              }`}
+            >
+              Overview
+            </Link>
+            {harnessChapters.map((chapter) => {
+              const isActive = activeHarnessSlug === chapter.slug;
+              return (
+                <Link
+                  key={chapter.slug}
+                  href={`/learn/harness/${chapter.slug}`}
+                  className={`flex items-center gap-2.5 border-l-4 pl-3 pr-1 py-2.5 min-w-0 text-sm transition-colors ${
+                    isActive
+                      ? 'border-accent bg-accent/10 text-text font-semibold'
+                      : 'border-transparent text-muted hover:text-text hover:border-text/20'
+                  }`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <span
+                    className={`font-mono font-bold text-xs leading-none shrink-0 ${
+                      isActive ? 'text-accent' : 'text-muted/50'
+                    }`}
+                  >
+                    {chapter.number}
+                  </span>
+                  <span className="truncate">{chapter.name}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* DIVIDER */}
+      <div className="border-t-2 border-text/20 my-4" />
+
+      {/* SECURITY SECTION */}
+      <SectionHeader
+        title="Security"
+        isOpen={securityOpen}
+        onToggle={() => setSecurityOpen(!securityOpen)}
+        count={securityChapters.length}
+        isActive={isInSecurity}
+      />
+
+      {securityOpen && (
+        <div className="mb-4">
+          <div className="space-y-0.5">
+            <Link
+              href="/learn/security"
+              className={`flex items-center border-l-4 pl-3 pr-1 py-2.5 text-sm transition-colors ${
+                isInSecurity && !activeSecuritySlug
+                  ? 'border-accent bg-accent/10 text-text font-semibold'
+                  : 'border-transparent text-muted hover:text-text hover:border-text/20'
+              }`}
+            >
+              Overview
+            </Link>
+            {securityChapters.map((chapter) => {
+              const isActive = activeSecuritySlug === chapter.slug;
+              return (
+                <Link
+                  key={chapter.slug}
+                  href={`/learn/security/${chapter.slug}`}
+                  className={`flex items-center gap-2.5 border-l-4 pl-3 pr-1 py-2.5 min-w-0 text-sm transition-colors ${
+                    isActive
+                      ? 'border-accent bg-accent/10 text-text font-semibold'
+                      : 'border-transparent text-muted hover:text-text hover:border-text/20'
+                  }`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <span
+                    className={`font-mono font-bold text-xs leading-none shrink-0 ${
+                      isActive ? 'text-accent' : 'text-muted/50'
+                    }`}
+                  >
+                    {chapter.number}
+                  </span>
+                  <span className="truncate">{chapter.name}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       <div className="mt-4 pt-3 border-t border-text/10">
         <p className="text-[10px] font-mono text-muted/40 uppercase tracking-widest">
-          {patterns.length} patterns &middot; {toolkitTopics.length} deep-dives
+          {patterns.length} patterns &middot; {toolkitTopics.length} deep-dives &middot;{' '}
+          {harnessChapters.length} chapters &middot; {securityChapters.length} security
         </p>
       </div>
     </nav>

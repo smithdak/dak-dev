@@ -1,0 +1,52 @@
+---
+title: "What You're Actually Risking When You Work With AI"
+slug: "the-real-risks"
+number: "01"
+description: "What actually leaves your machine, what the model retains, and what an agent can do on your behalf — the honest threat landscape, no scare tactics."
+relatedPatterns: []
+relatedTopics: ["settings"]
+published: true
+keywords: ["AI security risks", "AI privacy", "is AI safe to use at work", "AI data leakage", "working with AI safely"]
+---
+
+# What You're Actually Risking When You Work With AI
+
+Every prompt you send is a copy operation. The text leaves your machine, crosses a network, and is processed by infrastructure you do not own. That single fact is the root of every risk in this section. Most fear about AI is vague; the actual exposure is specific, bounded, and manageable once you can name it. This chapter names it.
+
+There are exactly three things at risk. Everything else is a detail of one of them.
+
+## The Three Exposures
+
+| Exposure | The question it answers | Who it affects |
+|----------|-------------------------|----------------|
+| **What leaves** | What data crossed the wire when you hit enter? | Anyone who types into a model |
+| **What is retained** | What does the provider keep, and could it train on it? | Anyone, but matters most with sensitive data |
+| **What it can do** | What can an agent execute on your behalf, with your credentials? | Anyone running an agent, not just a chatbot |
+
+The first two apply the moment you paste a stack trace into a chat. The third only appears when the model stops being a text box and starts being an agent with tools — and it is the one that turns a privacy question into a security incident.
+
+### What leaves
+
+A chat message is the obvious payload. The non-obvious ones: the file an agent reads to answer your question, the environment variable a tool prints, the customer record in the database row your query returned. You did not type those — the agent pulled them into the context window, and the context window goes to the provider. The threat model is not "what did I send" but "what could the system send on my behalf." That distinction is the whole subject of [Data & PII in Context](/learn/security/data-and-pii).
+
+### What is retained
+
+Retention is a contract term, not a technical guarantee you can see. Consumer tiers and enterprise tiers differ sharply: enterprise and API traffic on a zero-data-retention agreement is a fundamentally different risk profile than a free consumer chat. The mistake is assuming the strict policy applies when you are actually on the loose one.
+
+### What it can do
+
+An agent with a shell tool and your credentials can do anything you can do, and it decides what to do based on text — text that may have been written by an attacker. An agent that reads a malicious GitHub issue and then runs a command is not science fiction; it is the direct consequence of the [agent loop](/learn/harness/agent-loop) treating all tokens as equally trustworthy. [Prompt Injection](/learn/security/prompt-injection) is where this stops being theoretical.
+
+## Why This Shapes How You Work
+
+- **Sensitivity is a property of the data, not the tool.** The same model is safe for refactoring a sort function and reckless for pasting a production credentials file. Classify the input, not the assistant.
+- **Agents change the question.** A chatbot exposes what you type. An agent exposes what it can reach. Granting tools is granting reach — see [Permission Architecture](/learn/security/permission-architecture).
+- **The boring controls do the heavy lifting.** The right data tier, scoped credentials, and a permission boundary prevent more incidents than any clever prompt. [Settings & permissions](/learn/toolkit/settings) is where most of this is configured.
+
+## The Tradeoff
+
+Maximum safety is trivial: send nothing, run nothing, and the model is useless. Every bit of capability you add — more context, more tools, broader credentials — is a deliberate trade of exposure for leverage. The goal is not zero risk; it is *legible* risk, where you can state what you traded and why. A team that pastes anything into any model has not avoided the tradeoff. It has made it blindly.
+
+## When Not To Rely on This Chapter
+
+This is the on-ramp. Its three-bucket model is deliberately coarse — enough to decide whether a given use is reckless, not enough to architect a system. The moment you are building something other people will run, or wiring tools to credentials, this mental model is too blunt. Go to [A Threat Model for AI Systems](/learn/security/threat-model) and work from trust boundaries instead.

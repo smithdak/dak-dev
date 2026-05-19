@@ -1,0 +1,43 @@
+---
+title: "Tool Result Curation"
+slug: "tool-result-curation"
+number: "04"
+description: "Tool output is the largest uncontrolled input to the window. Truncation, deferral, and shaping results for signal."
+relatedPatterns: ["progressive-disclosure", "negative-space", "scope-fence"]
+relatedTopics: ["hooks", "mcp", "agents"]
+published: true
+keywords: ["tool result", "tool output truncation", "context pollution", "agent tool design", "harness engineering"]
+---
+
+# Tool Result Curation
+
+In the [agent loop](/learn/harness/agent-loop), step 4 appends tool results to history. That step is where most context budget is silently destroyed. A single `npm test` dump, a 2,000-line file read, or a verbose API response can consume more of the window than the entire task — and it does so on *every subsequent turn*, because the loop re-sends history each time. Tool results are the largest input you control and the one most often left uncontrolled.
+
+## The Signal-to-Noise Problem
+
+The model needs the *information* in a tool result, almost never the *raw form* of it. A failing test suite is the canonical case:
+
+| Raw output | What the model needs |
+|------------|----------------------|
+| 1,800 lines of passing-test logs + 1 failure | The 1 failure, with its assertion and stack |
+| Full `git diff` of 30 files | The 3 files relevant to the current task |
+| 500-line JSON API response | The 4 fields the task depends on |
+| Entire file to change one function | The function and its immediate dependencies |
+
+Dumping the raw form does not only waste tokens. It actively degrades reasoning — the failure is now buried in 1,800 lines of noise the model must scan past on every future turn. This is context pollution, and it compounds.
+
+## Three Curation Strategies
+
+Apply in order of preference:
+
+1. **Shape at the source.** The best result is one that was never verbose. A tool that returns "3 tests failed: [names + assertions]" instead of full logs solves the problem permanently. This is the strongest argument for custom [MCP](/learn/toolkit/mcp) tools over raw shell: you control the return contract.
+2. **Truncate with a recovery path.** When you must run a verbose command, cap the output and tell the model how to get more — "showing first 50 of 1,800 lines; filter for FAIL to see failures." This is [Progressive Disclosure](/learn/patterns/progressive-disclosure) applied to tool output: a small resident footprint, full detail on demand.
+3. **Defer to a subagent.** For inherently huge output — full-codebase search, log analysis — delegate to an [agent](/learn/toolkit/agents). The subagent burns *its own* window on the raw data and returns only the conclusion. The noise never touches the parent context. This is [Scope Fence](/learn/patterns/scope-fence) and [Negative Space](/learn/patterns/negative-space) at the harness layer.
+
+## The Control Point
+
+Curation lives between step 3 and step 4 of the loop, and that is exactly what [Hooks](/learn/toolkit/hooks) gate. A `PostToolUse` hook that truncates output, strips ANSI noise, or rewrites a result before it is appended is a harness-level edit the model never sees and cannot override. Build it once and every tool call in the session benefits.
+
+## The Tradeoff
+
+Aggressive curation is the highest-return budget move available — and the easiest place to cause a silent correctness failure. Truncate the wrong 50 lines and you hide the one error that explains everything; the model then reasons confidently from an incomplete picture, which is worse than reasoning from none. The rule that holds: **never truncate without a recovery path.** A capped result that tells the model how to retrieve the rest preserves correctness; a blindly chopped one trades a token problem for a debugging problem. When in doubt, defer to a subagent rather than guess what to cut — isolation is lossless; truncation is not.

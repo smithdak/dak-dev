@@ -1,0 +1,93 @@
+---
+name: "Incremental Verification"
+slug: "incremental-verification"
+chapter: 5
+number: "5.1"
+intent: "Verify each unit of work as it is produced, not the whole batch at the end, so errors surface while they are cheap to fix and trivially attributable."
+difficulty: "beginner"
+published: true
+keywords: ["verification", "incremental", "early detection", "error attribution", "feedback loop", "agent review"]
+relatedPatterns:
+  - slug: "checkpoint-loop"
+    type: "composes"
+    note: "Checkpoint Loop is the workflow rhythm; Incremental Verification is what you actually do at each checkpoint."
+  - slug: "safety-net"
+    type: "composes"
+    note: "Incremental verification runs the safety net after each unit instead of once at the end."
+  - slug: "diff-review"
+    type: "contrasts"
+    note: "Incremental verification is continuous and behavioral; diff review is a single static read of the final change."
+---
+
+## Problem
+
+The agent finishes a 9-file refactor and reports success. You run the test suite. Forty tests fail. The failures span four different modules, and the stack traces point at code that looks correct in isolation.
+
+Now you have a debugging problem that is strictly harder than the original task. You don't know which of the agent's edits introduced which failure. The first bad change may have caused the agent to "fix" downstream code in ways that made sense given the bug but are wrong without it. The errors are entangled because they were produced together and never checked apart.
+
+This is the cost of batch verification: you defer all checking to the end, so every error arrives at once, stripped of the context that would tell you where it came from. An error caught one edit after it happened is a one-line fix. The same error caught forty edits later is an investigation.
+
+Agents make this worse than human developers do. A human refactoring 9 files runs the tests out of habit somewhere in the middle. An agent optimizes for completing the request and will run for fifteen minutes without verifying anything unless the loop forces it to.
+
+## Solution
+
+Verify every unit of work the moment it is complete, before the next unit begins. The unit is whatever change you can check in isolation — one function, one endpoint, one file.
+
+**The discipline is a single rule:**
+
+```
+No new work until the last work is verified.
+```
+
+Everything else is mechanics. The mechanics that matter:
+
+**Make the agent verify its own work in the loop.** State the check and the stop condition in your convention file so it happens without prompting:
+
+```
+After every file you change, before moving to the next:
+1. Run: npm run typecheck
+2. Run the tests for that file: npm test -- <file>
+3. If either fails, fix it before continuing. Do not start the
+   next file with a failing check outstanding.
+Report the check result for each file as you go.
+```
+
+**Scope the check to the unit, not the world.** Verifying one function should take seconds, not a full CI run. A check that is slow gets skipped — by the agent and by you.
+
+| Unit changed | Verification that fits the unit |
+|--------------|---------------------------------|
+| One pure function | The unit tests for that function |
+| One API endpoint | A request against it + its integration test |
+| One type/interface | `tsc --noEmit` on the package |
+| One component | Render it; run its test; eyeball the story |
+
+**Keep each unit attributable.** The reason incremental verification works is not just early detection — it is *attribution*. When the check fails right after one change, the change that broke it is known with certainty. You spend the fix budget on fixing, not on bisecting.
+
+**When a unit fails, stop the line.** A failed check is not a note to address later. It is a halt condition. Compounding a failure with more changes is how forty entangled failures happen.
+
+<Callout type="info" title="Verification Is Not Review">
+Incremental verification answers "does this unit work?" — typecheck, tests, run it. It does not answer "is this the right design?" That is <PatternRef slug="diff-review">Diff Review</PatternRef> and <PatternRef slug="adversarial-review">Adversarial Review</PatternRef>. Run the cheap behavioral check continuously; do the expensive judgment review once, on the assembled whole. Confusing the two means either slow loops or unreviewed designs.
+</Callout>
+
+## Signals
+
+- Test failures arrive in clusters spanning multiple modules at once
+- You spend more time finding which change broke something than fixing it
+- The agent reports "done" and verification is a separate phase you dread
+- Reverting one bad change cascades into reverting work that depended on it
+- You cannot answer "which edit caused this?" without `git bisect`
+
+## Consequences
+
+**Benefits:**
+- Errors are attributable — the failing check names the change that caused it
+- Fixes are cheap because they happen one edit deep, not forty
+- Failures stay independent instead of entangling into a debugging session
+- The agent gets corrective signal while the relevant context is still loaded
+- Every verified unit is a known-good point you can safely build on
+
+**Costs:**
+- Slower per-step throughput — verification has a fixed cost paid every unit
+- Requires a fast check; a slow suite makes the discipline collapse
+- The agent needs explicit instruction and a hard stop condition, or it batches anyway
+- Over-fine units (verifying every line) turn the loop into manual coding with extra latency

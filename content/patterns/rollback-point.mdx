@@ -1,0 +1,87 @@
+---
+name: "Rollback Point"
+slug: "rollback-point"
+chapter: 6
+number: "6.2"
+intent: "Commit known-good states before risky agent work so reverting is one command, not an archaeology dig through entangled changes."
+difficulty: "beginner"
+published: true
+keywords: ["rollback", "git commit", "checkpoint", "revert", "recovery", "known-good state"]
+relatedPatterns:
+  - slug: "checkpoint-loop"
+    type: "composes"
+    note: "Every verified checkpoint is the natural moment to drop a rollback point."
+  - slug: "safety-net"
+    type: "composes"
+    note: "The safety net is what tells you a state is good enough to commit as a point worth returning to."
+  - slug: "clean-slate"
+    type: "composes"
+    note: "Rollback recovers the code; Clean Slate recovers the conversation. Serious recovery needs both."
+---
+
+## Problem
+
+The agent's last twenty minutes of work went bad. You want to get back to where things worked. But "where things worked" isn't a place you can go — it's buried under an uncommitted pile of changes spanning a dozen files, some good, some bad, all interleaved. Your options are: hand-revert by memory, or `git checkout .` and lose the good with the bad.
+
+Both are bad. Hand-reverting from memory is how you reintroduce half a bug. Nuking everything throws away the legitimate progress mixed into the same working tree. You're in this position because there was no point in the timeline you can name and return to — the work accumulated as one undifferentiated blob with no internal boundaries.
+
+Agents make undo expensive in a specific way: they move fast and touch wide. A human exploring a risky change makes a few edits and remembers them. An agent makes forty edits across the codebase in one turn. Without deliberate save points, the cost of "undo the last bad stretch" scales with everything the agent did, not with the part that went wrong.
+
+## Solution
+
+Commit known-good states *before* risky work, so recovery is `git reset` to a named point instead of reconstruction from memory. The point has to exist before you need it — that is the entire pattern.
+
+**Drop a point before anything you might want to undo:**
+
+```
+git commit -am "checkpoint: auth working, before agent refactor"
+```
+
+Ugly, frequent, work-in-progress commits. They are not history you keep — they are restore points you create. You'll squash or drop them later. Their job is to exist at the moment things were known good.
+
+**Tie the point to a verified state, not a clock.** A rollback point is only worth returning to if it was good when you made it. The thing that tells you it's good is your <PatternRef slug="safety-net">Safety Net</PatternRef> — commit when the checks are green:
+
+| Commit a rollback point | Don't bother |
+|-------------------------|--------------|
+| Before a refactor across many files | After a one-line, tested change |
+| Before letting the agent run unattended | Mid-edit, with checks red |
+| At each green <PatternRef slug="checkpoint-loop">checkpoint</PatternRef> | When nothing risky is next |
+| Before a risky dependency or migration | — |
+
+**Recover by going back, not by patching forward.** When work goes bad, the fast path is returning to the last good point and replaying the good parts deliberately — not asking the agent to fix its own mess in place:
+
+```
+git reset --hard <last-good-checkpoint>   # back to known good
+# re-apply the parts that were actually right, deliberately
+```
+
+Patching a broken state forward layers more agent changes onto the confusion. Resetting to a known-good point and moving forward again from there is shorter and more reliable almost every time.
+
+**Recover both layers together.** A `git reset` with the same poisoned chat thread still running will re-break the code from the transcript. Pair this with <PatternRef slug="clean-slate">Clean Slate</PatternRef>: reset the code *and* start the fresh session. Code rollback alone is half a recovery.
+
+<Callout type="info" title="Restore Points Are Not History">
+These commits are deliberately disposable. Don't agonize over messages, don't push them, don't let "clean history" stop you from making them — `git rebase -i` collapses them before the branch ever merges. The failure mode is not too many WIP commits; it is needing one that you didn't make. Optimize for the point existing, not for the log looking tidy.
+</Callout>
+
+## Signals
+
+- "Get back to working" means hand-reverting changes from memory
+- Your only undo is `git checkout .`, which also discards the good work
+- Risky agent runs start from uncommitted, unmarked working trees
+- You patch a broken state forward because there's no clean point to return to
+- Post-mortems include "I don't remember exactly what it changed"
+
+## Consequences
+
+**Benefits:**
+- Recovery is one command to a named state, not reconstruction
+- Cost of "undo the bad stretch" is bounded — it stops at the last point
+- You can let the agent take bigger swings because the floor is known
+- Replaying good parts from a clean base beats patching a broken one
+- Costs seconds to create; saves the session when work goes bad
+
+**Costs:**
+- Discipline tax: the point must be made *before* it's needed, every time
+- WIP commits clutter local history until squashed (cheap, but real)
+- A point committed with red checks is a false floor — worse than none
+- Recovers code only; without Clean Slate the chat re-breaks it

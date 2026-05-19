@@ -1,0 +1,87 @@
+---
+name: "Diff Review"
+slug: "diff-review"
+chapter: 5
+number: "5.4"
+intent: "Read every changed line before accepting. The agent's summary is its intent; the diff is what it actually did — and they are not the same artifact."
+difficulty: "beginner"
+published: true
+keywords: ["diff review", "code review", "agent output", "git diff", "verification", "trust but verify"]
+relatedPatterns:
+  - slug: "scope-fence"
+    type: "composes"
+    note: "A tight scope fence keeps the diff small enough that reading every line is actually feasible."
+  - slug: "checkpoint-loop"
+    type: "composes"
+    note: "Small checkpoints produce small diffs; small diffs get genuinely read instead of skimmed."
+  - slug: "adversarial-review"
+    type: "contrasts"
+    note: "Diff Review is you reading the lines; Adversarial Review delegates that read to an independent agent."
+---
+
+<FlowDiagram
+  before='[{"label":"Agent reports: refactored auth, all tests pass"},{"label":"You read the summary"},{"label":"Looks reasonable — accept","highlight":true},{"label":"Unrequested change ships unseen"},{"label":"Find it in production"}]'
+  after='[{"label":"Agent reports: refactored auth, all tests pass"},{"label":"You read the diff, every line"},{"label":"Spot the unrequested logout change","highlight":true},{"label":"Reject that hunk before it lands"},{"label":"Only intended change ships"}]'
+/>
+
+## Problem
+
+The agent says: "Refactored the auth middleware to use the new token format. All tests pass." It is telling the truth. It also, in passing, changed the session timeout from 24 hours to 30 minutes because a constant looked stale, and deleted a feature-flag check it judged dead. Neither was requested. Neither is in the summary. Both are in the diff.
+
+You read the summary, it matched what you asked for, you accepted. The summary is an accurate description of the agent's *intent*. The diff is a complete record of its *actions*. When you review the summary instead of the diff, you are verifying the agent's understanding of what it did — which is exactly the thing that is unreliable when it is wrong.
+
+Agent summaries are systematically lossy in one direction: they describe the work you asked for and omit the work you didn't. Not from deception — the agent is summarizing against your request, so changes orthogonal to the request fall out of the summary while staying in the code. The gap between "what it says it did" and "what the diff shows" is precisely where unrequested, unreviewed behavior ships.
+
+## Solution
+
+Read the diff. Every changed line, every changed file, before you accept anything. The summary tells you where to look; it never substitutes for looking.
+
+**Make the diff small enough to actually read.** This is the part people skip, and it is why diff review fails in practice. A 600-line diff does not get reviewed — it gets skimmed, and skimming is the failure mode with extra steps. Small diffs come from upstream discipline:
+
+```
+A reviewable diff is an upstream decision, not a review-time wish:
+- Scope Fence (2.2)       → fewer files touched
+- Checkpoint Loop (3.2)   → fewer lines per checkpoint
+- Vertical Slice (3.1)    → one coherent change, not a tangle
+Review is only as good as the diff is small.
+```
+
+**Read with a question, not a vibe.** Skimming asks "does this look fine?" Reviewing asks specific questions:
+
+| For every hunk, ask | Looking for |
+|---------------------|-------------|
+| Did I ask for this change? | Unrequested scope — the silent timeout edit |
+| What input breaks this line? | Edge cases the happy path hides |
+| What used to be here? | Deletions — the riskiest, least visible change |
+| Does this match the summary? | The gap between stated intent and actual action |
+
+**Pay the most attention to deletions and the least to additions.** A reviewer's eye is drawn to new code. The expensive agent mistakes are usually removals — a guard clause, a check, a branch the agent decided was unnecessary. Read what the `-` lines took away, not only what the `+` lines added.
+
+**Reject at the hunk level.** "Mostly good" is not accept. The unrequested timeout change rides into production on the back of a good refactor precisely because the refactor was fine. Accept the hunks you reviewed and intended; send the rest back by name.
+
+<Callout type="warning" title="The Summary Is a Map, Not the Territory">
+"All tests pass" means the tests that exist passed — it says nothing about the behavior no test covers (that is <PatternRef slug="regression-guard">Regression Guard</PatternRef>). "Refactored X" describes the goal, not the full set of edits. Treat the agent's summary as a claim to verify against the diff, never as a report you can accept in place of the diff. The moment the summary replaces the read, you have stopped reviewing.
+</Callout>
+
+## Signals
+
+- You accept agent work after reading its summary, not its diff
+- Changes you never asked for surface later — in staging, or in production
+- Diffs are routinely large enough that you skim instead of read
+- The risky surprises, when found, are in deleted lines you glossed over
+- "All tests pass" is doing the load-bearing work in your accept decision
+
+## Consequences
+
+**Benefits:**
+- Unrequested changes are caught at review, not in production
+- You verify actions, not the agent's possibly-wrong description of them
+- Deletions — the highest-risk, lowest-visibility edits — get real scrutiny
+- Creates back-pressure toward small, scoped, genuinely reviewable changes
+- The cheapest verification pattern there is: no tooling, only discipline
+
+**Costs:**
+- Real time and attention, paid on every change, by you
+- Collapses into skimming once diffs get large — depends on upstream scoping
+- Catches what you recognize as wrong; subtle logic errors can still read as fine
+- Doesn't scale with throughput — at volume, delegate it (Adversarial Review)

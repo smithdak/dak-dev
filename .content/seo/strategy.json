@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updated_at": "2026-02-05",
+  "updated_at": "2026-05-19",
   "domain_authority_estimate": "new",
   "target_keywords": {
     "primary": [
@@ -27,6 +27,30 @@
         "intent": "informational",
         "difficulty": "medium",
         "posts": ["ai-isnt-just-for-coders-claude-skills"]
+      },
+      {
+        "keyword": "harness engineering",
+        "intent": "informational",
+        "difficulty": "low",
+        "posts": ["learn/harness"]
+      },
+      {
+        "keyword": "context engineering",
+        "intent": "informational",
+        "difficulty": "medium",
+        "posts": ["learn/harness/context-economics"]
+      },
+      {
+        "keyword": "AI security",
+        "intent": "informational",
+        "difficulty": "medium",
+        "posts": ["learn/security"]
+      },
+      {
+        "keyword": "prompt injection defense",
+        "intent": "informational",
+        "difficulty": "medium",
+        "posts": ["learn/security/prompt-injection"]
       }
     ],
     "secondary": [
@@ -111,6 +135,31 @@
         "keyword": "AI reluctance workplace how to fix",
         "parent_primary": "claude skills",
         "posts": ["ai-isnt-just-for-coders-claude-skills"]
+      },
+      {
+        "keyword": "agent loop architecture",
+        "parent_primary": "harness engineering",
+        "posts": ["learn/harness/agent-loop"]
+      },
+      {
+        "keyword": "context window management agents",
+        "parent_primary": "context engineering",
+        "posts": ["learn/harness/context-economics"]
+      },
+      {
+        "keyword": "claude agent sdk custom harness",
+        "parent_primary": "harness engineering",
+        "posts": ["learn/harness/building-a-harness"]
+      },
+      {
+        "keyword": "AI data privacy context window",
+        "parent_primary": "AI security",
+        "posts": ["learn/security/data-and-pii"]
+      },
+      {
+        "keyword": "agent permission architecture",
+        "parent_primary": "AI security",
+        "posts": ["learn/security/permission-architecture"]
       }
     ]
   },
@@ -150,6 +199,40 @@
         "claude-code-skills-agent-skills-standard"
       ],
       "created_at": "2026-02-05"
+    },
+    {
+      "id": "cluster_003",
+      "name": "Harness Engineering",
+      "description": "Authority cluster on the agent runtime layer — the loop, context economics, compaction, tool-result curation, and system-prompt architecture. Lives in the Learn section as the third pillar (the floor beneath Patterns and Toolkit). Closes gap_002.",
+      "pillar_post": "learn/harness",
+      "cluster_posts": [
+        "learn/harness/agent-loop",
+        "learn/harness/context-economics",
+        "learn/harness/compaction-continuity",
+        "learn/harness/tool-result-curation",
+        "learn/harness/system-prompt-architecture",
+        "learn/harness/building-a-harness"
+      ],
+      "planned_posts": [],
+      "created_at": "2026-05-19"
+    },
+    {
+      "id": "cluster_004",
+      "name": "AI Security & Privacy Engineering",
+      "description": "Authority cluster on the security and privacy surface of building and operating AI agents — the real risks, data/PII in the context window, threat modeling, prompt injection, secrets hygiene, permission/capability architecture, output safety & exfiltration, and supply-chain/audit. Lives in the Learn section as the fourth pillar — the trust surface cutting across Patterns, Toolkit, and Harness. Two accessible on-ramp chapters (the-real-risks, data-and-pii) target top-of-funnel privacy intent; six engineering chapters establish builder authority. Closes gap_003. Reinforces (does not collide with) topic_016, which targets web-security for deploying teams rather than builders working with AI.",
+      "pillar_post": "learn/security",
+      "cluster_posts": [
+        "learn/security/the-real-risks",
+        "learn/security/data-and-pii",
+        "learn/security/threat-model",
+        "learn/security/prompt-injection",
+        "learn/security/secrets-and-credentials",
+        "learn/security/permission-architecture",
+        "learn/security/exfiltration-and-output",
+        "learn/security/supply-chain-and-audit"
+      ],
+      "planned_posts": [],
+      "created_at": "2026-05-19"
     }
   ],
   "content_gaps": [
@@ -165,9 +248,21 @@
       "id": "gap_002",
       "topic": "Autonomous AI agent architecture patterns",
       "priority": "medium",
+      "status": "addressed",
+      "addressed_by": "cluster_003",
       "suggested_keywords": ["LLM agent patterns", "multi-agent architecture", "autonomous AI design"],
-      "notes": "Technical deep-dives on agent architecture are rare. APL post partially fills this.",
+      "notes": "Closed 2026-05-19 by the Harness Engineering cluster (cluster_003) — the Learn section's third pillar covers the agent loop, context economics, compaction, tool-result curation, and system-prompt architecture. APL post partially filled this earlier.",
       "created_at": "2026-01-25"
+    },
+    {
+      "id": "gap_003",
+      "topic": "AI agent security & privacy for builders",
+      "priority": "high",
+      "status": "addressed",
+      "addressed_by": "cluster_004",
+      "suggested_keywords": ["prompt injection defense", "AI data privacy", "LLM PII context window", "agent permission architecture", "AI secrets management"],
+      "notes": "Closed 2026-05-19 by the AI Security & Privacy cluster (cluster_004) — the Learn section's fourth pillar. Two accessible on-ramps (the-real-risks, data-and-pii) target top-of-funnel privacy intent; six engineering chapters establish builder authority. Distinct from topic_016 (web-security checklist for deploying teams) — the two reinforce rather than overlap.",
+      "created_at": "2026-05-19"
     }
   ],
   "competitor_benchmarks": [

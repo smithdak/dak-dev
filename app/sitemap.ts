@@ -6,6 +6,8 @@
 import { getAllPosts } from '@/lib/posts';
 import { getAllPatterns, CHAPTERS } from '@/lib/patterns';
 import { TOOLKIT_TOPICS } from '@/lib/toolkit';
+import { HARNESS_CHAPTERS } from '@/lib/harness';
+import { SECURITY_CHAPTERS } from '@/lib/security';
 import { getAllTagSlugs } from '@/lib/tags';
 import type { MetadataRoute } from 'next';
 
@@ -44,6 +46,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${SITE_URL}/learn/toolkit`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${SITE_URL}/learn/harness`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${SITE_URL}/learn/security`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,
@@ -104,6 +118,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
+  // Harness chapter pages
+  const harnessPages: MetadataRoute.Sitemap = HARNESS_CHAPTERS.map((chapter) => ({
+    url: `${SITE_URL}/learn/harness/${chapter.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
+
+  // Security chapter pages
+  const securityPages: MetadataRoute.Sitemap = SECURITY_CHAPTERS.map((chapter) => ({
+    url: `${SITE_URL}/learn/security/${chapter.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
+
   // Tag pages
   const tagPages: MetadataRoute.Sitemap = tagSlugs.map((tagSlug) => ({
     url: `${SITE_URL}/blog/tags/${tagSlug}`,
@@ -112,5 +142,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...staticPages, ...postPages, ...patternPages, ...patternSubPages, ...chapterPages, ...toolkitPages, ...tagPages];
+  return [...staticPages, ...postPages, ...patternPages, ...patternSubPages, ...chapterPages, ...toolkitPages, ...harnessPages, ...securityPages, ...tagPages];
 }

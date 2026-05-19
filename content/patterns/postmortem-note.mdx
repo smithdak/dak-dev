@@ -1,0 +1,88 @@
+---
+name: "Postmortem Note"
+slug: "postmortem-note"
+chapter: 6
+number: "6.4"
+intent: "After a recovery, encode the root cause into the persistent layer — a convention, a memory, a test — so the same failure cannot recur instead of recurring every session."
+difficulty: "intermediate"
+published: true
+keywords: ["postmortem", "root cause", "institutional memory", "convention file", "recovery", "prevention"]
+relatedPatterns:
+  - slug: "convention-file"
+    type: "composes"
+    note: "A prevention rule the agent must follow belongs in the convention file it reads every session."
+  - slug: "memory-layer"
+    type: "composes"
+    note: "Durable failure knowledge goes in the memory layer so it outlives the session that learned it."
+  - slug: "regression-guard"
+    type: "composes"
+    note: "The strongest postmortem note is not prose — it is a regression test that fails if the mistake returns."
+---
+
+## Problem
+
+You spent an hour recovering: the agent kept importing the deprecated `db` client instead of the pooled one, every query in the new code bypassed the connection pool, and you only caught it under load. You fixed it, you understood exactly why it happened, and you moved on. Next week, fresh session, new feature — the agent imports the deprecated `db` client again. The recovery taught you something. It taught the project nothing.
+
+This is the quiet tax on agent work: failures don't accumulate into learning, because the thing that learned was a conversation, and the conversation is gone. Every session starts from the same blank slate that produced the bug the first time. You are not fixing recurring bugs — you are fixing the *same* bug, repeatedly, paying full recovery cost each time because the lesson never left your head.
+
+Agents intensify this. They have no memory of last week's incident and no instinct to ask. They will reproduce a failure mode as many times as you let them, with total confidence each time, because nothing in their context says "we tried this; it broke production." The knowledge exists — it's in your head and a closed thread — but it lives nowhere the next session will read.
+
+## Solution
+
+Close every non-trivial recovery by writing the lesson into a layer the next session reads automatically. The recovery is not done when the code works. It is done when the failure cannot silently recur.
+
+**Pick the layer by how the failure should be prevented:**
+
+| The lesson is... | Encode it as... | Why there |
+|------------------|-----------------|-----------|
+| A rule the agent must follow | A line in the <PatternRef slug="convention-file">Convention File</PatternRef> | Read every session, steers before the mistake |
+| A fact about this project | An entry in the <PatternRef slug="memory-layer">Memory Layer</PatternRef> | Survives the session that learned it |
+| A behavior that must not regress | A <PatternRef slug="regression-guard">Regression Guard</PatternRef> test | Enforced by the machine, not by memory |
+
+Prose prevents nothing on its own. A convention line steers the agent away from the mistake; a test makes the mistake impossible to ship silently. Prefer the test when the failure is mechanically checkable — `grep` for the deprecated import in CI beats a sentence asking nicely.
+
+**Write the note for the agent, not for an incident archive:**
+
+```
+- Always import the pooled client from lib/db/pool. The bare
+  `db` export bypasses the connection pool and exhausts
+  connections under load. (Cost us a prod incident, 2026-02.)
+```
+
+That is three things in two lines: the rule (do this), the mechanism (because that), the stakes (it bit us). The mechanism is what stops the agent rationalizing past the rule; the stakes are what stop *you* deleting it later as clutter.
+
+**Make writing the note the exit condition of recovery.** Bolt it onto whichever recovery pattern you just ran:
+
+```
+After Reproduction First → keep the repro as the regression guard.
+After Clean Slate        → the "known dead end" becomes a memory entry.
+After Rollback Point      → the convention line that prevents the re-break.
+Recovery isn't complete until the lesson outlives the session.
+```
+
+<Callout type="info" title="This Is Where the Catalog Closes the Loop">
+Postmortem Note is the last pattern on purpose. Recovery's job is not only to get working again — it is to feed what the failure taught back into <PatternRef slug="convention-file">Foundation</PatternRef>, so the next session starts steered. A project that does this gets monotonically harder to break: every incident becomes a guardrail. A project that doesn't relives Chapter 6 forever. The patterns are a loop, not a list — and this note is the edge that closes it.
+</Callout>
+
+## Signals
+
+- The agent reproduces a failure you already recovered from once
+- Recovery knowledge lives in your head and closed threads, nowhere a session reads
+- Onboarding a new session means re-learning the same project landmines
+- "We've hit this before" is said out loud but written down nowhere
+- The convention file and memory layer don't grow after incidents
+
+## Consequences
+
+**Benefits:**
+- Failures become guardrails — the project gets harder to break over time
+- Recovery cost is paid once per failure mode, not once per session
+- Institutional memory outlives the conversation that earned it
+- Closes the loop: Recovery feeds Foundation, the next run starts steered
+- A test-form note is enforced by the machine, immune to being forgotten
+
+**Costs:**
+- Discipline tax at the least motivated moment — right after a fix finally works
+- Convention and memory files bloat if every note is logged without pruning
+- A prose note with no enforcement decays into ignored documentation
+- Over-noting trivial one-offs adds steering noise that dilutes the real rules

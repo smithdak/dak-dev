@@ -1,0 +1,90 @@
+---
+name: "Clean Slate"
+slug: "clean-slate"
+chapter: 6
+number: "6.1"
+intent: "When the context is poisoned and the agent is looping, discard the conversation and restart from a tight written brief instead of arguing the agent out of its own history."
+difficulty: "beginner"
+published: true
+keywords: ["clean slate", "context reset", "fresh session", "agent looping", "recovery", "context poisoning"]
+relatedPatterns:
+  - slug: "context-priming"
+    type: "composes"
+    note: "A clean slate is only cheap to recover from if you can re-prime the new session quickly."
+  - slug: "memory-layer"
+    type: "composes"
+    note: "Durable knowledge in the memory layer survives the reset, so a restart loses progress, not understanding."
+  - slug: "rollback-point"
+    type: "composes"
+    note: "Reset the conversation and the code together — a fresh session staring at a half-broken tree is still stuck."
+---
+
+<FlowDiagram
+  before='[{"label":"Agent goes down a wrong path"},{"label":"You correct it in-thread"},{"label":"It half-applies the fix, half-defends the old approach","highlight":true},{"label":"You correct the correction"},{"label":"20 turns deep, still wrong"}]'
+  after='[{"label":"Agent goes down a wrong path"},{"label":"Recognize the context is poisoned","highlight":true},{"label":"Abandon the thread"},{"label":"New session + tight brief + known-good code"},{"label":"Correct on the first try"}]'
+/>
+
+## Problem
+
+The agent took a wrong approach forty minutes ago. You've been correcting it ever since. Each correction half-lands: it adopts your fix but keeps reasoning from the original mistake, so the next response is a hybrid of your intent and its first wrong turn. You're now twenty exchanges deep, the thread contains more dead ends than signal, and every new reply is anchored to the accumulated confusion.
+
+This is context poisoning. The conversation itself has become the problem. Once a long thread contains a wrong model of the task, every subsequent turn is generated in the presence of that wrong model. You can't instruct it away, because the instruction joins the same poisoned context that's producing the bad output. You are arguing with the history, and the history keeps winning.
+
+The instinct is to keep correcting — you've invested twenty turns, abandoning them feels like waste. That instinct is the trap. The sunk turns have negative value: they are actively steering the agent wrong. More correction adds more conflicting context to a thread whose problem is too much conflicting context.
+
+## Solution
+
+Throw the conversation away. Start a new session, prime it with a tight brief built from what you learned, and point it at known-good code. The knowledge transfers; the confusion does not.
+
+**Recognize the moment to reset.** The signal is not "the agent made a mistake" — that's a normal correction. The signal is *the same mistake surviving correction*:
+
+```
+Reset when:
+- The same wrong assumption reappears after you corrected it twice
+- Replies hedge between your fix and the agent's original approach
+- You're explaining what NOT to do more than what to do
+- You catch yourself re-litigating a decision from 15 turns ago
+One good correction lands. A third correction of the same thing
+means the context is the problem, not the instruction.
+```
+
+**Reset the code, not just the chat.** A fresh session pointed at a half-broken working tree inherits the mess through the files instead of the transcript. Pair this with <PatternRef slug="rollback-point">Rollback Point</PatternRef>: revert to the last known-good commit, *then* open the new session. Recover both layers or you've recovered neither.
+
+**Write the brief from what the dead thread taught you.** The failed conversation was not worthless — it was reconnaissance. Extract the signal, drop the noise:
+
+```
+Task: [the actual goal, stated cleanly]
+Constraints: [what you now know it must respect]
+Known dead end: [the approach that failed, one line, so the
+                 fresh agent doesn't rediscover it]
+Start from: [the known-good commit / files to read first]
+```
+
+That "known dead end" line is the entire payoff of the failed session. It costs you nothing to carry forward and saves the new session from walking the same wrong path.
+
+<Callout type="info" title="Persistent Memory Changes the Math">
+A <PatternRef slug="memory-layer">Memory Layer</PatternRef> and a <PatternRef slug="convention-file">Convention File</PatternRef> make a clean slate nearly free: project knowledge lives in files the new session reads on the first turn, so a reset costs you the in-progress work, not the understanding. Without that layer, every reset re-explains the project from zero — which is why people keep arguing with poisoned threads instead of restarting. The cheaper the reset, the sooner you should take it.
+</Callout>
+
+## Signals
+
+- You're more than ~15 turns deep and circling the same problem
+- Corrections half-land — the agent blends your fix with its old approach
+- A wrong assumption keeps resurfacing after you've addressed it
+- You keep the thread alive mainly because abandoning it feels wasteful
+- Reading the transcript back, it's mostly dead ends, not progress
+
+## Consequences
+
+**Benefits:**
+- Escapes context poisoning that no in-thread instruction can fix
+- The new session reasons from the goal, not the accumulated confusion
+- Often faster than the next ten corrections of a poisoned thread
+- The failed thread still pays off as the "known dead end" in the brief
+- Forces you to state the task cleanly — which often reveals why it drifted
+
+**Costs:**
+- Loses genuine in-progress work, not only the confusion
+- Re-priming has a cost — high without a memory/convention layer
+- Judging "poisoned" vs. "one more correction" takes a calibrated read
+- Reset too eagerly and you thrash sessions instead of thrashing turns

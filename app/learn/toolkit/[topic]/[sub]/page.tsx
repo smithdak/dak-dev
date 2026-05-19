@@ -11,6 +11,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { CodeBlockWrapper } from '@/components/blog/CodeBlockWrapper';
 import { TableOfContents } from '@/components/blog/TableOfContents';
 import { extractTableOfContents } from '@/lib/toc';
+import { SectionKicker } from '@/components/learn/SectionKicker';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
 const VALID_SUB_PAGES: ToolkitSubPage[] = ['mental-model', 'playbook', 'compositions', 'pitfalls'];
@@ -86,6 +87,11 @@ export default async function ToolkitSubPageRoute({
 
       <div className="lg:grid lg:grid-cols-[1fr_220px] lg:gap-10 px-4 sm:px-6 lg:px-0">
         <article className="min-w-0 prose prose-invert prose-lg mdx-content">
+          <SectionKicker
+            section="Toolkit"
+            kicker={`${topic.name} · ${subMeta.label}`}
+            color="cyan"
+          />
           <CodeBlockWrapper>
           <MDXRemote source={page.content} components={mdxComponents} options={mdxOptions} />
           </CodeBlockWrapper>

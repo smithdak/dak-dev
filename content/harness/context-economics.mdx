@@ -1,0 +1,57 @@
+---
+title: "Context Window Economics"
+slug: "context-economics"
+number: "02"
+description: "The token budget is the scarce resource. What occupies the window, the real cost model, and what to evict first."
+relatedPatterns: ["context-priming", "progressive-disclosure", "negative-space"]
+relatedTopics: ["claude-md", "memory"]
+published: true
+keywords: ["context window", "context engineering", "token budget", "context management", "agent cost model"]
+---
+
+# Context Window Economics
+
+The context window is not memory. It is a fixed-size budget you spend every single turn, and the [agent loop](/learn/harness/agent-loop) spends it again on every iteration. Treating tokens as free is the single most expensive mistake in harness design. The discipline of deciding what earns a place in the window — and what gets evicted — is context engineering, and it is the highest-return work in the whole stack.
+
+## What Occupies the Window
+
+A 200K window is never 200K of useful task context. The real allocation, on a typical mid-task turn:
+
+| Occupant | Typical share | Controllable? |
+|----------|---------------|---------------|
+| System prompt + tool definitions | 5–15K, fixed per turn | Indirectly — fewer tools, tighter defs |
+| Project instructions (CLAUDE.md) | 1–5K, fixed per turn | Yes — see [CLAUDE.md](/learn/toolkit/claude-md) |
+| Conversation + reasoning history | Grows unbounded | Yes — the main lever |
+| Tool results (file reads, shell, search) | Often the largest single block | Yes — [Tool Result Curation](/learn/harness/tool-result-curation) |
+| The actual current task | Frequently the smallest slice | — |
+
+The uncomfortable truth: by mid-task, the model is often reasoning about a window that is 80% history and tool output, and 20% the thing you asked for. Quality degrades long before the hard limit, because signal is diluted, not absent.
+
+## The Real Cost Model
+
+Cost is not "tokens in the task." It is the integral of context size over the whole run:
+
+```
+total_input_tokens ≈ Σ (context_size at turn i)  for i in 1..N
+```
+
+A 30-turn task that carries a 50K context averages ~1.5M input tokens — not 50K. This is why:
+
+- **Prompt caching is not optional.** A stable prefix (system prompt, tool defs, CLAUDE.md) cached across turns turns the most expensive, most-repeated bytes into the cheapest. This is the highest-ROI change in most harnesses.
+- **Front-load stable content, append volatile content.** Cache hits require an unchanged prefix. Put the things that never change first; never interleave volatile data into the cached region.
+- **Short tasks with large context can cost more than long tasks with small context.** Optimize the carried size, not the turn count.
+
+## What to Evict First
+
+When the window tightens, evict in this order — cheapest signal loss first:
+
+1. **Stale tool output** — a file read 20 turns ago that has since been edited is now actively misleading, not only useless.
+2. **Superseded reasoning** — exploration that led to a discarded approach.
+3. **Resolved sub-threads** — a debugged-and-fixed detour. Keep the conclusion, drop the trace.
+4. **Raw data that has been summarized** — keep the summary, drop the source.
+
+What you do *not* evict: the task definition, active constraints, and the durable decisions. The [Negative Space](/learn/patterns/negative-space) and [Progressive Disclosure](/learn/patterns/progressive-disclosure) patterns are the disciplined version of this — load detail on demand, keep the resident set small. [Context Priming](/learn/patterns/context-priming) is the inverse move: spend budget deliberately at the start so the model does not waste turns rediscovering what you already knew.
+
+## The Tradeoff
+
+Aggressive eviction and summarization keep the window sharp but risk dropping a detail that mattered three turns later — a silent correctness failure, the worst kind. Conservative retention is safe until the window saturates, then quality falls off a cliff with no warning. The escape hatch is not a better eviction heuristic; it is moving durable facts *out* of the window entirely into the [Memory System](/learn/toolkit/memory), so they survive eviction and [compaction](/learn/harness/compaction-continuity) without spending resident budget.

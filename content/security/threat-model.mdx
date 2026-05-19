@@ -1,0 +1,55 @@
+---
+title: "A Threat Model for AI Systems"
+slug: "threat-model"
+number: "03"
+description: "The attack surface of an agent: what is genuinely new versus classic appsec, and the four trust boundaries — model, context, tools, output."
+relatedPatterns: ["negative-space", "scope-fence"]
+relatedTopics: ["settings", "hooks"]
+published: true
+keywords: ["AI threat model", "LLM attack surface", "agent security model", "trust boundary AI", "AI security architecture"]
+---
+
+# A Threat Model for AI Systems
+
+Most AI security advice is a list of attacks. A list is not a model — it cannot tell you whether you have covered enough, because it has no structure. A threat model does: it draws the boundaries where trust changes, then asks what crosses each one. For an agent there are exactly four, and almost every real incident is one boundary that was assumed safe.
+
+The reframe that makes this tractable: **classic appsec assumes code is trusted and data is not. An agent erases that line.** The model's instructions and the attacker's text are the same token stream. That single property is what is new; everything else is appsec you already know.
+
+## The Four Boundaries
+
+| Boundary | What crosses it | The trust mistake |
+|----------|-----------------|-------------------|
+| **Model** | Your prompt in, a completion out | Treating output as correct because it is confident |
+| **Context** | Everything assembled into the window | Assuming you wrote what is in it |
+| **Tools** | The agent's actions on the world | Granting capability as if intent were guaranteed |
+| **Output** | What the model produces, into the next system | Rendering or executing it as trusted |
+
+Walk them in order and the rest of this section is just depth on each.
+
+### Model boundary
+
+The model is a stateless function: tokens in, tokens out, no memory, no judgment about *where* a token came from. It cannot tell your instruction from text it read in a tool result — see the [system prompt architecture](/learn/harness/system-prompt-architecture) chapter for why the instruction hierarchy is a soft preference, not an enforced wall. Threats here are wrong-but-confident output and the model being steered by content it ingested.
+
+### Context boundary
+
+Everything in the [context window](/learn/harness/context-economics) is treated by the model as equally authoritative. A poisoned file read has the same standing as your system prompt. This is the boundary defenders most often forget exists, because they reason about the prompt they typed, not the window the [agent loop](/learn/harness/agent-loop) assembled. [Prompt Injection](/learn/security/prompt-injection) is this boundary failing.
+
+### Tool boundary
+
+Tools are where text becomes consequence. A read tool discloses; a write or shell tool acts. The blast radius of the agent is exactly the union of its tools' capabilities — nothing more, and nothing less. [Permission Architecture](/learn/security/permission-architecture) is the discipline of making that union small and the [Negative Space](/learn/patterns/negative-space) and [Scope Fence](/learn/patterns/scope-fence) patterns are how you state the boundary the agent must not cross.
+
+### Output boundary
+
+Model output flows somewhere — a terminal, a browser, a database, another agent. Every one of those is a fresh injection sink. [Output & Exfiltration](/learn/security/exfiltration-and-output) covers this boundary; the error is assuming output is safe because it came from your model rather than an attacker's payload echoed through it.
+
+## Using the Model
+
+The model is a checklist with closure. For any feature: which boundaries does it cross, what is the trust change at each, and what enforces it? "The prompt asks the model not to" is not an enforcement answer — that is the model boundary, which does not enforce. Enforcement lives at the tool boundary ([settings & permissions](/learn/toolkit/settings)) and around it ([hooks](/learn/toolkit/hooks)). If your only control is on the boundary that cannot enforce, you have no control.
+
+## The Tradeoff
+
+A threat model is a lens, not a proof. It makes you systematic, and it makes you slower — every feature now carries a four-boundary review, and that review has a real cost in velocity. Skip it and you ship faster until the one incident that erases the savings. The judgment call is not whether to model threats but at what resolution: a throwaway script does not need a four-boundary review; a tool wired to production credentials does.
+
+## When Not To Threat-Model
+
+If nothing crosses the tool or output boundary — a model summarizing text into a string you read with your own eyes and nothing else — the model collapses to "what did I disclose," and [Data & PII in Context](/learn/security/data-and-pii) already answered that. Reserve the full model for systems that *act*. The first and hardest acting boundary to get right is the context boundary, which is next: [Prompt Injection](/learn/security/prompt-injection).

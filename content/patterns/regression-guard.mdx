@@ -1,0 +1,94 @@
+---
+name: "Regression Guard"
+slug: "regression-guard"
+chapter: 5
+number: "5.3"
+intent: "Pin the existing behavior with characterization tests before the agent touches the code, so \"it still works\" is a check the machine runs, not a hope you hold."
+difficulty: "intermediate"
+published: true
+keywords: ["regression", "characterization tests", "golden master", "refactoring", "behavior preservation", "verification"]
+relatedPatterns:
+  - slug: "safety-net"
+    type: "composes"
+    note: "The safety net is the suite that exists; the regression guard is behavior you pin before a change because no test covered it yet."
+  - slug: "test-first-steering"
+    type: "composes"
+    note: "Test-First steers toward new behavior; Regression Guard pins old behavior. Same mechanism, opposite direction in time."
+  - slug: "reproduction-first"
+    type: "enables"
+    note: "A reproduction is a regression guard for a bug — the failing test you keep so it can never come back."
+---
+
+## Problem
+
+You ask the agent to refactor a tax-calculation module — same outputs, cleaner internals. It produces a tidy rewrite, the existing tests pass, you ship it. Three weeks later finance reports that orders shipping to one state are now taxed two cents low. The old code had an undocumented rounding rule for that case. No test covered it because the behavior was load-bearing but invisible. The agent had no way to know it mattered, so it didn't preserve it.
+
+The refactor didn't fail because the agent was careless. It failed because "behaves the same" was never written down anywhere a machine could enforce it. The contract lived only in the old code's execution, and the rewrite replaced the only copy.
+
+This is the structural risk in every agent change to existing code. The agent optimizes for the requested transformation. Behavior the request didn't mention — edge cases, rounding, ordering, error shapes other code quietly depends on — is invisible to it and unprotected by your suite, because suites test what someone thought to test, and nobody thought to test the thing that was just working.
+
+## Solution
+
+Before the agent changes anything, capture what the code does *now* as executable tests, generated from its current outputs. These characterization tests don't assert what is correct — they assert what is *current*. The change is only allowed to keep them green.
+
+**The sequence is strict — the guard goes up before the change:**
+
+```
+1. Identify the behavior at risk: the module being changed and
+   everything that calls it.
+2. Have the agent generate characterization tests by feeding real
+   inputs through the CURRENT code and snapshotting the outputs.
+3. Run them — they must pass against the unchanged code. A guard
+   that doesn't pass before the change protects nothing.
+4. Now make the change. The guard must stay green the whole way.
+5. A guard that goes red is the decision point, not a nuisance.
+```
+
+**The brief for step 2:**
+
+```
+Before refactoring lib/tax.ts, build a regression guard.
+Enumerate representative inputs INCLUDING boundaries: zero,
+negative, the highest bracket, every state with a special rule,
+empty and malformed input. Run each through the current
+implementation and snapshot the exact output — value, type,
+and error shape. These snapshots are the contract. Do not
+change the implementation in this step.
+```
+
+**When a guard goes red, it is signal — triage it:**
+
+| Red guard means | Action |
+|-----------------|--------|
+| Unintended behavior change | Fix the change. This is the catch working. |
+| Old behavior was a bug | Update the snapshot **in its own commit**, with a note. |
+| Test pinned an implementation detail | Weaken the assertion to the real contract. |
+
+The discipline is that changing a snapshot is a deliberate, isolated, explained act — never a reflex to make the bar green again.
+
+<Callout type="critical" title="An Agent Will Edit the Guard to Make It Pass">
+Given a failing characterization test and a goal of "make it pass," an agent will often "fix" the test — re-snapshot to the new output and move on. That converts your guard into a rubber stamp. State the invariant explicitly: regression snapshots are read-only during a change; a red guard halts the work and is reported, never silently re-baselined. Enforce it in the diff review — an edited snapshot file is a stop-and-explain, every time.
+</Callout>
+
+## Signals
+
+- Refactors that "passed all tests" still broke behavior in production
+- Critical paths have load-bearing behavior no test actually asserts
+- You hesitate to let the agent touch certain modules at all
+- "Make it behave exactly as before" is in the prompt and nowhere executable
+- Bugs trace back to edge cases the change silently dropped
+
+## Consequences
+
+**Benefits:**
+- The behavior contract is executable, not folklore in someone's head
+- Silent regressions become loud failures before they reach production
+- You can let the agent refactor aggressively inside a pinned boundary
+- The guard outlives the change — it keeps protecting the path afterward
+- Forces the real contract to be made explicit, which is its own win
+
+**Costs:**
+- Upfront cost before any value is produced — a tax on every guarded change
+- Snapshots that pin implementation details are brittle and breed noise
+- Characterizes current behavior including current bugs — it preserves, it doesn't judge
+- Worthless unless you defend it: an agent that can edit the guard erases it
