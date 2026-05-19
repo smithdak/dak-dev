@@ -188,7 +188,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Learn Showcase — Patterns + Toolkit */}
+      {/* Learn Showcase — the four pillars (Patterns, Toolkit, Harness, Security) */}
       <LearnShowcase />
 
       {/* Compact Tools Bar */}
