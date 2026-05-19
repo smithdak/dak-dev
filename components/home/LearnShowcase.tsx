@@ -1,71 +1,120 @@
 import { getAllPatterns, CHAPTERS } from '@/lib/patterns';
 import { TOOLKIT_TOPICS } from '@/lib/toolkit-types';
+import { HARNESS_CHAPTERS } from '@/lib/harness-types';
+import { SECURITY_CHAPTERS } from '@/lib/security-types';
 import Link from 'next/link';
-import { DifficultyBadge } from '@/components/patterns/DifficultyBadge';
 import { ScrollReveal, ScrollRevealItem } from '@/components/ui/ScrollReveal';
 
-const CHAPTER_TEXT_COLORS: Record<number, string> = {
-  1: 'text-chapter-1',
-  2: 'text-chapter-2',
-  3: 'text-chapter-3',
-  4: 'text-chapter-4',
-  5: 'text-chapter-5',
-  6: 'text-chapter-6',
-};
-
-const CHAPTER_BORDER_COLORS: Record<number, string> = {
-  1: 'border-l-chapter-1',
-  2: 'border-l-chapter-2',
-  3: 'border-l-chapter-3',
-  4: 'border-l-chapter-4',
-  5: 'border-l-chapter-5',
-  6: 'border-l-chapter-6',
-};
-
-const CHAPTER_BG_COLORS: Record<number, string> = {
-  1: 'bg-chapter-1/10',
-  2: 'bg-chapter-2/10',
-  3: 'bg-chapter-3/10',
-  4: 'bg-chapter-4/10',
-  5: 'bg-chapter-5/10',
-  6: 'bg-chapter-6/10',
-};
+interface ShowcasePillar {
+  key: string;
+  title: string;
+  href: string;
+  description: string;
+  /** Data-driven stat line — never hardcode a count here. */
+  stat: string;
+  cta: string;
+  /** Static literals so Tailwind v4's class extraction keeps them (mirrors LearnHero). */
+  topBorder: string;
+  iconColor: string;
+  /** Single-path 24x24 stroke icon — identical to the /learn pillar, for cohesion. */
+  icon: string;
+}
 
 /**
- * Unified homepage showcase for the Learn section — Patterns + Toolkit
- * Server component with ScrollReveal for viewport-triggered animations
+ * Homepage showcase for the Learn platform — the four pillars at parity.
+ *
+ * Server component; ScrollReveal is the client leaf. Counts are derived from
+ * the lib constants at build time (no hardcoded numbers). The pillar-card
+ * anatomy, canonical colors (chapter-1/2/4/6), and icons are intentionally
+ * identical to components/learn/LearnHero.tsx so the homepage and /learn read
+ * as one design language.
  */
 export function LearnShowcase() {
-  const allPatterns = getAllPatterns();
+  const patternCount = getAllPatterns().length;
+  const chapterCount = CHAPTERS.length;
+  const toolkitTopicCount = TOOLKIT_TOPICS.length;
+  const harnessChapterCount = HARNESS_CHAPTERS.length;
+  const securityChapterCount = SECURITY_CHAPTERS.length;
 
-  if (allPatterns.length === 0 && TOOLKIT_TOPICS.length === 0) return null;
+  if (
+    patternCount === 0 &&
+    toolkitTopicCount === 0 &&
+    harnessChapterCount === 0 &&
+    securityChapterCount === 0
+  ) {
+    return null;
+  }
 
-  // Chapter stats
-  const chapterStats = CHAPTERS.map((chapter) => ({
-    ...chapter,
-    count: allPatterns.filter((p) => p.frontmatter.chapter === chapter.number).length,
-  }));
-
-  // Pick 3 featured patterns (chapters 1, 2, 3) for the sample list
-  const featuredPatterns = CHAPTERS.slice(0, 3)
-    .map((chapter) => {
-      const chapterPatterns = allPatterns.filter(
-        (p) => p.frontmatter.chapter === chapter.number
-      );
-      return chapterPatterns[0] || null;
-    })
-    .filter((p) => p !== null);
+  const pillars: ShowcasePillar[] = [
+    {
+      key: 'patterns',
+      title: 'Patterns',
+      href: '/learn/patterns',
+      description:
+        'Named, portable techniques for AI-assisted engineering — a structured reference of repeatable moves.',
+      stat: `${patternCount} patterns · ${chapterCount} chapters`,
+      cta: 'Browse patterns',
+      topBorder: 'border-t-chapter-1',
+      iconColor: 'text-chapter-1',
+      icon: 'M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z',
+    },
+    {
+      key: 'toolkit',
+      title: 'Toolkit',
+      href: '/learn/toolkit',
+      description:
+        "An expert's guide to Claude Code's features — mental models, playbooks, and the pitfalls that bite.",
+      stat: `${toolkitTopicCount} deep-dives`,
+      cta: 'Explore toolkit',
+      topBorder: 'border-t-chapter-2',
+      iconColor: 'text-chapter-2',
+      icon: 'M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.121 2.121 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z',
+    },
+    {
+      key: 'harness',
+      title: 'Harness',
+      href: '/learn/harness',
+      description:
+        'The runtime beneath the model — the agent loop, context economics, compaction, and the system prompt.',
+      stat: `${harnessChapterCount} chapters · the floor`,
+      cta: 'Go deeper',
+      topBorder: 'border-t-chapter-4',
+      iconColor: 'text-chapter-4',
+      icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+    },
+    {
+      key: 'security',
+      title: 'Security',
+      href: '/learn/security',
+      description:
+        'The trust surface of building with agents — prompt injection, secrets, permissions, and exfiltration.',
+      stat: `${securityChapterCount} chapters · the trust surface`,
+      cta: 'Lock it down',
+      topBorder: 'border-t-chapter-6',
+      iconColor: 'text-chapter-6',
+      icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+    },
+  ];
 
   return (
-    <section className="py-16 md:py-24 border-t-4 border-text">
+    <section
+      aria-labelledby="learn-showcase-heading"
+      className="py-16 md:py-24 border-t-4 border-text"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
+        {/* Tier 1 — Section header (mirrors the Featured Post header idiom) */}
         <ScrollReveal>
           <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between border-b-4 border-text pb-6 gap-4">
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-2">Learn</h2>
+              <h2
+                id="learn-showcase-heading"
+                className="text-4xl md:text-5xl font-bold mb-2"
+              >
+                Learn
+              </h2>
               <p className="text-lg text-muted">
-                A structured reference for agentic engineering
+                Four pillars of agentic engineering — patterns, toolkit,
+                harness, and security
               </p>
             </div>
             <Link
@@ -91,205 +140,69 @@ export function LearnShowcase() {
           </div>
         </ScrollReveal>
 
-        {/* Stats Bar */}
-        <ScrollReveal>
-          <div className="flex flex-wrap gap-6 mb-10">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl md:text-4xl font-bold text-accent tabular-nums">
-                {allPatterns.length}
-              </span>
-              <span className="text-sm font-bold uppercase tracking-wider text-muted">
-                Patterns
-              </span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl md:text-4xl font-bold text-text tabular-nums">
-                {CHAPTERS.length}
-              </span>
-              <span className="text-sm font-bold uppercase tracking-wider text-muted">
-                Chapters
-              </span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl md:text-4xl font-bold text-text tabular-nums">
-                {TOOLKIT_TOPICS.length}
-              </span>
-              <span className="text-sm font-bold uppercase tracking-wider text-muted">
-                Deep-Dives
-              </span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl md:text-4xl font-bold text-text tabular-nums">4</span>
-              <span className="text-sm font-bold uppercase tracking-wider text-muted">
-                Sub-pages Each
-              </span>
-            </div>
-          </div>
-        </ScrollReveal>
-
-        {/* Two-Panel Intro */}
+        {/* Tier 2 — The four pillars, at parity (same anatomy as /learn) */}
         <ScrollReveal stagger>
-          <div className="grid md:grid-cols-2 gap-6 mb-12">
-            {/* Patterns Panel */}
-            <ScrollRevealItem>
-              <Link
-                href="/learn/patterns"
-                className="group block border-4 border-text p-6 md:p-8 transition-all duration-200 hover:shadow-[8px_8px_0_0_var(--color-accent)] hover:border-accent hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background h-full"
-              >
-                {/* Panel Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-2xl md:text-3xl font-bold group-hover:text-accent transition-colors">
-                    Patterns
-                  </h3>
-                  <span className="border-2 border-accent text-accent text-xs font-bold uppercase tracking-wider px-3 py-1">
-                    {allPatterns.length} patterns
-                  </span>
-                </div>
-                <p className="text-muted mb-6 leading-relaxed break-words">
-                  Named, repeatable techniques for AI-assisted engineering. Organized into {CHAPTERS.length} chapters from foundation to advanced orchestration.
-                </p>
-
-                {/* Mini Chapter Grid */}
-                <div className="grid grid-cols-2 gap-2 mb-6">
-                  {chapterStats.map((chapter) => (
-                    <div
-                      key={chapter.number}
-                      className={`${CHAPTER_BG_COLORS[chapter.number]} border border-text/20 p-3 transition-colors group-hover:border-text/40`}
-                    >
-                      <span className={`block font-mono text-[10px] font-bold ${CHAPTER_TEXT_COLORS[chapter.number]} mb-0.5`}>
-                        CH.{chapter.number}
-                      </span>
-                      <span className="block text-xs font-bold text-text truncate">
-                        {chapter.name}
-                      </span>
-                      <span className="block text-[10px] text-muted mt-0.5 tabular-nums">
-                        {chapter.count} {chapter.count === 1 ? 'pattern' : 'patterns'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA */}
-                <span className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-accent">
-                  Browse patterns
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {pillars.map((pillar) => (
+              <ScrollRevealItem key={pillar.key}>
+                <Link
+                  href={pillar.href}
+                  className={`group relative flex h-full flex-col border-4 border-text border-t-8 ${pillar.topBorder} bg-surface/30 p-6 transition-all duration-200 hover:-translate-y-1 hover:border-accent hover:shadow-[8px_8px_0_0_var(--color-accent)] focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background`}
+                >
                   <svg
-                    className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                    className={`w-8 h-8 mb-4 ${pillar.iconColor}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                     aria-hidden="true"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d={pillar.icon}
+                    />
                   </svg>
-                </span>
-              </Link>
-            </ScrollRevealItem>
-
-            {/* Toolkit Panel */}
-            <ScrollRevealItem>
-              <Link
-                href="/learn/toolkit"
-                className="group block border-4 border-text p-6 md:p-8 transition-all duration-200 hover:shadow-[8px_8px_0_0_var(--color-accent)] hover:border-accent hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background h-full"
-              >
-                {/* Panel Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-2xl md:text-3xl font-bold group-hover:text-accent transition-colors">
-                    Toolkit
+                  <h3 className="text-2xl md:text-3xl font-bold mb-3 group-hover:text-accent transition-colors">
+                    {pillar.title}
                   </h3>
-                  <span className="border-2 border-text text-text text-xs font-bold uppercase tracking-wider px-3 py-1">
-                    {TOOLKIT_TOPICS.length} deep-dives
-                  </span>
-                </div>
-                <p className="text-muted mb-6 leading-relaxed break-words">
-                  Expert&apos;s guide to Claude Code internals. Mental models, production playbooks, composition patterns, and real-world pitfalls.
-                </p>
-
-                {/* Topic List */}
-                <div className="space-y-2 mb-6">
-                  {TOOLKIT_TOPICS.map((topic) => (
-                    <div
-                      key={topic.slug}
-                      className="flex items-start gap-3 border border-text/20 p-3 transition-colors group-hover:border-text/40"
+                  <p className="text-muted leading-relaxed mb-6 flex-1">
+                    {pillar.description}
+                  </p>
+                  <p className="text-sm font-mono text-muted mb-4 tabular-nums">
+                    {pillar.stat}
+                  </p>
+                  <span className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-accent">
+                    {pillar.cta}
+                    <svg
+                      className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
                     >
-                      <svg
-                        className="w-4 h-4 text-accent/60 shrink-0 mt-0.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={topic.icon} />
-                      </svg>
-                      <div className="min-w-0">
-                        <span className="block text-sm font-bold text-text">{topic.name}</span>
-                        <span className="block text-[11px] text-muted leading-snug line-clamp-2">
-                          {topic.description}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA */}
-                <span className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-accent">
-                  Explore toolkit
-                  <svg
-                    className="w-4 h-4 group-hover:translate-x-1 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </Link>
-            </ScrollRevealItem>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2.5}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </span>
+                </Link>
+              </ScrollRevealItem>
+            ))}
           </div>
         </ScrollReveal>
 
-        {/* Featured Patterns Sample */}
-        {featuredPatterns.length > 0 && (
-          <ScrollReveal stagger>
-            <div className="mb-10">
-              <p className="text-xs font-bold uppercase tracking-wider text-muted mb-4">
-                Sample patterns
-              </p>
-              <div className="space-y-3">
-                {featuredPatterns.map((pattern) => (
-                  <ScrollRevealItem key={pattern.frontmatter.slug}>
-                    <Link
-                      href={`/learn/patterns/${pattern.frontmatter.slug}`}
-                      className={`group block border-2 border-text/20 hover:border-text/60 bg-surface/40 border-l-4 ${CHAPTER_BORDER_COLORS[pattern.frontmatter.chapter]} px-5 py-4 transition-all duration-150 hover:-translate-x-0.5 hover:shadow-[3px_3px_0_0_var(--color-text)] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background`}
-                    >
-                      <span className="flex items-start sm:items-center gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
-                        <span className={`font-mono text-xs font-bold ${CHAPTER_TEXT_COLORS[pattern.frontmatter.chapter]} tabular-nums flex-shrink-0 w-8`}>
-                          {pattern.frontmatter.number}
-                        </span>
-                        <span className="font-bold text-sm group-hover:underline decoration-2 underline-offset-4 flex-1 min-w-0">
-                          {pattern.frontmatter.name}
-                        </span>
-                        <DifficultyBadge difficulty={pattern.frontmatter.difficulty} className="flex-shrink-0" />
-                      </span>
-                      <span className="block mt-1.5 pl-11 sm:pl-12 text-xs text-muted line-clamp-2 sm:line-clamp-1">
-                        {pattern.frontmatter.intent}
-                      </span>
-                    </Link>
-                  </ScrollRevealItem>
-                ))}
-              </div>
-            </div>
-          </ScrollReveal>
-        )}
-
-        {/* CTAs */}
+        {/* Tier 3 — One resolution row (replaces the old three-CTA cluster) */}
         <ScrollReveal>
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="mt-12 flex flex-col sm:flex-row gap-6 items-start sm:items-center">
             <Link
-              href="/learn/patterns"
+              href="/learn"
               className="group inline-flex items-center justify-center font-semibold px-6 py-3 text-base gap-2 bg-transparent text-accent border-4 border-accent hover:bg-accent hover:text-background shadow-[4px_4px_0_0_var(--color-accent)] hover:shadow-[6px_6px_0_0_var(--color-accent)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
             >
-              Browse Patterns
+              Explore the Learn Platform
               <svg
                 className="w-5 h-5 transition-transform group-hover:translate-x-1"
                 fill="none"
@@ -297,29 +210,25 @@ export function LearnShowcase() {
                 viewBox="0 0 24 24"
                 aria-hidden="true"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </Link>
-            <Link
-              href="/learn/toolkit"
-              className="group inline-flex items-center justify-center font-semibold px-6 py-3 text-base gap-2 bg-transparent text-text border-4 border-text hover:bg-text hover:text-background shadow-[4px_4px_0_0_var(--color-text)] hover:shadow-[6px_6px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-text focus:ring-offset-4 focus:ring-offset-background"
-            >
-              Explore Toolkit
-              <svg
-                className="w-5 h-5 transition-transform group-hover:translate-x-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
               </svg>
             </Link>
             <Link
               href="/learn/patterns/graph"
               className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-text transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <circle cx="12" cy="12" r="3" strokeWidth={2} />
                 <circle cx="4" cy="6" r="2" strokeWidth={2} />
                 <circle cx="20" cy="6" r="2" strokeWidth={2} />
