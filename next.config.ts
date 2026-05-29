@@ -14,19 +14,39 @@ const bundleAnalyzer = withBundleAnalyzer({
 // object-src none, base-uri self, and tightly scoped connect/frame/img.
 const isDev = process.env.NODE_ENV !== 'production';
 
+// RUNNABLE CODE EMBEDS (Codapi) — opt-in, OFF by default.
+// The <RunnableSnippet> component only loads its scripts when
+// NEXT_PUBLIC_ENABLE_CODAPI === 'true'. The CSP relaxation it needs is wired to
+// the SAME flag below, so the two stay in lockstep: flag off → hardened policy
+// + no feature; flag on → the relaxation + the feature. When enabled we add:
+//   - script-src:  'wasm-unsafe-eval' (WASI sandboxes instantiate wasm) and
+//                  https://unpkg.com (Codapi/Runno web-component scripts)
+//   - connect-src: https://unpkg.com (Runno fetches language wasm binaries)
+//   - worker-src already allows 'self' blob: (Runno uses workers) — no change.
+// This is a real relaxation of the hardened policy; re-verify Lighthouse
+// Best-Practices in CI before merging an activation. NOTE: the WASI engine
+// (python/sqlite) needs only 'wasm-unsafe-eval'; the browser JS engine also
+// needs 'unsafe-eval' in production (already present in dev for HMR).
+const codapiEnabled = process.env.NEXT_PUBLIC_ENABLE_CODAPI === 'true';
+const codapiScript = codapiEnabled ? " 'wasm-unsafe-eval' https://unpkg.com" : '';
+const codapiConnect = codapiEnabled ? ' https://unpkg.com' : '';
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'self'",
   "form-action 'self'",
-  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://giscus.app${
+  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://giscus.app${codapiScript}${
     isDev ? " 'unsafe-eval'" : ''
   }`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https://images.unsplash.com",
   "font-src 'self'",
-  `connect-src 'self' https://va.vercel-scripts.com https://*.vercel-insights.com${
+  // NEWSLETTER_ORIGIN: when NEXT_PUBLIC_NEWSLETTER_ENDPOINT is set (see
+  // components/ui/NewsletterSignup.tsx), add the provider origin here so the
+  // subscribe POST is allowed, e.g. ... https://buttondown.com
+  `connect-src 'self' https://va.vercel-scripts.com https://*.vercel-insights.com${codapiConnect}${
     isDev ? ' ws:' : ''
   }`,
   'frame-src https://giscus.app',

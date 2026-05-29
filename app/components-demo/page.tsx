@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Tag, TagList } from '@/components/ui/Tag';
 import { PageTransition } from '@/components/ui/PageTransition';
+import { AgentLoopStepper } from '@/components/interactive/AgentLoopStepper';
+import { ScrollStory } from '@/components/interactive/ScrollStory';
+import { RunnableSnippet } from '@/components/interactive/RunnableSnippet';
 
 const samplePosts = [
   {
@@ -214,6 +217,55 @@ export default function ComponentsDemo() {
               <p className="text-sm text-muted">#A9A9A9</p>
             </div>
           </div>
+        </section>
+
+        {/* Interactive / explorable components */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold mb-6 border-l-4 border-accent pl-4">
+            Interactive Components
+          </h2>
+
+          <h3 className="text-xl font-bold mb-3">AgentLoopStepper</h3>
+          <AgentLoopStepper />
+
+          <h3 className="text-xl font-bold mb-3 mt-10">ScrollStory</h3>
+          <ScrollStory
+            eyebrow="Demo walkthrough"
+            steps={JSON.stringify([
+              {
+                title: 'First beat',
+                body: 'Scroll down slowly. The sticky panel on the left tracks whichever step is centered in the viewport.',
+              },
+              {
+                title: 'Second beat',
+                body: 'The number flips and the progress bar advances as each step crosses the middle of the screen.',
+              },
+              {
+                title: 'Third beat',
+                body: 'With reduced motion enabled, tracking is disabled and the steps simply read as a list.',
+              },
+            ])}
+          />
+
+          <h3 className="text-xl font-bold mb-3 mt-10">
+            RunnableSnippet — JavaScript (engine: browser)
+          </h3>
+          <RunnableSnippet
+            language="javascript"
+            sandbox="javascript"
+            engine="browser"
+            code={`// The agent loop, in miniature. Press Run.\nlet turns = 0;\nfunction step(state) {\n  turns++;\n  return state === "done" ? "done" : "thinking";\n}\nlet state = "start";\nwhile (state !== "done" && turns < 5) {\n  state = turns >= 3 ? "done" : step(state);\n}\nconsole.log("Loop stopped after", turns, "turns:", state);`}
+          />
+
+          <h3 className="text-xl font-bold mb-3 mt-10">
+            RunnableSnippet — Python (engine: wasi)
+          </h3>
+          <RunnableSnippet
+            language="python"
+            sandbox="python"
+            engine="wasi"
+            code={`# Token budget check — runs in-browser via WASI.\nbudget = 4000\nturns = [320, 180, 540, 260, 150]\nused = sum(turns)\nprint(f"{used}/{budget} tokens used ({used*100//budget}%)")`}
+          />
         </section>
       </div>
     </PageTransition>

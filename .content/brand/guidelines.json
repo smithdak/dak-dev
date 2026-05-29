@@ -114,6 +114,49 @@
       "needs_major_revision": 0
     }
   },
+  "prose_rubric": {
+    "description": "Qualitative grading applied by an LLM-as-judge in /quality-gate, on top of the mechanical validators. Each dimension is scored 0-5 against the anchors; the weighted total normalizes to 0-100. This catches what regex cannot: weak arguments, vague evidence, missing transparency, derivative takes, and AI slop. LLM-as-judge is fallible, so the human checkpoint in /quality-gate is the final authority — the rubric informs the decision, it does not replace it.",
+    "scale": {
+      "0": "Absent — dimension not met at all",
+      "1": "Poor — major gaps, reads as AI slop or filler",
+      "2": "Weak — present but unconvincing",
+      "3": "Adequate — meets the bar, unremarkable",
+      "4": "Strong — clearly above average",
+      "5": "Exceptional — best-in-class, link-worthy"
+    },
+    "dimensions": {
+      "argument_structure": {
+        "weight": 20,
+        "asks": "Does it lead with the bottom line, progress logically, and stay scannable? Can a skimmer extract the thesis in 15 seconds?",
+        "fail_below": 2
+      },
+      "evidence_specificity": {
+        "weight": 25,
+        "asks": "Are claims backed by real, specific metrics, tested code, and cited sources — not vague generalities ('improves performance')? Numbers over adjectives.",
+        "fail_below": 2
+      },
+      "transparency": {
+        "weight": 25,
+        "asks": "Does it address tradeoffs, when NOT to use the approach, failure modes, and the complexity tax? This is the brand's core value.",
+        "fail_below": 1,
+        "hard_fail_when": "technical-advice post scores 0"
+      },
+      "authority_originality": {
+        "weight": 15,
+        "asks": "Does it offer original insight, first-person production experience, or a teardown competitors don't have — versus a derivative rehash?",
+        "fail_below": 1
+      },
+      "clarity_flow": {
+        "weight": 15,
+        "asks": "Does it teach the WHY, read smoothly sentence to sentence, and avoid hedging/filler/AI cadence? Would a senior engineer respect the writing?",
+        "fail_below": 2
+      }
+    },
+    "thresholds": {
+      "prose_pass": 80,
+      "prose_revise": 60
+    }
+  },
   "content_types": {
     "general": {
       "description": "Standard blog post",

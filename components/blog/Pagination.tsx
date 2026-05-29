@@ -86,6 +86,7 @@ export function Pagination({
             return (
               <span
                 key={`ellipsis-${index}`}
+                role="listitem"
                 className="px-3 py-2 text-muted"
                 aria-hidden="true"
               >
@@ -96,11 +97,13 @@ export function Pagination({
 
           const isCurrentPage = page === currentPage;
 
+          // role="listitem" goes on a wrapping span — it is not an allowed
+          // role on <a>/<Link> (aria-allowed-role).
           return (
-            <Link
-              key={page}
-              href={getPageUrl(page)}
-              className={`
+            <span key={page} role="listitem" className="inline-flex">
+              <Link
+                href={getPageUrl(page)}
+                className={`
                 inline-flex items-center justify-center min-w-[44px] px-4 py-2 font-semibold transition-colors focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background
                 ${
                   isCurrentPage
@@ -108,12 +111,14 @@ export function Pagination({
                     : 'border-2 border-text hover:bg-text hover:text-background'
                 }
               `}
-              aria-label={isCurrentPage ? `Current page, page ${page}` : `Go to page ${page}`}
-              aria-current={isCurrentPage ? 'page' : undefined}
-              role="listitem"
-            >
-              {page}
-            </Link>
+                aria-label={
+                  isCurrentPage ? `Current page, page ${page}` : `Go to page ${page}`
+                }
+                aria-current={isCurrentPage ? 'page' : undefined}
+              >
+                {page}
+              </Link>
+            </span>
           );
         })}
       </div>

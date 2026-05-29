@@ -334,6 +334,18 @@ element overrides (callouts, diff blocks, tool-example tabs exist only in
 patterns). Both route code through the same Shiki path so highlighting is
 identical everywhere it appears.
 
+**Interactive "explorable" components** live in `components/interactive/`
+(`AgentLoopStepper`, `ScrollStory`, `RunnableSnippet`) and are registered in the
+*base* `mdxComponents` map (`components/blog/MdxComponents.tsx`), so they are
+available to blog, harness, and pattern prose alike (the pattern map spreads the
+base). They are small `'use client'` islands that receive already-shaped props
+and inherit the global reduced-motion contract (§6.4). Following the
+`FlowDiagram` convention, components that take structured data accept it as a
+**single-quoted JSON string literal** parsed inside the component
+(`<ScrollStory steps='[{"title":"…","body":"…"}]' />`). Neither raw
+array/object literals nor the `{JSON.stringify([…])}` expression form survive
+the RSC MDX attribute path — only a literal string does.
+
 ---
 
 ## 8. Performance engineering
@@ -529,6 +541,9 @@ that should make us revisit. Detail is in the cited section.
 | 8 | Four pillars + boundary statements + colocated routing invariants | Free-form sections | Adding a pillar (must ship a boundary) | 4 |
 | 9 | Filesystem content, no CMS, no memoization | Database/CMS, or cached reads | Thousands of docs, or non-git authoring | 5, 8 |
 | 10 | Perf gate `0.90` optimistic; correctness gates hard `1.0` | Uniform threshold | Perf is tightened (drop optimistic with it) | 12 |
+| 11 | Runnable code embeds (Codapi) opt-in, OFF by default behind `NEXT_PUBLIC_ENABLE_CODAPI` | Ship runnable by default | The CSP relaxation (wasm-unsafe-eval + unpkg origin) is accepted and Lighthouse re-verified | 10.1, 14 |
+| 12 | `robots.txt` explicitly *welcomes* major AI crawlers (per-agent rules) | Wildcard-only, or block AI bots | A crawler abuses access, or citation policy changes (flip its entry to `disallow`) | 11 |
+| 13 | `/quality-gate`: enforced prose-rubric gate + human sign-off, "gates over trust" | Trust the mechanical score alone | LLM-as-judge proves unreliable enough to drop, or a deterministic prose check replaces it | — |
 
 ---
 
@@ -551,6 +566,18 @@ Stated plainly so nobody rediscovers them as surprises:
 - **`reactStrictMode` double-invokes effects in dev** (`next.config.ts:40`) —
   intentional; new effects must be idempotent or they will misbehave in dev and
   potentially in prod under concurrent React.
+- **Runnable embeds pressure the CSP if enabled.** `RunnableSnippet` is OFF by
+  default and changes nothing while off. Turning it on
+  (`NEXT_PUBLIC_ENABLE_CODAPI=true`) requires relaxing `script-src`
+  (`'wasm-unsafe-eval'` + `https://unpkg.com`) and `connect-src` — a real
+  weakening of §10.1, documented inline in `next.config.ts`. Re-verify
+  Lighthouse Best-Practices in CI before merging an activation. WASI sandboxes
+  are limited to Python/SQLite/etc; JS/agent demos are not covered here.
+- **The newsletter funnel depends on an external provider.** `NewsletterSignup`
+  POSTs to `NEXT_PUBLIC_NEWSLETTER_ENDPOINT` (opaque `no-cors`, optimistic
+  success) and falls back to `mailto:` when unset. The provider origin must be
+  added to `connect-src` (see the `NEWSLETTER_ORIGIN` comment in
+  `next.config.ts`) or the POST is blocked in production.
 - **The four-pillar IA degrades silently.** Nothing *enforces* a boundary
   statement or the flat-only routing invariant — they are prose contracts
   (§4). The protection is review discipline plus the colocated comments.

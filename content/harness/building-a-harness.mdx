@@ -57,6 +57,15 @@ Even with the SDK doing the loop, three responsibilities are irreducibly yours, 
 - **A [Safety Net](/learn/patterns/safety-net).** Custom dispatch means custom blast radius. Sandbox the tools, gate destructive actions, log every side effect — the managed harness does this for you; your harness does not until you build it.
 - **Scaffolding before autonomy.** Stand the loop up with logging, replay, and a kill switch *before* you let it run unattended. This is [Scaffold First](/learn/patterns/scaffold-first) at the infrastructure layer: the observability is not a follow-up, it is the precondition.
 
+## Anatomy of One Owned Run
+
+Scroll through a single iteration of a hand-built loop. The SDK owns the model call; everything highlighted is code you wrote — and code you now maintain.
+
+<ScrollStory
+  eyebrow="One turn, your code"
+  steps='[{"title":"Assemble the request","body":"The SDK builds the model request from your system-prompt preset and tool definitions. Your only job here is configuration — but a misconfigured preset or tool schema is your bug, surfacing 25 turns later as confused behavior."},{"title":"Enforce your stop policy","body":"Before dispatching, your loop checks the ceilings the model cannot see: turns elapsed, wall-clock spent, dollars burned. The SDK hands you the turn; whether to take it is your policy. This is the line between a finite run and a runaway."},{"title":"Dispatch through your safety net","body":"Each tool call runs through your dispatch layer — sandboxed, gated on destructive actions, with every side effect logged. Custom dispatch means custom blast radius. The managed harness did this for you; yours does not until you build it."},{"title":"Account, then loop or stop","body":"You append results, tally cost and latency, and emit a replayable record of what happened. Only then does control return to the loop. The observability is not a follow-up — it is the precondition for ever letting this run unattended."}]'
+/>
+
 ## The Tradeoff
 
 A custom harness buys total control and costs you the entire surface area this section describes — forever, across every model version, including the bugs. The managed harness costs you control at the edges and gives you a loop that gets better while you sleep. The honest default is: use the managed harness, reach for the SDK at the *first* concrete requirement it cannot meet, and even then keep the preset preamble. Most "we need our own agent infrastructure" decisions are the [Checkpoint Loop](/learn/patterns/checkpoint-loop) lesson unlearned — solving for imagined generality instead of the next verified step. Build the harness when the requirement is real and named. Not before.

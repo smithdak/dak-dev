@@ -25,6 +25,10 @@ One iteration of the loop:
 
 The model is pure. All state, all side effects, all memory live in the harness and the message array it carries.
 
+Step the loop yourself. Each turn appends to the message array — watch the context window grow as the agent reasons, calls tools, and reads results, until a stop condition ends it.
+
+<AgentLoopStepper />
+
 ## Stop Conditions
 
 The loop ends on one of these. Conflating them is a common source of "the agent quit early" bugs:

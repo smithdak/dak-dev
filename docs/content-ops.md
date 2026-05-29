@@ -32,20 +32,28 @@ without this file changing.
 | `/write-post` | Creating a post — brand-consistent scaffold from a template |
 | `/review-post` | Pre-publish review for brand consistency, quality, SEO |
 | `/brand-check` | Quick brand-voice check on arbitrary text |
+| `/quality-gate` | Enforced pre-publish gate: mechanical + voice + prose rubric + human sign-off |
 | `/content-calendar` | View/manage the pipeline and idea backlog |
 | `/content-strategist` | Keyword research, gap analysis, topic clusters, SEO audit |
 
 ## Workflow
 
 ```
-idea ──► outlined ──► drafting ──► review ──► ready ──► published
-  │          │            │           │          │
-  │          │            │           │          └─ set published: true, push (auto-deploys)
+idea ──► outlined ──► drafting ──► review ──► gate ──► ready ──► published
+  │          │            │           │         │         │
+  │          │            │           │         │         └─ set published: true, push (auto-deploys)
+  │          │            │           │         └─ /quality-gate, human sign-off → status: ready
   │          │            │           └─ /review-post, fix issues
   │          │            └─ /write-post, create the MDX
   │          └─ add the outline to calendar notes
   └─ add the idea via /content-calendar
 ```
+
+`/quality-gate` is the enforced promotion step: a post does not reach `ready`
+until it clears mechanical validation, brand voice, AND the qualitative prose
+rubric (`prose_rubric` in `.content/brand/guidelines.json`), followed by an
+explicit human sign-off. "Quality gates over trust" — no single check certifies
+the post; any hard failure blocks promotion.
 
 SEO sequence, before and around drafting:
 

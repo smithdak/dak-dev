@@ -2,6 +2,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { ReactNode } from 'react';
 import { slugify } from '@/lib/utils';
+import { AgentLoopStepper } from '@/components/interactive/AgentLoopStepper';
+import { ScrollStory } from '@/components/interactive/ScrollStory';
+import { RunnableSnippet } from '@/components/interactive/RunnableSnippet';
 
 /**
  * Custom MDX components with neo-brutalist styling
@@ -302,4 +305,9 @@ export const mdxComponents = {
   tr: Tr,
   th: Th,
   td: Td,
+  // Interactive "explorable explanation" components (client islands).
+  // Available to blog, harness, and pattern MDX via this shared map.
+  AgentLoopStepper,
+  ScrollStory,
+  RunnableSnippet,
 };

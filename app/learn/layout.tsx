@@ -24,8 +24,11 @@ export default function LearnLayout({ children }: { children: ReactNode }) {
     topicSubPages[topic.slug] = pages.map((p) => p.frontmatter.subPage!).filter(Boolean);
   }
 
+  // overflow-x-clip (not -hidden): clips horizontal overflow without creating a
+  // scroll container, so position:sticky descendants — the sidebar, the TOC,
+  // and ScrollStory — still pin to the viewport.
   return (
-    <div className="mx-auto max-w-[1400px] overflow-x-hidden">
+    <div className="mx-auto max-w-[1400px] overflow-x-clip">
       {/* Mobile nav */}
       <LearnMobileNav
         chapters={CHAPTERS}

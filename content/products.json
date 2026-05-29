@@ -88,5 +88,55 @@
     "category": "plugin",
     "date": "2026-02",
     "featured": true
+  },
+  {
+    "id": "plugin-hive",
+    "name": "Plugin Hive",
+    "description": "Turns Claude Code into a hive mind — a coordinated colony of specialized agents that decompose, implement, verify, and ship features without manual intervention.",
+    "url": "https://github.com/twofoldtech-dakota/plugin-hive",
+    "icon": "code",
+    "category": "agent",
+    "date": "2026-02",
+    "featured": true
+  },
+  {
+    "id": "plugin-migration-planner",
+    "name": "Plugin Migration Planner",
+    "description": "Guides architects through Sitecore XP on AWS to Azure migrations — structured discovery, cross-reference analysis, phased estimation, and client-ready deliverables.",
+    "url": "https://github.com/twofoldtech-dakota/plugin-migration-planner",
+    "icon": "tool",
+    "category": "plugin",
+    "date": "2026-02",
+    "featured": true
+  },
+  {
+    "id": "plugin-cms-toolkit",
+    "name": "Plugin CMS Toolkit",
+    "description": "Claude Code plugin for Sitecore, Umbraco, and Optimizely CMS development — analysis, scaffolding, and enhancement workflows.",
+    "url": "https://github.com/twofoldtech-dakota/plugin-cms-toolkit",
+    "icon": "tool",
+    "category": "plugin",
+    "date": "2026-03",
+    "featured": true
+  },
+  {
+    "id": "starter-template",
+    "name": "Starter Template",
+    "description": "A fullstack TypeScript monorepo starter — Turborepo, Next.js, Bun, Drizzle + Postgres, Better Auth, Tailwind v4, and a full test/CI setup.",
+    "url": "https://github.com/twofoldtech-dakota/starter-template",
+    "icon": "package",
+    "category": "infrastructure",
+    "date": "2026-03",
+    "featured": false
+  },
+  {
+    "id": "azure-devops-claude-auto-pr",
+    "name": "Auto-PR",
+    "description": "When an Azure DevOps work item goes Active, this service clones the repo, has Claude Code implement the change, and pushes a feature branch for review.",
+    "url": "https://github.com/twofoldtech-dakota/azure-devops-claude-auto-pr",
+    "icon": "code",
+    "category": "infrastructure",
+    "date": "2026-04",
+    "featured": false
   }
 ]

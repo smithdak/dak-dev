@@ -99,25 +99,32 @@ export async function ToolsBar() {
             aria-label="Projects and tools"
           >
             {products.map((product) => (
-              <a
+              // role="listitem" belongs on a non-link wrapper — it is not an
+              // allowed role on <a> (aria-allowed-role). The wrapper is the
+              // scroll child, so width + snap-start live here.
+              <div
                 key={product.id}
-                href={product.url}
-                target="_blank"
-                rel="noopener noreferrer"
                 role="listitem"
                 style={{ width: 172, minWidth: 172, maxWidth: 172 }}
-                className={`group block border-2 border-text/20 ${CATEGORY_HOVER[product.category]} bg-surface/30 p-4 snap-start transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_var(--color-text)] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background`}
+                className="snap-start"
               >
-                <span className="block text-muted group-hover:text-text transition-colors mb-3">
-                  <ProductIcon icon={product.icon} />
-                </span>
-                <span className="block text-sm font-bold text-text truncate mb-2 group-hover:underline decoration-2 underline-offset-4">
-                  {product.name}
-                </span>
-                <span className={`inline-block border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${CATEGORY_STYLES[product.category]}`}>
-                  {product.category}
-                </span>
-              </a>
+                <a
+                  href={product.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group block h-full border-2 border-text/20 ${CATEGORY_HOVER[product.category]} bg-surface/30 p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_var(--color-text)] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background`}
+                >
+                  <span className="block text-muted group-hover:text-text transition-colors mb-3">
+                    <ProductIcon icon={product.icon} />
+                  </span>
+                  <span className="block text-sm font-bold text-text truncate mb-2 group-hover:underline decoration-2 underline-offset-4">
+                    {product.name}
+                  </span>
+                  <span className={`inline-block border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${CATEGORY_STYLES[product.category]}`}>
+                    {product.category}
+                  </span>
+                </a>
+              </div>
             ))}
           </div>
           {/* Right fade to indicate scrollability */}
