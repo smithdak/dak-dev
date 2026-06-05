@@ -1,0 +1,34 @@
+---
+title: "Why It Makes Things Up"
+slug: "why-it-makes-things-up"
+description: "Hallucination is not a glitch — it is the mechanism. An AI generates likely text instead of looking facts up, which is why it can be confidently, fluently wrong."
+mentalModel: "It generates; it does not look things up. That single fact explains hallucinations."
+published: true
+keywords: ["why AI hallucinates", "AI makes things up", "LLM hallucination explained", "AI confidently wrong"]
+---
+
+# Why It Makes Things Up
+
+One fact clears up most of the confusion about AI getting things wrong: it does not look anything up. An LLM generates the most likely next words from patterns it learned — it does not retrieve facts from a store. "Made up" is not a malfunction creeping in; it is the same machinery that produces the good answers, pointed at something it never learned.
+
+## Generate, not retrieve
+
+A search engine returns documents that exist. A model writes a fresh, plausible answer every time. Most of the time, plausible and correct line up, so it feels like retrieval. When they come apart, the model has no internal alarm that says "I am out of my depth" — it keeps generating fluent text, and the result is a hallucination: confident, well-formed, and false.
+
+## Why "I don't know" is rare
+
+A person who is unsure usually sounds unsure. A model is built to produce fluent, confident text, and "I don't know" rarely wins as the most likely continuation. So it tends to answer anyway, in the same even tone it uses when it is right. The danger is not the wrong answer — it is the wrong answer that reads exactly like a right one.
+
+<Callout type="critical" title="The case that should stick with you">
+A lawyer once filed a brief citing court cases an AI produced. The cases looked real — proper names, plausible numbers, correct formatting. They did not exist. The model had generated them, and nothing about how they read flagged that they were invented.
+</Callout>
+
+## How to defend against it
+
+You cannot turn a generator into a retriever, but you can box it in:
+
+- **Verify what matters** — anything with a number, date, name, or citation gets checked against a real source.
+- **Give it real sources** — [RAG](/learn/start/decoder) hands the model the actual documents to answer from, which narrows the room for invention (it does not close it).
+- **Keep a human on the important calls** — the [jagged frontier](/learn/start/explain/the-jagged-frontier) is sharpest exactly where the stakes are highest.
+
+The wider trust-and-privacy picture lives in [Security: The Real Risks](/learn/security/the-real-risks).

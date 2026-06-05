@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ScrollReveal, ScrollRevealItem } from '@/components/ui/ScrollReveal';
 import { TextDecode } from '@/components/ui/TextDecode';
 import { GLOSSARY_CLUSTERS, getGlossaryByCluster, type DeeperLink } from '@/lib/onramp-types';
+import { slugify } from '@/lib/utils';
 
 /**
  * The Decoder — the on-ramp's plain-English glossary.
@@ -93,7 +94,10 @@ export function Decoder() {
               <div className="grid gap-5 md:grid-cols-2">
                 {terms.map((t, i) => (
                   <ScrollRevealItem key={t.term}>
-                    <article className="h-full flex flex-col border-2 border-text/60 border-t-4 border-t-chapter-5 bg-surface/40 p-6">
+                    <article
+                      id={`term-${slugify(t.term)}`}
+                      className="h-full flex flex-col border-2 border-text/60 border-t-4 border-t-chapter-5 bg-surface/40 p-6 scroll-mt-24"
+                    >
                       <h3 className="text-xl font-bold font-mono tracking-tight text-chapter-5 mb-4">
                         <TextDecode text={t.term} delay={i * 110} />
                       </h3>

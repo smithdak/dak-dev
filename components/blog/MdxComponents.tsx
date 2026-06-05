@@ -5,6 +5,7 @@ import { slugify } from '@/lib/utils';
 import { AgentLoopStepper } from '@/components/interactive/AgentLoopStepper';
 import { ScrollStory } from '@/components/interactive/ScrollStory';
 import { RunnableSnippet } from '@/components/interactive/RunnableSnippet';
+import { GlossaryTerm } from '@/components/learn/GlossaryTerm';
 
 /**
  * Custom MDX components with neo-brutalist styling
@@ -310,4 +311,8 @@ export const mdxComponents = {
   AgentLoopStepper,
   ScrollStory,
   RunnableSnippet,
+  // Auto-glossary "define on first use" toggletip. lib/rehype-glossary wraps the
+  // first occurrence of each Decoder term in a <glossaryterm> element; this maps
+  // that element to the accessible toggletip component. Site-wide via this map.
+  glossaryterm: GlossaryTerm,
 };

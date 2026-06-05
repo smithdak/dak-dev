@@ -1,4 +1,5 @@
 import remarkGfm from 'remark-gfm';
+import rehypeGlossary from './rehype-glossary';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -7,6 +8,7 @@ async function getMdxOptions() {
     return {
       mdxOptions: {
         remarkPlugins: [remarkGfm],
+        rehypePlugins: [rehypeGlossary],
       },
     };
   }
@@ -33,6 +35,7 @@ async function getMdxOptions() {
             getHighlighter: () => highlighter,
           },
         ],
+        rehypeGlossary,
       ],
     },
   };

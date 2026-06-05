@@ -1,0 +1,44 @@
+---
+title: "The Agent Loop"
+slug: "the-agent-loop"
+description: "The one model that explains the rest: an agent runs tools in a loop — think, act, observe — until the goal is met. Step through it yourself."
+mentalModel: "Think → act → observe, on repeat. The one model that explains the rest."
+published: true
+keywords: ["agent loop explained", "how AI agents work", "think act observe", "agentic loop for non-technical"]
+---
+
+# The Agent Loop
+
+Learn one model and the rest of agentic engineering stops being mysterious: an agent is a model running tools in a loop toward a goal. It takes a step, looks at the result, decides the next step, and repeats until the work is done.
+
+## Three moves, on repeat
+
+Every turn of the loop is the same three moves:
+
+- **Think** — the model reasons about what to do next.
+- **Act** — it calls a tool: read a file, run a command, search the web.
+- **Observe** — the result comes back, and the model reads it before deciding again.
+
+That is the whole engine. A chatbot does one think-and-answer. An agent wraps that in a loop, so it can work through a real task instead of describing one.
+
+## Why it keeps going — and when it stops
+
+The loop runs until a stop condition is met: the goal is reached, or a limit kicks in — a turn cap, a time budget, a human saying "stop." Take the stop condition away and a confused agent will loop until it runs out of room. The limit is a feature, not a flaw.
+
+Step the loop yourself, one turn at a time, and watch the working memory fill as it goes:
+
+<AgentLoopStepper />
+
+## What the loop explains
+
+Once you see the loop, a lot of agent behavior makes sense:
+
+- **It can only see what is in front of it.** If a step's result is not fed back in, the agent is blind to it — and will repeat or contradict itself.
+- **Longer tasks cost more, fast.** Every turn re-reads the whole history, so a 40-step task pays for the early steps many times over.
+- **The control points are between the steps.** You cannot edit the model's thinking, but you can decide which tools it is allowed to run and review what it did.
+
+## Where the picture gets fuzzy
+
+"Think" is a useful word, not a literal one. The model is not deliberating the way you do; it is predicting a likely next step from patterns. The loop is real and mechanical — the "reasoning" inside each step is generated, not pondered. Hold both ideas at once and you will read agent behavior correctly.
+
+Ready for the machinery? The [Harness](/learn/harness) pillar builds this loop from the floor up, including the [agent loop](/learn/harness/agent-loop) in full.

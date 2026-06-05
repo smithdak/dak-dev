@@ -187,8 +187,16 @@ and re-export the types module so callers have one import site.
 a plain-English on-ramp for non-technical readers (founders, PMs, designers,
 ops) who watched an agentic-engineering demo and want to understand it, not
 build it. It decodes the vocabulary (the **Decoder**, a thematic glossary at
-`/learn/start/decoder`) and the core mental models (**Demo, Decoded** annotated
-walkthroughs at `/learn/start/demo/<slug>`), then links *into* the four pillars.
+`/learn/start/decoder`) and the core mental models (**explainers** at
+`/learn/start/explain/<slug>` and **Demo, Decoded** walkthroughs at
+`/learn/start/demo/<slug>`), then links *into* the four pillars.
+
+**Define-on-first-use toggletips are site-wide.** `lib/rehype-glossary.ts` runs
+in the shared MDX pipeline (`lib/mdx-options.ts`) and wraps the first occurrence
+of each Decoder term in any document in a `<glossaryterm>` element, mapped in
+`components/blog/MdxComponents.tsx` to an accessible click-toggletip
+(`components/learn/GlossaryTerm.tsx`) that links back to the Decoder. It skips
+code, links, and headings, and wraps each term at most once per document.
 
 It follows the per-section convention without claiming peer status: a boundary
 statement plus a client-safe types module (`lib/onramp-types.ts`, which also

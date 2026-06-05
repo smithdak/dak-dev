@@ -16,6 +16,7 @@
 //   /learn/start              (index — "Start Here")
 //   /learn/start/decoder      (the glossary)
 //   /learn/start/demo/<slug>  (annotated "Demo, Decoded" walkthroughs)
+//   /learn/start/explain/<slug> (mental-model explainer pages)
 // It is intentionally EXCLUDED from the four-pillar sidebar/active-slug parsing
 // (LearnSidebar keys off /learn/{patterns,toolkit,harness,security}). Adding the
 // on-ramp to that parsing means revisiting LearnSidebar + LearnMobileNav.
@@ -230,6 +231,80 @@ export const DEMO_WALKTHROUGHS: DemoMeta[] = [
   },
 ];
 
+export interface ExplainerFrontmatter {
+  title: string;
+  slug: string;
+  description: string;
+  /** The one-line mental model, shown on the index card. */
+  mentalModel: string;
+  published: boolean;
+  keywords?: string[];
+}
+
+export interface ExplainerMeta {
+  slug: string;
+  title: string;
+  mentalModel: string;
+  /** Single-path 24x24 stroke icon — the site's SVG convention. */
+  icon: string;
+  order: number;
+}
+
+export interface Explainer {
+  frontmatter: ExplainerFrontmatter;
+  content: string;
+  readingTime: string;
+}
+
+// "How This Actually Works" — one durable mental model per page. Each is an
+// Explanation-quadrant piece (analogy-first, paired with the precise term, and
+// honest about where the analogy breaks). Content lives at
+// content/onramp/explainers/<slug>.mdx.
+export const EXPLAINERS: ExplainerMeta[] = [
+  {
+    slug: 'the-agent-loop',
+    title: 'The Agent Loop',
+    mentalModel: 'Think → act → observe, on repeat. The one model that explains the rest.',
+    icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+    order: 1,
+  },
+  {
+    slug: 'context-is-working-memory',
+    title: 'Context Is Working Memory',
+    mentalModel: 'Why it "forgets" mid-task — and why nothing you tell it sticks.',
+    icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
+    order: 2,
+  },
+  {
+    slug: 'the-jagged-frontier',
+    title: 'The Jagged Frontier',
+    mentalModel: 'Why it aces the bar exam and fails to count the letters in a word.',
+    icon: 'M3 17l6-6 4 4 8-8m0 0h-5m5 0v5',
+    order: 3,
+  },
+  {
+    slug: 'the-model-is-not-the-product',
+    title: 'The Model Is Not the Product',
+    mentalModel: 'Why the same model feels brilliant in one tool and useless in another.',
+    icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+    order: 4,
+  },
+  {
+    slug: 'autonomy-is-a-dial',
+    title: 'Autonomy Is a Dial',
+    mentalModel: 'In, on, or out of the loop — and who is accountable when it acts.',
+    icon: 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4',
+    order: 5,
+  },
+  {
+    slug: 'why-it-makes-things-up',
+    title: 'Why It Makes Things Up',
+    mentalModel: 'It generates; it does not look things up. That single fact explains hallucinations.',
+    icon: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+    order: 6,
+  },
+];
+
 export function getGlossaryByCluster(clusterId: string): GlossaryTerm[] {
   return GLOSSARY_TERMS.filter((t) => t.cluster === clusterId);
 }
@@ -240,4 +315,12 @@ export function getAllDemoSlugs(): string[] {
 
 export function getDemoMeta(slug: string): DemoMeta | undefined {
   return DEMO_WALKTHROUGHS.find((d) => d.slug === slug);
+}
+
+export function getAllExplainerSlugs(): string[] {
+  return EXPLAINERS.map((e) => e.slug);
+}
+
+export function getExplainerMeta(slug: string): ExplainerMeta | undefined {
+  return EXPLAINERS.find((e) => e.slug === slug);
 }

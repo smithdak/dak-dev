@@ -9,7 +9,9 @@ import {
   ONRAMP_BOUNDARY,
   GLOSSARY_TERMS,
   DEMO_WALKTHROUGHS,
+  EXPLAINERS,
   getDemo,
+  getExplainer,
 } from '@/lib/onramp';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
@@ -56,10 +58,10 @@ const PATH = [
   },
   {
     n: '03',
-    title: 'Go as deep as you want',
-    body: 'When the words click, the four pillars are the expert track — the same ideas, no training wheels.',
-    href: '/learn',
-    cta: 'Browse the pillars',
+    title: 'Understand the ideas',
+    body: 'Six short reads, one mental model each — why it forgets, why it makes things up, why the same model differs across tools.',
+    href: '#ideas',
+    cta: 'See the mental models',
   },
 ];
 
@@ -193,6 +195,37 @@ export default function StartHerePage() {
                     color="amber"
                     available={c.available}
                     cta={c.cta}
+                  />
+                </ScrollRevealItem>
+              ))}
+            </div>
+          </ScrollReveal>
+        </section>
+
+        <section aria-labelledby="ideas-heading" id="ideas" className="scroll-mt-20 mt-16 mb-4">
+          <div className="border-l-8 border-l-chapter-5 border-b-2 border-text/30 pl-5 pb-4 mb-8">
+            <h2 id="ideas-heading" className="text-2xl md:text-3xl font-bold tracking-tight">
+              Understand the ideas
+            </h2>
+            <p className="text-sm text-muted mt-2 max-w-3xl leading-relaxed">
+              Six short reads, one mental model each. Analogy first, paired with the precise term —
+              so it sticks without dumbing it down.
+            </p>
+          </div>
+
+          <ScrollReveal stagger>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {EXPLAINERS.map((e) => (
+                <ScrollRevealItem key={e.slug}>
+                  <SectionCard
+                    href={`/learn/start/explain/${e.slug}`}
+                    number={String(e.order).padStart(2, '0')}
+                    name={e.title}
+                    description={e.mentalModel}
+                    icon={e.icon}
+                    color="amber"
+                    available={getExplainer(e.slug) !== null}
+                    cta="Read"
                   />
                 </ScrollRevealItem>
               ))}

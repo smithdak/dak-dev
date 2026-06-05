@@ -1,0 +1,30 @@
+---
+title: "Context Is Working Memory"
+slug: "context-is-working-memory"
+description: "Why an AI agent forgets mid-task and why nothing you tell it sticks: the context window is its working memory — a desk, not a filing cabinet."
+mentalModel: "Why it \"forgets\" mid-task — and why nothing you tell it sticks."
+published: true
+keywords: ["context window explained", "why AI forgets", "LLM memory", "context window for non-technical"]
+---
+
+# Context Is Working Memory
+
+Picture a desk, not a filing cabinet. Everything the model can use right now has to fit on the desk: your request, the conversation so far, any files you attached, and its own reply in progress. That desk is the context window — its working memory.
+
+## Why it forgets
+
+A desk has edges. When the work piles past them, the earliest papers slide off. That is what happens in a long conversation: once the text runs past the limit, the oldest parts drop out of view, and the model carries on without them. It is not being careless — those words are no longer on the desk.
+
+And when the session ends, the desk is cleared. Nothing you said carries into tomorrow unless something outside the model wrote it down. The model itself learns nothing from your chat.
+
+## Why "give it all my documents" disappoints
+
+A common first instinct is to paste in everything and let the model sort it out. Two things get in the way. A desk only holds so much, so most of a large pile never fits. And the more you heap on, the harder it is for the model to find the one page that matters. More context is not the same as better answers — relevance beats volume.
+
+This is the problem [RAG](/learn/start/decoder) is built to solve: fetch the few relevant pages at the moment of the question, instead of dumping the whole cabinet on the desk.
+
+## Where the analogy breaks
+
+A real desk keeps your papers where you left them. This one is rebuilt from scratch every turn — the model is handed the whole desk again on each step of the loop, which is why long tasks get slow and expensive. And "memory" overstates it: the context window is short-term only. There is no long-term memory behind it unless an engineer builds one.
+
+Want the economics of that desk — what it costs and how teams stretch it? That is [Harness Engineering](/learn/harness).
