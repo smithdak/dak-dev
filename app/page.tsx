@@ -11,6 +11,7 @@ export const metadata = {
   title: 'Dakota Smith | Fullstack Solutions Architect',
   description:
     'High-performance personal blog featuring tech articles and engineering insights. Building great software with Next.js, TypeScript, and modern web technologies.',
+  alternates: { canonical: '/' },
 };
 
 export default async function Home() {

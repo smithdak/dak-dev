@@ -1,6 +1,6 @@
 import { getAllPosts } from './posts';
+import { SITE_URL } from './site';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
 const SITE_NAME = 'Dakota Smith Blog';
 const SITE_DESCRIPTION = 'High-performance personal blog featuring engineering projects, web development insights, and technical tutorials.';
 const AUTHOR_NAME = 'Dakota Smith';

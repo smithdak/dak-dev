@@ -122,8 +122,9 @@ Five content types, one app. Routes under `app/`:
 - **Learn** — shared chrome in `app/learn/layout.tsx`; four pillars below (§4).
 - **Static** — `app/page.tsx` (home), `app/about/page.tsx`.
 - **Generated endpoints** — `app/sitemap.ts`, `app/robots.ts`,
-  `app/feed.xml/route.ts`, `app/api/og/route.tsx`, `app/api/search/route.ts`,
-  `app/icon.tsx`, `app/apple-icon.tsx`.
+  `app/feed.xml/route.ts`, `app/llms.txt/route.ts`, `app/api/og/route.tsx`,
+  `app/api/search/route.ts`, `app/icon.tsx`, `app/apple-icon.tsx`,
+  `app/twofold-logo/route.tsx` (publisher logo).
 - **Redirects** — consolidation rules in `next.config.ts:152-175`
   (`/patterns/*` → `/learn/patterns/*`, `/tools` → `/about#tools`,
   `/contact` → `/about#contact`). Redirects are config, not pages, so they
@@ -505,19 +506,35 @@ declare `permissions: contents: read` at the top and widen to
 
 ## 11. SEO and metadata
 
+- **One URL origin** — `lib/site.ts` exports `SITE_URL`, sourced from
+  `NEXT_PUBLIC_SITE_URL` with trailing slashes stripped. Everything that builds
+  an absolute URL (metadata, JSON-LD, sitemap, robots, RSS, OG/share links)
+  imports it instead of re-deriving the origin inline. The normalisation makes
+  the `${SITE_URL}/path` → `host//path` double-slash class of bug structurally
+  impossible regardless of how the env var is set; the canonical/OG/JSON-LD
+  signals can't split across `/path` and `//path`.
 - **Metadata API** — root defaults with a title `template` in
-  `app/layout.tsx:23-79` (`metadataBase`, OpenGraph, Twitter card, `robots`
-  with `max-image-preview: large`); pages override via `generateMetadata`.
+  `app/layout.tsx` (`metadataBase`, OpenGraph, Twitter card, `robots` with
+  `max-image-preview: large`); pages override via `generateMetadata`.
+  `title.template` adds `| Dakota Smith` once and is **not** applied to the
+  segment that defines it (the root `page.tsx`), so child pages return a *bare*
+  title — a pre-suffixed string double-suffixes. Home and every `/blog` route
+  set `alternates.canonical`, matching the Learn routes.
 - **Structured data** — `lib/schema.ts` generators rendered through
   `components/seo/JsonLd`; every page type has a matching schema (BlogPosting,
-  TechArticle for patterns, BreadcrumbList, Person, CollectionPage). Breadcrumb
-  schema is what earns rich results, so it is not optional on nested pages.
+  TechArticle for patterns, BreadcrumbList, Person, CollectionPage incl. the
+  `/learn` hub, `WebSite` with a `SearchAction`). Author is a `Person` whose
+  `url` is the on-site `/about` page with off-site profiles in `sameAs`;
+  Article-class `publisher` is the `Organization` (Twofold) carrying a logo
+  (`app/twofold-logo` ImageObject), not the author Person. Breadcrumb schema is
+  what earns rich results, so it is not optional on nested pages.
 - **Sitemap** — `app/sitemap.ts` enumerates all five content types plus tag
   pages with tiered priorities; it reads the same `lib/` loaders as the pages,
   so it cannot drift out of sync with what actually exists.
-- **robots / RSS** — `app/robots.ts` allows `/`, disallows `/api/` and
-  `/components-demo/`; `app/feed.xml/route.ts` serves RSS, linked from
-  `<head>` (`app/layout.tsx:111-116`).
+- **robots / RSS / llms.txt** — `app/robots.ts` allows `/`, disallows `/api/`
+  and `/components-demo/` (no legacy `Host` directive); `app/feed.xml/route.ts`
+  serves RSS, linked from `<head>`; `app/llms.txt/route.ts` serves a curated
+  AI-agent site map (llmstxt.org) built from the same `lib/` loaders.
 
 SEO `1.0` is a merge gate (§12), which is why these are wired to the data
 layer rather than hand-maintained.

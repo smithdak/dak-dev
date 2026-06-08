@@ -6,7 +6,7 @@ import { GLOSSARY_TERMS } from '@/lib/onramp';
 import { generateBreadcrumbSchema } from '@/lib/schema';
 import { JsonLd } from '@/components/seo/JsonLd';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+import { SITE_URL as siteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'The Decoder',

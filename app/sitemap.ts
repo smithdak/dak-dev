@@ -9,9 +9,8 @@ import { TOOLKIT_TOPICS } from '@/lib/toolkit';
 import { HARNESS_CHAPTERS } from '@/lib/harness';
 import { SECURITY_CHAPTERS } from '@/lib/security';
 import { getAllTagSlugs } from '@/lib/tags';
+import { SITE_URL } from '@/lib/site';
 import type { MetadataRoute } from 'next';
-
-const SITE_URL = 'https://dak-dev.vercel.app';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const posts = getAllPosts();

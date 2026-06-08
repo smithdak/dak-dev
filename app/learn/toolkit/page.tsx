@@ -14,7 +14,7 @@ import {
   SUB_PAGE_META,
 } from '@/lib/toolkit';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+import { SITE_URL as siteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Claude Code Toolkit',

@@ -15,7 +15,7 @@ import { TableOfContents } from '@/components/blog/TableOfContents';
 import { extractTableOfContents } from '@/lib/toc';
 import { SectionKicker } from '@/components/learn/SectionKicker';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+import { SITE_URL as siteUrl } from '@/lib/site';
 
 // The on-ramp demo MDX may use the shared interactive islands (AgentLoopStepper,
 // etc.) plus two annotation primitives unique to "Demo, Decoded": Callout for

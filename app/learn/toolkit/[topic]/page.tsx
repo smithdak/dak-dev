@@ -13,7 +13,7 @@ import { TableOfContents } from '@/components/blog/TableOfContents';
 import { extractTableOfContents } from '@/lib/toc';
 import { SectionKicker } from '@/components/learn/SectionKicker';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+import { SITE_URL as siteUrl } from '@/lib/site';
 
 export async function generateStaticParams() {
   return getAllToolkitTopicSlugs().map((topic) => ({ topic }));

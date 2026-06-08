@@ -15,6 +15,7 @@ import {
   generateBlogPostingSchema,
   generateBreadcrumbSchema,
 } from '@/lib/schema';
+import { SITE_URL as baseUrl } from '@/lib/site';
 import { getMdxOptions } from '@/lib/mdx-options';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -34,24 +35,27 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: 'Post Not Found | Dakota Smith',
+      title: 'Post Not Found',
     };
   }
 
   // Use the article's hero image for OG (absolute URL required)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
   const ogImageUrl = post.frontmatter.hero
     ? `${baseUrl}${post.frontmatter.hero}`
     : `${baseUrl}/api/og?title=${encodeURIComponent(post.frontmatter.title)}&date=${encodeURIComponent(post.frontmatter.date)}`;
 
+  // Bare title — the root layout's `%s | Dakota Smith` template adds the suffix
+  // once. Returning a pre-suffixed title doubles it.
   return {
-    title: `${post.frontmatter.title} | Dakota Smith`,
+    title: post.frontmatter.title,
     description: post.frontmatter.excerpt,
     keywords: post.frontmatter.keywords,
+    alternates: { canonical: `/blog/${slug}` },
     openGraph: {
       title: post.frontmatter.title,
       description: post.frontmatter.excerpt,
       type: 'article',
+      url: `${baseUrl}/blog/${slug}`,
       publishedTime: post.frontmatter.date,
       authors: [post.frontmatter.author || 'Dakota Smith'],
       images: [
@@ -118,7 +122,6 @@ export default async function BlogPost({
   ]);
 
   // Generate full URL for sharing
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
   const fullUrl = `${baseUrl}/blog/${slug}`;
 
   return (

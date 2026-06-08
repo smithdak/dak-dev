@@ -7,8 +7,9 @@ import { PageTransition } from '@/components/ui/PageTransition';
 import Link from 'next/link';
 import { LearnHero } from '@/components/learn/LearnHero';
 import { ConnectionsMap } from '@/components/learn/ConnectionsMap';
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { generateLearnCollectionSchema } from '@/lib/schema';
+import { SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Learn',
@@ -16,16 +17,19 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Learn — Patterns & Claude Code Toolkit',
     description: 'Expert guides for agentic engineering with Claude Code.',
-    url: `${siteUrl}/learn`,
+    url: `${SITE_URL}/learn`,
   },
   alternates: { canonical: '/learn' },
 };
 
 export default function LearnPage() {
   const allPatterns = getAllPatterns();
+  const learnCollectionSchema = generateLearnCollectionSchema();
 
   return (
     <PageTransition className="min-h-screen pb-16">
+      <JsonLd data={learnCollectionSchema} />
+
       <LearnHero
         patternCount={allPatterns.length}
         chapterCount={CHAPTERS.length}

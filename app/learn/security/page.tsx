@@ -7,7 +7,7 @@ import { SectionConnects } from '@/components/learn/SectionConnects';
 import { ScrollReveal, ScrollRevealItem } from '@/components/ui/ScrollReveal';
 import { SECURITY_CHAPTERS, SECURITY_BOUNDARY, getSecurityChapter } from '@/lib/security';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+import { SITE_URL as siteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Security',

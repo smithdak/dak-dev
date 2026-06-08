@@ -10,7 +10,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { generateBreadcrumbSchema, generateChapterSchema } from '@/lib/schema';
 import Link from 'next/link';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+import { SITE_URL as siteUrl } from '@/lib/site';
 
 export async function generateStaticParams() {
   return CHAPTERS.map((chapter) => ({ chapter: chapter.slug }));

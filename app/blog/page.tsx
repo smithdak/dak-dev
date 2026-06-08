@@ -7,8 +7,9 @@ import { Pagination } from '@/components/blog/Pagination';
 import { PageTransition } from '@/components/ui/PageTransition';
 
 export const metadata = {
-  title: 'Blog | Dakota Smith',
+  title: 'Blog',
   description: 'Tech articles and engineering insights from Dakota Smith.',
+  alternates: { canonical: '/blog' },
 };
 
 export default async function BlogPage() {

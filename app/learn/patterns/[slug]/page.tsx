@@ -24,6 +24,7 @@ import {
   generateBreadcrumbSchema,
   generatePatternSchema,
 } from '@/lib/schema';
+import { SITE_URL as baseUrl } from '@/lib/site';
 import { getMdxOptions } from '@/lib/mdx-options';
 import Link from 'next/link';
 
@@ -58,8 +59,6 @@ export async function generateMetadata({
   const chapter = CHAPTERS.find(
     (c) => c.number === pattern.frontmatter.chapter
   );
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
   const ogImageUrl = `${baseUrl}/api/og?type=pattern&title=${encodeURIComponent(pattern.frontmatter.name)}&chapter=${pattern.frontmatter.chapter}&number=${encodeURIComponent(pattern.frontmatter.number)}`;
 
   return {

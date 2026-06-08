@@ -15,7 +15,7 @@ import { TableOfContents } from '@/components/blog/TableOfContents';
 import { extractTableOfContents } from '@/lib/toc';
 import { SectionKicker } from '@/components/learn/SectionKicker';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+import { SITE_URL as siteUrl } from '@/lib/site';
 
 // Explainer MDX may use the shared interactive islands plus Callout/Annotation.
 // First-use jargon is auto-decoded via the <glossaryterm> toggletip already in

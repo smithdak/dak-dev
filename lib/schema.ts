@@ -6,11 +6,21 @@
 import type { PostFrontmatter } from './posts';
 import type { PatternFrontmatter, ChapterMeta } from './patterns';
 import type { ToolkitFrontmatter, ToolkitTopicMeta } from './toolkit';
+import { SITE_URL } from './site';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
 const SITE_NAME = 'Dakota Smith Blog';
 const AUTHOR_NAME = 'Dakota Smith';
-const AUTHOR_URL = 'https://github.com/twofoldtech-dakota';
+// On-site author page — the canonical entity URL for "Dakota Smith". Off-site
+// profiles live in `sameAs` so knowledge graphs resolve them to this one node.
+const AUTHOR_URL = `${SITE_URL}/about`;
+const GITHUB_URL = 'https://github.com/twofoldtech-dakota';
+const LINKEDIN_URL = 'https://linkedin.com/in/dakota-smith-a855b230';
+// The publishing organisation ("the house, not the person"). Article-class
+// schema expects an Organization publisher carrying a logo, distinct from the
+// Person author.
+const ORG_NAME = 'Twofold';
+const ORG_URL = 'https://twofold.tech';
+const ORG_LOGO_URL = `${SITE_URL}/twofold-logo`;
 
 export interface PersonSchema {
   '@context': 'https://schema.org';
@@ -18,6 +28,19 @@ export interface PersonSchema {
   name: string;
   url: string;
   sameAs?: string[];
+}
+
+export interface OrganizationSchema {
+  '@context': 'https://schema.org';
+  '@type': 'Organization';
+  name: string;
+  url: string;
+  logo: {
+    '@type': 'ImageObject';
+    url: string;
+    width: number;
+    height: number;
+  };
 }
 
 export interface WebSiteSchema {
@@ -28,6 +51,14 @@ export interface WebSiteSchema {
   description: string;
   author: PersonSchema;
   inLanguage: string;
+  potentialAction?: {
+    '@type': 'SearchAction';
+    target: {
+      '@type': 'EntryPoint';
+      urlTemplate: string;
+    };
+    'query-input': string;
+  };
 }
 
 export interface BlogPostingSchema {
@@ -39,7 +70,7 @@ export interface BlogPostingSchema {
   datePublished: string;
   dateModified?: string;
   author: PersonSchema;
-  publisher: PersonSchema;
+  publisher: OrganizationSchema;
   url: string;
   mainEntityOfPage: {
     '@type': 'WebPage';
@@ -87,10 +118,29 @@ export function generatePersonSchema(): PersonSchema {
     '@type': 'Person',
     name: AUTHOR_NAME,
     url: AUTHOR_URL,
-    sameAs: [
-      AUTHOR_URL,
-      // Add more social profiles as needed
-    ],
+    // sameAs is the primary signal that resolves "Dakota Smith" to one entity.
+    sameAs: [GITHUB_URL, LINKEDIN_URL],
+  };
+}
+
+/**
+ * Generate Organization schema for the publisher.
+ *
+ * Article-class rich results expect publisher to be an Organization carrying a
+ * logo (ImageObject), distinct from the Person author.
+ */
+export function generateOrganizationSchema(): OrganizationSchema {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: ORG_NAME,
+    url: ORG_URL,
+    logo: {
+      '@type': 'ImageObject',
+      url: ORG_LOGO_URL,
+      width: 600,
+      height: 60,
+    },
   };
 }
 
@@ -107,6 +157,15 @@ export function generateWebSiteSchema(): WebSiteSchema {
       'High-performance personal blog featuring engineering projects, web development insights, and technical tutorials.',
     author: generatePersonSchema(),
     inLanguage: 'en-US',
+    // Sitelinks search box eligibility — maps to the on-site ⌘K search.
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
   };
 }
 
@@ -129,7 +188,7 @@ export function generateBlogPostingSchema(
     datePublished: post.date,
     dateModified: post.date, // Add dateModified to frontmatter if needed
     author: generatePersonSchema(),
-    publisher: generatePersonSchema(),
+    publisher: generateOrganizationSchema(),
     url: postUrl,
     mainEntityOfPage: {
       '@type': 'WebPage',
@@ -205,7 +264,7 @@ export function generatePatternSchema(
     description: pattern.intent,
     url: patternUrl,
     author: generatePersonSchema(),
-    publisher: generatePersonSchema(),
+    publisher: generateOrganizationSchema(),
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': patternUrl,
@@ -274,7 +333,7 @@ export function generateToolkitTopicSchema(
     description: page.description,
     url: topicUrl,
     author: generatePersonSchema(),
-    publisher: generatePersonSchema(),
+    publisher: generateOrganizationSchema(),
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': topicUrl,
@@ -299,6 +358,63 @@ export function generateToolkitCollectionSchema(topicCount: number) {
     mainEntity: {
       '@type': 'ItemList',
       numberOfItems: topicCount,
+    },
+  };
+}
+
+/**
+ * Generate CollectionPage + ItemList schema for the /learn hub.
+ *
+ * The hub that links the whole Learn platform is the natural CollectionPage of
+ * the four pillars; without this it is invisible as a structured entity while
+ * its children carry CollectionPage/ItemList.
+ */
+export function generateLearnCollectionSchema() {
+  const pillars = [
+    {
+      name: 'Agent Patterns',
+      url: `${SITE_URL}/learn/patterns`,
+      description:
+        'A structured reference of named patterns for working effectively with AI coding agents.',
+    },
+    {
+      name: 'Claude Code Toolkit',
+      url: `${SITE_URL}/learn/toolkit`,
+      description:
+        "Expert deep-dives into Claude Code's features for production agentic engineering.",
+    },
+    {
+      name: 'The Harness',
+      url: `${SITE_URL}/learn/harness`,
+      description:
+        'How the agent loop, context, and tools fit together — the runtime around the model.',
+    },
+    {
+      name: 'Security',
+      url: `${SITE_URL}/learn/security`,
+      description:
+        'Threat models and controls for agentic systems — prompt injection, tool risk, and trust boundaries.',
+    },
+  ];
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Learn — Agentic Engineering',
+    description:
+      'Expert guides for agentic engineering across four pillars: Patterns, Toolkit, Harness, and Security.',
+    url: `${SITE_URL}/learn`,
+    author: generatePersonSchema(),
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: pillars.length,
+      itemListElement: pillars.map((pillar, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: pillar.name,
+        description: pillar.description,
+        url: pillar.url,
+      })),
     },
   };
 }

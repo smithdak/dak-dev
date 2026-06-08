@@ -9,8 +9,7 @@
  */
 
 import type { MetadataRoute } from 'next';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+import { SITE_URL } from '@/lib/site';
 
 // Private/utility paths no crawler should index.
 const DISALLOW = ['/api/', '/components-demo/'];
@@ -46,6 +45,8 @@ export default function robots(): MetadataRoute.Robots {
       })),
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
-    host: SITE_URL,
+    // No `host` directive: it is legacy (Yandex-only) and expects a bare
+    // hostname, not a scheme-qualified URL. Dropped rather than emit an
+    // ignored, malformed line.
   };
 }

@@ -9,9 +9,8 @@ import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import { ReferralWidget } from '@/components/ui/ReferralWidget';
 import referralLinks from '@/content/referrals.json';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { SITE_URL as siteUrl } from '@/lib/site';
 import './globals.css';
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -38,7 +37,7 @@ export const metadata: Metadata = {
     'tech blog',
     'engineering blog',
   ],
-  authors: [{ name: 'Dakota Smith', url: 'https://github.com/twofoldtech-dakota' }],
+  authors: [{ name: 'Dakota Smith', url: `${siteUrl}/about` }],
   creator: 'Dakota Smith',
   openGraph: {
     type: 'website',

@@ -7,7 +7,7 @@ import { SectionConnects } from '@/components/learn/SectionConnects';
 import { ScrollReveal, ScrollRevealItem } from '@/components/ui/ScrollReveal';
 import { HARNESS_CHAPTERS, HARNESS_BOUNDARY, getHarnessChapter } from '@/lib/harness';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+import { SITE_URL as siteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Harness Engineering',

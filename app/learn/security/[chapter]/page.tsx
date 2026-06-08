@@ -19,7 +19,7 @@ import { extractTableOfContents } from '@/lib/toc';
 import { SectionKicker } from '@/components/learn/SectionKicker';
 import { SectionPager } from '@/components/learn/SectionPager';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+import { SITE_URL as siteUrl } from '@/lib/site';
 
 export function generateStaticParams() {
   return getAllSecurityChapterSlugs().map((chapter) => ({ chapter }));
