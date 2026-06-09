@@ -15,9 +15,10 @@ export const metadata = {
 };
 
 export default async function Home() {
-  // Fetch all posts and get the latest one as featured
+  // Fetch all posts; prefer a post pinned with `featured: true`, else the latest.
+  // getAllPosts() is sorted newest-first, so find() yields the most recent featured.
   const allPosts = await getAllPosts();
-  const featuredPost = allPosts[0];
+  const featuredPost = allPosts.find((post) => post.frontmatter.featured) ?? allPosts[0];
 
   // Generate Schema.org structured data for homepage
   const webSiteSchema = generateWebSiteSchema();

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updated_at": "2026-02-16",
+  "updated_at": "2026-06-09",
   "workflow_stages": ["idea", "outlined", "drafting", "review", "ready", "published"],
   "topics": [
     {
@@ -170,8 +170,7 @@
       "notes": "Part 3 of Plugin Lifecycle Toolkit series. Covers 32 MCP tools, health scanning, issue tracking, release management. Links to parts 1 and 2. Primary keyword: claude code plugin.",
       "created_at": "2026-02-16",
       "updated_at": "2026-02-16"
-    }
-  ],
+    },
     {
       "id": "topic_013",
       "title": "WebMCP: How Chrome Turns Websites Into AI Agent APIs",
@@ -185,30 +184,30 @@
       "notes": "Covers Chrome 145 WebMCP early preview (Feb 10, 2026). Two API approaches (declarative HTML, imperative JS). Tradeoffs: no security model, no headless mode, no discoverability. Links to MCP Apps post. Primary keyword: WebMCP.",
       "created_at": "2026-02-25",
       "updated_at": "2026-02-25"
-    }
-  ],
+    },
     {
       "id": "topic_014",
       "title": "Claude Managed Agents: The End of DIY Agent Infrastructure",
       "slug": "claude-managed-agents-end-of-diy-infrastructure",
       "type": "general",
-      "status": "review",
+      "status": "published",
       "priority": "high",
       "target_date": "2026-04-14",
+      "published_date": "2026-04-14",
       "tags": ["ai", "claude", "agents", "developer-tools"],
       "notes": "Covers Anthropic's April 8, 2026 launch. Decoupled architecture deep dive, Messages API comparison, tradeoffs, real-world adopters. Primary keyword: claude managed agents. Links to STUDIO and MCP Apps posts.",
       "created_at": "2026-04-14",
       "updated_at": "2026-04-14"
-    }
-  ],
+    },
     {
       "id": "topic_015",
       "title": "The Agent Operating System: Multi-Agent Pipelines with Claude",
       "slug": "agent-operating-system-multi-agent-pipelines",
       "type": "general",
-      "status": "review",
+      "status": "published",
       "priority": "high",
       "target_date": "2026-04-14",
+      "published_date": "2026-04-14",
       "tags": ["ai", "claude", "agents", "architecture"],
       "notes": "Part 2 of Managed Agents series. OS abstraction mapping, three-agent auto-PR pipeline, STUDIO comparison, multi-agent threads deep dive. Primary keyword: claude managed agents.",
       "created_at": "2026-04-14",
@@ -219,13 +218,40 @@
       "title": "Preparing for Mythos: A Web Security Checklist for Dev Teams",
       "slug": "preparing-for-mythos-ai-security-checklist",
       "type": "general",
-      "status": "review",
+      "status": "published",
       "priority": "high",
       "target_date": "2026-04-15",
+      "published_date": "2026-04-15",
       "tags": ["security", "ai", "web-development", "devops"],
       "notes": "Covers Anthropic Mythos Preview and Project Glasswing security implications. Actionable checklist for agencies and dev teams. Primary keyword: mythos ai security. Links to managed agents posts.",
       "created_at": "2026-04-15",
       "updated_at": "2026-04-15"
+    },
+    {
+      "id": "topic_017",
+      "title": "Durable Agent Orchestration with Claude Managed Agents",
+      "slug": "durable-agent-orchestration-claude-managed-agents",
+      "type": "general",
+      "status": "review",
+      "priority": "high",
+      "target_date": "2026-06-09",
+      "tags": ["ai", "claude", "agents", "orchestration"],
+      "notes": "Part 3 of Managed Agents series. ANONYMIZED build write-up (internal source tool kept private — no employer/product names). Thesis: put fixed routing in durable Vercel Workflow steps, not a coordinator agent; treat each agent as a stateless worker. Covers 6-surface/4-agent pipeline, true-completion signal gotcha, Opus->Sonnet model reversal, validate+review safety gate, mock mode. Primary keyword: agent orchestration. Links to topics 014, 015, 005. Validation score 99/100. Published locally. NEEDS: hero+thumbnail images, then images:process for blur. Orphan until a published post links back. Added anonymized product entry 'Plain-Language Plugin Pipeline' in products.json.",
+      "created_at": "2026-06-09",
+      "updated_at": "2026-06-09"
+    },
+    {
+      "id": "topic_018",
+      "title": "Building a Deep Research Agent That Verifies Its Sources",
+      "slug": "deep-research-agent-fan-out-adversarial-verification",
+      "type": "general",
+      "status": "review",
+      "priority": "high",
+      "target_date": "2026-06-09",
+      "tags": ["ai", "claude", "agents", "research"],
+      "notes": "Companion to topic_017 (Managed Agents / agent-workflow series). ANONYMIZED. Thesis: match the research-workflow shape to the job. Centerpiece: the deep-research command (Claude Code Workflow) — Scope/Search/Fetch/3-vote adversarial Verify/Synthesize, ~97 model calls per question, structured output every hop. Contrast: anonymized single-call daily web-search scanner (claude-sonnet-4-6 + web_search_20250305 server tool, cron, materiality×relevance×recency scoring, sha1 fingerprint dedup, no verify). Neither uses Managed Agents — deliberate teaching point. Primary keyword: deep research. Links to topics 017, 014. Validation 99/100. NEEDS: hero+thumbnail images, then images:process. Orphan until a published post links back.",
+      "created_at": "2026-06-09",
+      "updated_at": "2026-06-09"
     }
   ],
   "ideas_backlog": [

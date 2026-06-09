@@ -1,0 +1,171 @@
+---
+title: "Durable Agent Orchestration with Claude Managed Agents"
+date: "2026-06-09"
+excerpt: "Learn why I moved agent orchestration into durable workflow steps instead of a coordinator agent, and the model, safety-gate, and cost tradeoffs it carried."
+slug: "durable-agent-orchestration-claude-managed-agents"
+tags: ["ai", "claude", "agents", "orchestration"]
+thumbnail: "/images/posts/durable-agent-orchestration-claude-managed-agents/thumbnail.jpg"
+thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAQUG/8QAHRAAAgICAwEAAAAAAAAAAAAAAQIAkRVSAxIhY//EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AzOJJHnItwxf1S5PDvs1x7tsbkH//2Q=="
+hero: "/images/posts/durable-agent-orchestration-claude-managed-agents/hero.jpg"
+heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAQUG/8QAHxAAAQMDBQAAAAAAAAAAAAAAAgABkQMVUhESMWOB/8QAFAEBAAAAAAAAAAAAAAAAAAAAAf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMxa9eKoP6i19oSp7GWTyneWTygP/9k="
+published: true
+featured: true
+author: "Dakota Smith"
+keywords: ["agent orchestration", "claude managed agents", "durable workflows", "multi-agent pipeline", "vercel workflow", "ai agent architecture"]
+---
+
+The most important agent orchestration decision I made on my last build was to keep the orchestration out of the agents. The tool turns a plain-language request — "audit our analytics tags against the measurement plan and flag duplicate events" — into a validated, installable Claude Code plugin, run by a pipeline of four Claude Managed Agents. The control flow that drives them lives in durable workflow steps I own, not inside a coordinator agent.
+
+Anthropic's `callable_agents` API lets one coordinator agent delegate to specialists, which is the approach I used in [my multi-agent auto-PR pipeline](/blog/agent-operating-system-multi-agent-pipelines). Both are legitimate agent orchestration patterns. This time I went the other way. Each stage is a durable step that creates a session, waits for the agent to finish, pulls its output file, and writes it to Postgres before the next stage starts. The control flow is plain TypeScript, not a model's runtime judgment.
+
+Here's the full pipeline, the session-completion bug that cost me a day, the model-routing decision I reversed, the safety gate that stops generated plugins from auto-shipping, and when this approach is the wrong one.
+
+## Two Ways to Handle Agent Orchestration
+
+There are two honest answers to "how do agents hand work to each other," and they suit different problems.
+
+**Agent Orchestration.** One agent holds a `callable_agents` list and decides who runs next. Handoffs are messages between isolated threads. This fits when the routing itself needs judgment — when the next step depends on what the last agent discovered, or the graph branches in ways you can't enumerate ahead of time. The cost: the control flow lives in a model's head. It is nondeterministic, and it spends tokens having the coordinator reason about routing you may already know. Resuming after a crash at stage four means reconstructing where the coordinator was.
+
+**Agent workflow.** The control flow is code. Stage order is fixed and visible in a file. Each step is durable — if the process dies after Scaffold, the run resumes at Review instead of starting over. Every stage writes its artifact to a database row, so a browser refresh replays the run from stored state rather than re-running agents.
+
+I chose durable steps because my routing was fixed. A six-stage assembly line doesn't need a model to decide what comes next. It needs each station to be reliable, observable, and resumable. The orchestrator is [Vercel Workflow](https://useworkflow.dev); each stage is a `"use step"` function.
+
+## The Pipeline: Six Surfaces, Four Agents
+
+The run moves through six surfaces. Only four of them are Managed Agents.
+
+| Stage | Surface | Job |
+|---|---|---|
+| 0 · Intake | Messages API (structured output) | Parse the request into a normalized intent spec; ask up to three clarifying questions if it is underspecified |
+| 1 · Design | Managed Agent | Turn the intent into a platform-agnostic plugin design |
+| 2 · Optimize | Managed Agent | Rewrite the design into buildable, checkable rules plus an annotated diff |
+| 3 · Scaffold | Managed Agent | Generate the real Claude Code plugin file tree |
+| 4 · Validate | Reuses the Scaffold session | Assert the bundle is correct; failure blocks handoff |
+| 5 · Review | Managed Agent | Independent critique and risk flags; verdict `ship` / `ship-with-fixes` / `do-not-ship` |
+
+Stage 0 is the first design lesson. Intake is not a Managed Agent — it is one structured-output Messages API call. Parsing free text into a typed JSON spec needs no container, no tools, and no file output, so a session would add startup latency and cost for nothing. The rule I now follow: reserve Managed Agents for stages that need a sandbox, tools, and a written artifact. Everything else stays a Messages call.
+
+Each Managed-Agent stage is the same durable shape — create a session, send the work, wait for a true finish, persist the output:
+
+```typescript
+// One pipeline stage as a durable Vercel Workflow step
+export async function designStage(runId: string, intent: IntentSpec) {
+  'use step';
+
+  const session = await client.beta.sessions.create({
+    agent: env.ANTHROPIC_AGENT_ID_DESIGNER,
+    environment_id: env.ANTHROPIC_ENVIRONMENT_ID,
+  });
+
+  await client.beta.sessions.events.send(session.id, {
+    events: [{ type: 'user.message', content: [{ type: 'text', text: designPrompt(intent) }] }],
+  });
+
+  const design = await waitForArtifact(session.id, 'design.json');
+  await persistArtifact(runId, 'design', design); // -> Postgres: runs · jobs · artifacts
+  return design;
+}
+```
+
+Because each stage is its own durable step, the run survives a deploy, a cold start, or a closed laptop. The next stage reads the prior artifact from Postgres, so replaying a stage that already finished returns the stored result instead of paying for the agent twice.
+
+## Running a Managed Agent to True Completion
+
+This is the part that cost me a day. **Managed Agent sessions start idle.** The naive check waits until the session is idle, then downloads the output. It fires on that initial idle state, before the agent has done any work, and downloads a file that does not exist.
+
+The fix is to detect a *true* finish: the session reports idle *after* doing work (its stop reason is not `requires_action`), or it reports terminated. I poll newest-event-first and gate on both signals:
+
+```typescript
+const POLL_INTERVAL_MS = 3000;
+const MAX_POLLS_PER_STAGE = 200; // 3s × 200 ≈ 10 min ceiling per stage
+
+async function waitForArtifact(sessionId: string, file: string) {
+  for (let poll = 0; poll < MAX_POLLS_PER_STAGE; poll++) {
+    const { data: events } = await client.beta.sessions.events.list(sessionId, { limit: 100 });
+    const latest = events[0]; // newest first
+    const done =
+      latest?.type === 'session.status_terminated' ||
+      (latest?.type === 'session.status_idle' && latest.stop_reason?.type !== 'requires_action');
+    if (done) return downloadArtifact(sessionId, file);
+    await sleep(POLL_INTERVAL_MS);
+  }
+  throw new Error(`Stage timed out after ${MAX_POLLS_PER_STAGE} polls`);
+}
+```
+
+Downloading the artifact has its own trap. The Files API indexes a session's outputs one to three seconds *after* the session goes idle, so an immediate listing comes back empty. The download needs a short retry loop, and every Files call needs **both** beta headers or the listing fails intermittently:
+
+```typescript
+const FILE_BETAS = ['managed-agents-2026-04-01', 'files-api-2025-04-14'];
+
+async function downloadArtifact(sessionId: string, name: string) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const files = await client.beta.files.list({ scope_id: sessionId, betas: FILE_BETAS });
+    const match = files.data.find((f) => f.filename.endsWith(name));
+    if (match) {
+      const blob = await client.beta.files.download(match.id, { betas: FILE_BETAS });
+      return JSON.parse(await blob.text());
+    }
+    await sleep(1000); // wait for indexing, then re-list
+  }
+  throw new Error(`Output ${name} never indexed`);
+}
+```
+
+I isolated every line that touches the beta API behind one module. When the beta header or the completion-signal shape changes — and on a public beta, it will — there is exactly one file to re-verify.
+
+## The Model-Routing Decision I Reversed
+
+My first design routed by model tier: Sonnet for the cheap stages, Opus for Optimize, the stage that does the hardest reasoning. It read well on paper. In practice, Optimize on Opus ran six to nine minutes per stage, with high variance. That was close enough to my per-stage timeout to be a production risk, and slow enough that a live run felt broken.
+
+I moved all four agents to `claude-sonnet-4-6`. Optimize stayed strong and dropped to a predictable runtime. The lesson: model tier is a latency decision as much as a quality one, and a slower top-tier stage that risks a timeout is worse than a faster stage that ships.
+
+Cost lands where caching puts it. Each agent's system prompt is frozen at creation and never overridden per session, so repeated runs read it from cache at a tenth of the input price. A full six-stage run costs roughly $0.50 to $1.50, dominated by tokens — Sonnet runs $3 per million input and $15 per million output. A small managed-compute charge applies only while a session is actively running.
+
+## The Safety Gate: Validate, Then Review
+
+The output of this pipeline is an installable Claude Code plugin. Plugins carry hooks and MCP configuration — code that runs on other people's machines. So the pipeline **never auto-ships**. It ends at a validated bundle behind a human gate, and two stages enforce that.
+
+Stage 4, Validate, runs inside the Scaffolder's own session container and asserts the bundle is structurally correct. The plugin manifest must parse, every skill needs valid frontmatter, names must be kebab-case, and nothing nests where it shouldn't. A failure sets the bundle status to `failed`, surfaces the reason, and the pipeline does not advance. Reusing the Scaffolder's session here matters — the validator checks the exact files the agent wrote, in the same container.
+
+Stage 5, Review, is a fresh agent reading the finished tree with no stake in having built it. It returns a typed verdict:
+
+```typescript
+type ReviewVerdict = 'ship' | 'ship-with-fixes' | 'do-not-ship';
+
+interface Review {
+  verdict: ReviewVerdict;
+  findings: { area: string; severity: 'blocker' | 'major' | 'minor'; issue: string; fix: string }[];
+  risk_flags: string[]; // e.g. "hook runs a shell command", "MCP reads credentials"
+}
+```
+
+A deterministic security scan runs before the Reviewer and is independent of it — plain pattern matching for hardcoded secrets, hooks that shell out, and MCP servers touching credentials. The Reviewer must triage every flag the scan raises rather than silently dropping it. That keeps a security floor even if the model misses something, because regex does not get tired or talked out of a finding.
+
+I deliberately cut the stage that would have opened a pull request automatically. Unreviewed agent-generated code that runs on other machines is exactly the thing a human should approve. The gate is the product, not an obstacle to it.
+
+## Tradeoffs and When Not To Do This
+
+Durable-step orchestration is not free, and it is not always right.
+
+**The complexity tax is real.** You take on a durable workflow runtime, a Postgres schema for runs, jobs, and artifacts, and a streaming layer to show progress. I also built a mock mode (`MOCK_AGENTS=1`) that returns fixture artifacts with realistic pacing, so I could test the agent orchestration end to end without spending tokens. That is another surface to maintain. A coordinator agent needs none of it — you configure agents and let one of them drive.
+
+**Use a coordinator agent instead when** the routing needs judgment: dynamic branching, an unknown number of steps, or a next-step that depends on what the last agent found. My graph was fixed, so code won. A research agent that decides what to investigate next does not have that luxury.
+
+**Use a single Messages API call instead when** the task is a one-shot transform or needs sub-second latency. My Intake stage proves the point inside the same system — not every box in the diagram deserves a session.
+
+**Account for beta fragility.** Managed Agents and the Files API both ship behind beta headers, and behaviors shift between releases. The completion-signal shape, the indexing lag, and the header strings are all things I expect to re-verify. Containing them in one module is what makes that survivable rather than a rewrite.
+
+## Conclusion
+
+The portable lesson is about where agent orchestration logic belongs. If your routing is fixed, keep it in durable steps you can read, test, and resume — and treat each Managed Agent as a stateless worker that takes input, writes a file, and stops. If your routing needs judgment, give a coordinator agent the wheel and pay for the flexibility. Most real systems, like this one, are a mix: a Messages call where text becomes JSON, durable steps for the assembly line, and a human at the gate where the output runs on someone else's machine.
+
+**Key Takeaways:**
+
+- Put fixed routing in durable workflow steps, not a coordinator agent — you get determinism, resumability, and orchestration you can unit-test
+- Detect a Managed Agent's *true* completion (idle-after-work or terminated), because sessions start idle and a naive check downloads an empty artifact
+- Reserve Managed Agents for stages that need a sandbox, tools, and file output; a structured-output Messages call is faster and cheaper for parsing
+- Model tier is a latency decision too — I reversed an Opus stage to Sonnet after six-to-nine-minute runs threatened timeouts
+- When the output runs on other machines, end the pipeline at a human-reviewed gate with an independent verdict and a deterministic security scan
+
+This is the first of two posts. The next one goes a layer down — the Managed Agents fundamentals behind these stages and how the same building blocks power a `deep-research` command. If you want the architecture primer first, start with [why Managed Agents ends DIY agent infrastructure](/blog/claude-managed-agents-end-of-diy-infrastructure), then [the orchestration systems I built before this one](/blog/supervisor-in-the-machine-why-i-built-studio).

@@ -1,0 +1,166 @@
+---
+title: "Building a Deep Research Agent That Verifies Its Sources"
+date: "2026-06-09"
+excerpt: "Learn how I built a deep research agent that fans out across sources, then refutes its own findings with three skeptics before reporting a single cited claim."
+slug: "deep-research-agent-fan-out-adversarial-verification"
+tags: ["ai", "claude", "agents", "research"]
+thumbnail: "/images/posts/deep-research-agent-fan-out-adversarial-verification/thumbnail.jpg"
+thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAgEF/8QAHxAAAgICAQUAAAAAAAAAAAAAAQIABAMRUQUSFFOR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDHXpNNa2PIwclhsyeBR9bQ4XY10BY61zH3Nyfsg//2Q=="
+hero: "/images/posts/deep-research-agent-fan-out-adversarial-verification/hero.jpg"
+heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAgMEBv/EAB4QAAIBAwUAAAAAAAAAAAAAAAECAAMSIQQUUpHw/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMvQ0VJwCxzHbCj4yFGNoyYV7cj3A//2Q=="
+published: true
+author: "Dakota Smith"
+keywords: ["deep research", "deep research agent", "claude agent workflow", "adversarial verification", "ai research agent", "web search agent"]
+---
+
+Most "research agents" report whatever they find. They search, they summarize, and they hand you a confident paragraph that launders a forum guess into a fact. My deep research agent does the opposite: before any claim reaches the report, three independent skeptics try to refute it, and two of three votes against kill it. What survives is what could not be argued down.
+
+A deep research agent earns trust through verification, not fluency. I run two research workflows that prove the point from opposite ends. One is a heavyweight harness that fans out across sources and adversarially checks every claim — roughly 100 model calls for a single question. The other is a lightweight daily scanner that makes one model call and never fans out. The lesson is matching the workflow shape to the job, and this post shows both shapes with the real numbers behind them.
+
+Here's the architecture of the heavy one, the verification mechanism that makes it trustworthy, the price that rigor costs, and when the cheap workflow is the right call instead.
+
+## The Shape of a Deep Research Agent
+
+The harness runs as a Claude Code workflow — a script that fans work out to subagents and collects structured results. The question moves through five phases:
+
+| Phase | What it does | Fan-out |
+|---|---|---|
+| **Scope** | Decompose the question into five complementary search angles | 1 agent |
+| **Search** | One web searcher per angle, ranking results against the original question | 5 in parallel |
+| **Fetch** | Deduplicate URLs, fetch the top sources, extract falsifiable claims with quotes | up to 15 in parallel |
+| **Verify** | Adversarially test each claim with a panel of skeptics | 3 votes × up to 25 claims |
+| **Synthesize** | Merge duplicate claims, rank by confidence, write a cited report | 1 agent |
+
+The first decision is the fan-out. A single agent searching one query sees one slice of the topic. Five agents searching five angles — broad, technical, recent, contrarian, practitioner — surface evidence no single query would. Search and fetch run as a pipeline with no barrier between them, so a source found by the fast "recent news" angle starts extracting while the "academic" angle is still searching:
+
+```javascript
+phase('Scope');
+const scope = await agent(scopePrompt(question), { schema: SCOPE_SCHEMA }); // 5 angles
+
+// Search (parallel) -> dedupe URLs -> fetch + extract. No barrier between stages.
+const sources = await pipeline(
+  scope.angles,
+  (angle) => agent(searchPrompt(angle), { phase: 'Search', schema: SEARCH_SCHEMA }),
+  (found) =>
+    parallel(
+      capToFetchBudget(dedupeByUrl(found), MAX_FETCH).map(
+        (src) => () => agent(fetchPrompt(src), { phase: 'Fetch', schema: EXTRACT_SCHEMA }),
+      ),
+    ),
+);
+```
+
+Each fetched source returns two to five *falsifiable* claims — concrete, checkable statements — each carrying a direct quote and a rating of central, supporting, or tangential. Vague generalities are rejected at extraction. A claim with no quote behind it never enters the pool.
+
+## Adversarial Verification: Make the Agent Argue With Itself
+
+This is the part that separates a research agent from a summarizer. Every claim that matters is handed to three skeptics, each told to *refute* it. Their job is not neutral assessment. They hunt for the source that contradicts it, the overreach past the quote, the stale benchmark, the marketing copy dressed as a finding. A claim survives only if fewer than two of three votes refute it, and only if enough valid votes came back to adjudicate it at all:
+
+```javascript
+const VOTES_PER_CLAIM = 3;
+const REFUTATIONS_REQUIRED = 2;
+
+const voted = await parallel(
+  rankedClaims.map((claim) => () =>
+    parallel(
+      Array.from({ length: VOTES_PER_CLAIM }, (_, v) => () =>
+        agent(refutePrompt(claim, v), { phase: 'Verify', schema: VERDICT_SCHEMA }),
+      ),
+    ).then((verdicts) => {
+      const valid = verdicts.filter(Boolean); // a vote can abstain (null) on error or skip
+      const refuted = valid.filter((v) => v.refuted).length;
+      // Survive only if a quorum actually adjudicated AND fewer than 2 refuted.
+      // All-abstain must not pass: refuted=0 would otherwise look like a clean win.
+      const survives = valid.length >= REFUTATIONS_REQUIRED && refuted < REFUTATIONS_REQUIRED;
+      return { ...claim, survives };
+    }),
+  ),
+);
+const confirmed = voted.filter((c) => c.survives);
+```
+
+Two details carry the weight. First, the verifier's verdict is structured, not prose:
+
+```typescript
+interface Verdict {
+  refuted: boolean;
+  evidence: string; // must be specific — a contradicting source or a misread of the quote
+  confidence: 'high' | 'medium' | 'low';
+  counterSource?: string;
+}
+```
+
+Second, the prompt sets the default to **refuted=true when uncertain**. A neutral verifier rounds toward "sounds plausible," which is how hallucinations survive. A verifier that must clear a skeptical bar rounds toward "not proven," which is the safer error for research. The abstention handling matters for the same reason: if every voter errors out, the claim has zero refutations, and a naive count would pass it. Requiring a quorum of real votes closes that gap.
+
+## Why Structured Output at Every Hop
+
+Every phase returns typed JSON against a schema — scope, search results, extracted claims, verdicts, the final report. The orchestrator never parses prose. It reads `verdicts.filter(v => v.refuted)` and moves on. This is the same lesson from [moving agent orchestration into code](/blog/durable-agent-orchestration-claude-managed-agents): the model produces data, and plain code makes the decisions. Schemas are the contract that keeps the control flow deterministic while the agents stay creative inside their boxes.
+
+The synthesis step is the one place judgment returns. It receives only the confirmed claims, merges the ones that say the same thing, groups them into findings, assigns a confidence per finding, and writes a short answer with caveats and open questions. The refuted claims ride along in a transparency block, so the report shows its work — what it killed, not only what it kept.
+
+## The Cost of Being Right
+
+Rigor is not cheap. The total model calls for one question follow a clear formula:
+
+```text
+1 (scope) + 5 (search angles) + ~15 (sources) + 25 × 3 (verify) + 1 (synthesize) ≈ 97
+```
+
+Close to a hundred model calls to answer one question well. That is the deliberate trade. Take a one-off, high-stakes question: a technical decision, a medical differential, a market claim you are about to repeat in front of a client. A hundred calls is a rounding error against being confidently wrong. The adversarial panel is the difference between a report you can cite and a paragraph you have to re-check by hand.
+
+It is the wrong trade for anything you do at volume. Run this harness on a schedule across many topics and the call count multiplies past any reasonable budget. That is where the second shape comes in.
+
+## The Other Shape: a Daily Scanner That Doesn't Fan Out
+
+The contrast is a market scanner I built into an internal tool. It watches a set of competitors and trends and surfaces what changed, ranked by how much it matters. The requirements invert the deep research agent's: it runs every day, across many watches, and a missed item is cheaper than a blown budget. So it makes exactly one model call per scan — `claude-sonnet-4-6` with the server-side web search tool — and never fans out:
+
+```typescript
+const res = await client.messages.create({
+  model: 'claude-sonnet-4-6',
+  max_tokens: 8000,
+  tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 8 }],
+  system: SCAN_SYSTEM, // "Ground every signal in real results. If you can't verify it, drop it."
+  messages: [{ role: 'user', content: watchBrief }],
+});
+```
+
+The model searches up to eight times inside that single call, returns structured signals, and plain code does the ranking. Each signal scores on three factors, and the severity tier falls out of the score:
+
+```typescript
+const score = materiality * relevance * recencyWeight; // each in 0..1
+const severity = score >= 0.45 ? 'high' : score >= 0.25 ? 'medium' : 'low';
+```
+
+Recency is a bucketed decay — a result from today weights 1.0, one from the last month 0.8, anything past 90 days 0.6 — so fresh moves rise without a fragile timestamp formula. Deduplication is a fingerprint, `sha1(lane | normalized-title)`, checked against history so the same development never surfaces twice. A daily cron at 00:00 UTC runs the scan for every active watch and writes a ranked digest.
+
+The honest limitation: there is no adversarial verification here. The system prompt tells the model to drop anything it cannot ground in a real result, and then it trusts that instruction. For continuous monitoring that is the right floor — a low-stakes feed where a human reviews items before acting. For a claim I am about to stake a decision on, it would not be enough. Different job, different floor.
+
+## Match the Workflow to the Job
+
+The two workflows are the same idea tuned to opposite constraints. Neither uses Claude Managed Agents, which I reached for in the [durable build pipeline](/blog/claude-managed-agents-end-of-diy-infrastructure) — a reminder that the heavy infrastructure is a choice, not a default. A research workflow needs web access and structured output, not a persistent sandbox.
+
+| Dimension | Deep research agent | Daily scanner |
+|---|---|---|
+| **Trigger** | One-off question | Cron, every watch, every day |
+| **Search** | Fan-out: 5 angles, parallel | Single call, ≤8 server-side searches |
+| **Verification** | 3-vote adversarial, kill on 2 | Grounding instruction only |
+| **Model calls** | ~100 per question | 1 per scan |
+| **Right when** | High-stakes, must be correct | High-volume, human reviews output |
+
+**Use the deep research agent when** being wrong is expensive and the question is worth a hundred calls: a one-time investigation, a claim headed into a deliverable, a decision that is hard to reverse. **Skip it when** you need an answer in seconds, the stakes are low, or you are running the same query on a schedule — the verification overhead buys nothing there.
+
+**Use the single-call scanner when** volume and cost dominate and a human stays in the loop. **Skip it when** the output feeds an irreversible action with no review, because one ungrounded item can slip through. The scanner is a floor; the deep research agent is a gate.
+
+## Conclusion
+
+A deep research agent is not a smarter summarizer. It is a workflow that assumes its own sources are guilty until verified, and the adversarial panel is what makes the output worth citing. The cheaper scanner is the same instinct at a different price point — grounded, deduplicated, ranked, and deliberately un-verified because the job tolerates it. Both beat the default research agent that reports its first plausible result.
+
+**Key Takeaways:**
+
+- Make the agent argue with itself: three skeptics per claim, kill on two refutations, and default to refuted when uncertain — neutrality is how hallucinations pass
+- Fan out across distinct angles so no single query defines the answer, and require a quote behind every extracted claim
+- Keep structured output at every hop so the orchestrator is plain code reading typed JSON, not a parser of prose
+- Adversarial rigor costs ~100 model calls per question — worth it for high-stakes one-offs, wrong for anything you run at volume
+- Match the workflow to the job: a single grounded call with web search for continuous monitoring, a fan-out-and-verify harness for decisions you cannot take back
+
+This is the companion to [durable agent orchestration](/blog/durable-agent-orchestration-claude-managed-agents). That post fixed the routing in code; this one shows what to do when the routing is fixed but the *evidence* cannot be trusted — verify it, adversarially, before it counts.

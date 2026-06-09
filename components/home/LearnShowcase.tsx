@@ -140,6 +140,32 @@ export function LearnShowcase() {
           </div>
         </ScrollReveal>
 
+        {/* Tier 1.5 — Small on-ramp "Start Here" link (non-pillar front door).
+            Compact by design — it sits above the four pillars without competing
+            with them; chapter-5 amber signals "begin here" (mirrors /learn). */}
+        <ScrollReveal>
+          <Link
+            href="/learn/start"
+            className="group mb-8 inline-flex flex-col items-start gap-1 border-2 border-text border-l-4 border-l-chapter-5 bg-surface/40 px-4 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_var(--color-chapter-5)] focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+          >
+            <span className="text-xs font-bold uppercase tracking-widest text-chapter-5">
+              New here?
+            </span>
+            <span className="inline-flex items-center gap-2 text-sm font-semibold text-text">
+              Start Here — agentic engineering in plain English
+              <svg
+                className="w-4 h-4 text-chapter-5 group-hover:translate-x-1 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </Link>
+        </ScrollReveal>
+
         {/* Tier 2 — The four pillars, at parity (same anatomy as /learn) */}
         <ScrollReveal stagger>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

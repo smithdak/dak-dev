@@ -14,6 +14,8 @@ export interface PostFrontmatter {
   hero: string;
   heroBlur?: string;
   published: boolean;
+  /** Pin this post to the homepage "Featured Post" slot; newest featured wins. */
+  featured?: boolean;
   author?: string;
   keywords?: string[];
   thumbnailText?: string;  // Short 1-5 word tagline for thumbnail overlay

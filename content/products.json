@@ -128,5 +128,15 @@
     "category": "infrastructure",
     "date": "2026-04",
     "featured": false
+  },
+  {
+    "id": "managed-agents-plugin-pipeline",
+    "name": "Plain-Language Plugin Pipeline",
+    "description": "A durable pipeline of four Claude Managed Agents that turns a plain-language request into a validated, installable Claude Code plugin — designed, optimized, scaffolded, and independently reviewed behind a human gate.",
+    "url": "/blog/durable-agent-orchestration-claude-managed-agents",
+    "icon": "tool",
+    "category": "agent",
+    "date": "2026-06",
+    "featured": false
   }
 ]
