@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updated_at": "2026-05-19",
+  "updated_at": "2026-06-01",
   "domain_authority_estimate": "new",
   "target_keywords": {
     "primary": [
@@ -51,6 +51,24 @@
         "intent": "informational",
         "difficulty": "medium",
         "posts": ["learn/security/prompt-injection"]
+      },
+      {
+        "keyword": "AI adoption strategy",
+        "intent": "informational",
+        "difficulty": "medium",
+        "posts": ["getting-a-company-to-use-ai"]
+      },
+      {
+        "keyword": "AI governance framework",
+        "intent": "informational",
+        "difficulty": "medium",
+        "posts": ["agentic-catalog-design-principles"]
+      },
+      {
+        "keyword": "agentic engineering",
+        "intent": "informational",
+        "difficulty": "medium",
+        "posts": ["how-engineering-became-agentic"]
       }
     ],
     "secondary": [
@@ -113,6 +131,51 @@
         "keyword": "claude custom instructions",
         "parent_primary": "claude skills",
         "posts": ["ai-isnt-just-for-coders-claude-skills"]
+      },
+      {
+        "keyword": "getting employees to use AI",
+        "parent_primary": "AI adoption strategy",
+        "posts": ["getting-a-company-to-use-ai"]
+      },
+      {
+        "keyword": "internal AI tools catalog",
+        "parent_primary": "AI adoption strategy",
+        "posts": ["getting-a-company-to-use-ai"]
+      },
+      {
+        "keyword": "AI for non-technical teams",
+        "parent_primary": "AI adoption strategy",
+        "posts": ["getting-a-company-to-use-ai"]
+      },
+      {
+        "keyword": "agentic AI design principles",
+        "parent_primary": "AI governance framework",
+        "posts": ["agentic-catalog-design-principles"]
+      },
+      {
+        "keyword": "least privilege AI agents",
+        "parent_primary": "AI governance framework",
+        "posts": ["agentic-catalog-design-principles"]
+      },
+      {
+        "keyword": "NIST AI risk management framework",
+        "parent_primary": "AI governance framework",
+        "posts": ["agentic-catalog-design-principles"]
+      },
+      {
+        "keyword": "autonomous agent fleet",
+        "parent_primary": "agentic engineering",
+        "posts": ["how-engineering-became-agentic"]
+      },
+      {
+        "keyword": "AI agent orchestration",
+        "parent_primary": "agentic engineering",
+        "posts": ["how-engineering-became-agentic"]
+      },
+      {
+        "keyword": "declarative AI agents",
+        "parent_primary": "agentic engineering",
+        "posts": ["how-engineering-became-agentic"]
       }
     ],
     "long_tail": [
@@ -160,6 +223,41 @@
         "keyword": "agent permission architecture",
         "parent_primary": "AI security",
         "posts": ["learn/security/permission-architecture"]
+      },
+      {
+        "keyword": "how to get a non-technical team to use AI",
+        "parent_primary": "AI adoption strategy",
+        "posts": ["getting-a-company-to-use-ai"]
+      },
+      {
+        "keyword": "rolling out AI tools company-wide",
+        "parent_primary": "AI adoption strategy",
+        "posts": ["getting-a-company-to-use-ai"]
+      },
+      {
+        "keyword": "connect claude.ai to internal tools mcp",
+        "parent_primary": "AI adoption strategy",
+        "posts": ["getting-a-company-to-use-ai"]
+      },
+      {
+        "keyword": "design principles for agentic systems",
+        "parent_primary": "AI governance framework",
+        "posts": ["agentic-catalog-design-principles"]
+      },
+      {
+        "keyword": "enforcing AI policy in CI",
+        "parent_primary": "AI governance framework",
+        "posts": ["agentic-catalog-design-principles"]
+      },
+      {
+        "keyword": "from AI copilot to autonomous agents",
+        "parent_primary": "agentic engineering",
+        "posts": ["how-engineering-became-agentic"]
+      },
+      {
+        "keyword": "governed autonomous agent fleet",
+        "parent_primary": "agentic engineering",
+        "posts": ["how-engineering-became-agentic"]
       }
     ]
   },
@@ -233,6 +331,31 @@
       ],
       "planned_posts": [],
       "created_at": "2026-05-19"
+    },
+    {
+      "id": "cluster_005",
+      "name": "The Agentic Org (POV / Narrative Pillar)",
+      "description": "Point-of-view pillar inspired by Salesforce's agentic-engineering trilogy (getting-engineers-to-use-ai, agentic-enterprise-design-principles, how-engineering-became-agentic). Three STANDALONE posts — deliberately NOT a bound 'Part 1 of 3' series; each ranks on its own intent and ships independently — grounded in Dakota's real, fully ANONYMIZED work leading a consultancy's agentic transformation. (1) Adoption: distribution beats capability — a central Claude Code marketplace + catalog that got a non-technical org using AI via a no-terminal Claude.ai MCP-connector path + role playbooks. (2) Design principles: an ENFORCED governance spine (15-module AI governance framework + NIST conformance, artifact taxonomy, least privilege, CI validator) — principles in code, not slides. (3) Transformation/frontier: the arc from a personal autonomous setup -> an org-wide catalog -> a governed declarative agent fleet. This is the narrative layer ABOVE the four technical clusters: it explains WHY they exist and links DOWN into them. Hard constraints: anonymize the org entirely (no company name, role codes, or client data); the unreleased Plugin Factory beta stays OUT of all three posts. Reinforces (does not cannibalize) cluster_002 — see content_gaps gap_004. Closes gap_004.",
+      "pillar_post": null,
+      "pillar_post_planned": {
+        "title": "The Agentic Org: How One Engineer Made a Whole Company Agentic",
+        "slug": "the-agentic-org",
+        "status": "future",
+        "notes": "Optional overview anchor; only write after >=2 of the standalone posts ship and earn it. Standalone posts do not depend on it."
+      },
+      "cluster_posts": [],
+      "planned_posts": [
+        "getting-a-company-to-use-ai",
+        "agentic-catalog-design-principles",
+        "how-engineering-became-agentic"
+      ],
+      "down_links": {
+        "getting-a-company-to-use-ai": ["cluster_002", "cluster_004", "cluster_001"],
+        "agentic-catalog-design-principles": ["cluster_004", "cluster_003", "cluster_001"],
+        "how-engineering-became-agentic": ["cluster_003", "cluster_001", "cluster_004"]
+      },
+      "soft_cross_links": "The three link to each other contextually (e.g. adoption -> 'the governance behind it' -> principles; principles -> 'where this is heading' -> transformation), but each opens self-contained, with no 'Part N of 3' framing.",
+      "created_at": "2026-06-01"
     }
   ],
   "content_gaps": [
@@ -263,6 +386,16 @@
       "suggested_keywords": ["prompt injection defense", "AI data privacy", "LLM PII context window", "agent permission architecture", "AI secrets management"],
       "notes": "Closed 2026-05-19 by the AI Security & Privacy cluster (cluster_004) — the Learn section's fourth pillar. Two accessible on-ramps (the-real-risks, data-and-pii) target top-of-funnel privacy intent; six engineering chapters establish builder authority. Distinct from topic_016 (web-security checklist for deploying teams) — the two reinforce rather than overlap.",
       "created_at": "2026-05-19"
+    },
+    {
+      "id": "gap_004",
+      "topic": "Agentic adoption & org-transformation narrative (POV pillar)",
+      "priority": "high",
+      "status": "addressed",
+      "addressed_by": "cluster_005",
+      "suggested_keywords": ["AI adoption strategy", "AI governance framework", "agentic engineering", "getting employees to use AI", "autonomous agent fleet"],
+      "notes": "The four existing clusters are all how-to/technical depth (Dev Tools, Skills-for-every-role, Harness, Security) — there was no narrative/POV anchor answering 'how the practice itself changes and why it matters'. Opened and addressed 2026-06-01 by cluster_005. Cannibalization check vs cluster_002 (Claude Skills for Every Role): NO overlap. cluster_002 targets product/how-to intent ('claude skills', 'how to use skills'); cluster_005's adoption post targets adoption/change-management intent ('AI adoption strategy', 'getting employees to use AI', 'rolling out AI tools company-wide'). The adoption post REINFORCES cluster_002 by linking down to it as 'what you actually distribute', capturing a higher-funnel audience that then descends into the Skills cluster. Different SERPs, different searcher, complementary internal links.",
+      "created_at": "2026-06-01"
     }
   ],
   "competitor_benchmarks": [
@@ -296,6 +429,21 @@
       "outbound": ["building-apl-autonomous-coding-agent"],
       "inbound": [],
       "recommended": ["building-apl-autonomous-coding-agent"]
+    },
+    "getting-a-company-to-use-ai": {
+      "outbound": [],
+      "inbound": [],
+      "recommended": ["ai-isnt-just-for-coders-claude-skills", "learn/security", "building-claude-marketplace-cms-analyzers", "agentic-catalog-design-principles"]
+    },
+    "agentic-catalog-design-principles": {
+      "outbound": [],
+      "inbound": [],
+      "recommended": ["learn/security/permission-architecture", "learn/security/supply-chain-and-audit", "learn/harness/system-prompt-architecture", "getting-a-company-to-use-ai", "how-engineering-became-agentic"]
+    },
+    "how-engineering-became-agentic": {
+      "outbound": [],
+      "inbound": [],
+      "recommended": ["learn/harness", "learn/harness/building-a-harness", "building-apl-autonomous-coding-agent", "supervisor-in-the-machine-why-i-built-studio", "agentic-catalog-design-principles"]
     }
   }
 }
