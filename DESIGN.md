@@ -533,7 +533,12 @@ declare `permissions: contents: read` at the top and widen to
   so it cannot drift out of sync with what actually exists.
 - **robots / RSS / llms.txt** — `app/robots.ts` allows `/`, disallows `/api/`
   and `/components-demo/` (no legacy `Host` directive); `app/feed.xml/route.ts`
-  serves RSS, linked from `<head>`; `app/llms.txt/route.ts` serves a curated
+  serves RSS (linked from `<head>`), `export const dynamic = 'force-static'` so
+  it prerenders as a static asset like its sibling endpoints. `lib/rss.ts`
+  emits RSS 2.0 with full-text `content:encoded` (MDX → HTML via a
+  remark/rehype pipeline, relative URLs absolutised), per-item `media:content`/
+  `media:thumbnail` images, `dc:creator` author names, and content-derived
+  (deterministic) build timestamps; `app/llms.txt/route.ts` serves a curated
   AI-agent site map (llmstxt.org) built from the same `lib/` loaders.
 
 SEO `1.0` is a merge gate (§12), which is why these are wired to the data

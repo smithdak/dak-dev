@@ -45,6 +45,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "framer-motion": "^12.42.0",
     "gray-matter": "^4.0.3",
+    "hast-util-to-html": "^9.0.5",
     "next": "^16.2.9",
     "next-mdx-remote": "^6.0.0",
     "react": "^19.2.7",
@@ -52,12 +53,16 @@
     "reading-time": "^1.5.0",
     "rehype-pretty-code": "^0.14.1",
     "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
     "sharp": "^0.35.2",
-    "shiki": "^4.3.0"
+    "shiki": "^4.3.0",
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.2.9",
     "@tailwindcss/postcss": "^4.3.1",
+    "@types/hast": "^3.0.4",
     "@types/mdx": "^2.0.14",
     "@types/node": "^25.9.1",
     "@types/pdfkit": "^0.17.4",

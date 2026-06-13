@@ -26,6 +26,9 @@ importers:
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
+      hast-util-to-html:
+        specifier: ^9.0.5
+        version: 9.0.5
       next:
         specifier: ^16.2.9
         version: 16.2.9(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -47,12 +50,21 @@ importers:
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1
+      remark-parse:
+        specifier: ^11.0.0
+        version: 11.0.0
+      remark-rehype:
+        specifier: ^11.1.2
+        version: 11.1.2
       sharp:
         specifier: ^0.35.2
         version: 0.35.2
       shiki:
         specifier: ^4.3.0
         version: 4.3.0
+      unified:
+        specifier: ^11.0.5
+        version: 11.0.5
     devDependencies:
       '@next/bundle-analyzer':
         specifier: ^16.2.9
@@ -60,6 +72,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.3.1
         version: 4.3.1
+      '@types/hast':
+        specifier: ^3.0.4
+        version: 3.0.4
       '@types/mdx':
         specifier: ^2.0.14
         version: 2.0.14
