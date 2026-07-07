@@ -65,9 +65,9 @@ function validateRSSFeed(feed: string): void {
   }
 }
 
-try {
+async function main() {
   console.log('Generating RSS feed...');
-  const feed = generateRSSFeed(50);
+  const feed = await generateRSSFeed(50);
 
   console.log('Validating RSS feed...');
   validateRSSFeed(feed);
@@ -81,7 +81,9 @@ try {
   console.log(feed.substring(0, 500));
 
   console.log('\n✓ RSS feed generation successful!');
-} catch (error) {
+}
+
+main().catch((error) => {
   console.error('RSS feed generation failed:', error);
   process.exit(1);
-}
+});

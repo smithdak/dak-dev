@@ -4,8 +4,8 @@ import path from 'path';
 
 console.log('Testing RSS Feed Generation...\n');
 
-try {
-  const feed = generateRSSFeed(50);
+async function main() {
+  const feed = await generateRSSFeed(50);
 
   console.log('✓ RSS feed generated successfully');
   console.log(`✓ Feed length: ${feed.length} bytes`);
@@ -43,8 +43,9 @@ try {
   console.log('─'.repeat(60));
   console.log(feed.substring(0, 500));
   console.log('─'.repeat(60));
+}
 
-} catch (error) {
+main().catch((error) => {
   console.error('❌ RSS feed validation failed:', error);
   process.exit(1);
-}
+});
