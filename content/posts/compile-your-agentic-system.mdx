@@ -1,0 +1,111 @@
+---
+title: "Compile Your Agentic System: base, skillsmith, and ObjectCore"
+date: "2026-07-15"
+excerpt: "Explore three projects that treat agent config as compiler output: validated sources in, drift-gated artifacts out — base, skillsmith, and ObjectCore."
+slug: "compile-your-agentic-system"
+tags: ["ai", "claude-code", "agents", "developer-tools"]
+thumbnail: "/images/posts/compile-your-agentic-system/thumbnail.jpg"
+thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAMG/8QAGRAAAgMBAAAAAAAAAAAAAAAAAAMBE1OR/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMXWrUVK2jhAAf/Z"
+hero: "/images/posts/compile-your-agentic-system/hero.jpg"
+heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAEDBv/EABcQAQADAAAAAAAAAAAAAAAAAAADE1P/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AxVcWp1RbIgH/2Q=="
+published: false
+author: "Dakota Smith"
+keywords: ["agentic system", "Claude Code plugins", "agent configuration", "Claude Code skills", "plugin marketplace", "CI drift gate"]
+---
+
+I shipped three projects this year that share one invariant: sources are hand-edited, artifacts are generated — never the reverse. [base](https://github.com/smithdak/base) compiles one agentic system definition into native config for three coding harnesses. [skillsmith](https://github.com/smithdak/skillsmith) compiles Claude Code skills into plugins, a marketplace manifest, and a catalog. [ObjectCore](https://github.com/smithdak/objectcore) compiles a plugin registry into a live marketplace endpoint. Different layers, same discipline: treat agent configuration as compiler output, and let CI fail on a single byte of drift.
+
+This is the next step in an arc I've been documenting here. [STUDIO](/blog/supervisor-in-the-machine-why-i-built-studio) put supervision into the agent loop. [APL](/blog/building-apl-autonomous-coding-agent) phased it into plan-execute-review cycles. Those projects made one agent session trustworthy. The new problem is everything around the session: the rules, skills, and marketplaces that configure the agentic system, all of which decay silently while you're busy shipping.
+
+This post covers the pattern, the three implementations, and — because the pipeline is a real tax — when hand-editing is still the right call.
+
+## Why Agentic Systems Rot
+
+Agent configuration fails in predictable ways. Skill descriptions stop matching how users phrase requests, so the skill never triggers. Skill bodies accumulate instructions until they bloat the context window. Scripts ship inside plugins without review. Rules get updated for one harness — Claude Code — while the Codex and Copilot copies drift a version behind. A marketplace manifest gets hand-patched in a hurry and no longer matches the plugins it describes.
+
+None of these are exotic failures. They are the same failures software had before build systems: hand-synced copies, unreviewed artifacts, no single source of truth. The fix is the same one compilers gave us. Define sources, validate them, generate every downstream artifact deterministically, and make CI reject any artifact that doesn't match its source. Validation plays the role of type checking. Generation is codegen. The drift gate is a reproducible build.
+
+## base: One Definition, Three Harnesses
+
+base is a Rust CLI that compiles an agentic system — rules, agents, pipelines, gates, knowledge — from plain files in git into native config for Claude Code, Codex, and GitHub Copilot. The CLI never runs the agent loop. It builds the system the loop runs inside.
+
+```console
+base init --global      # initialize the global canon once
+base init --project     # overlay for this repo
+base check              # validate canon and gate fidelity
+base sync               # compile to all three harnesses
+```
+
+Two design decisions carry the invariant. First, every generated file is listed in a hash manifest in `base.toml`; `base sync` refuses to overwrite hand edits unless you pass `--force`, and `base sync --check` fails CI when generated output is missing, stale, or hand-edited. Second, run state is durable and diffable: each pipeline run writes task, plan, and result artifacts to `.base/runs/`, and every outcome appends to `history.jsonl`. You can inspect what the system did with the same tools you use for code review.
+
+## skillsmith: Skills as Compiler Sources
+
+skillsmith applies the pattern one layer up, to Claude Code skills. The monorepo currently governs 15 skills across 4 plugins, and every installable artifact — plugins, the marketplace manifest, the catalog — is generated, never hand-edited.
+
+The pipeline is where the rot gets caught. Sources pass schema validation, 14 quality rules (V1–V14), and 7 security rules (S1–S7). Each skill ships at least 3 should-trigger and 3 should-not-trigger eval cases, phrased the way users type, and must hold a trigger hit rate of 0.85 or better. Bodies are capped at 500 lines — roughly 5,000 tokens — so a skill can't quietly eat the context window. The catalog publishes a script inventory for every script a skill can execute: path, interpreter, network flag, and SHA-256.
+
+```sh
+bun packages/cli/src/main.ts validate --strict   # schema + quality + security
+bun packages/cli/src/main.ts generate            # emit plugins, marketplace, catalog
+bun packages/cli/src/main.ts check               # CI drift gate: byte-exact or fail
+```
+
+Generated output is deterministic — schema-defined JSON key order, sorted lists, LF endings — so `check` can compare bytes, not semantics. If a generated file looks wrong, you fix the source and regenerate. There is no other path.
+
+## ObjectCore: The Marketplace Is a Build Artifact
+
+ObjectCore takes the same invariant to production infrastructure. It's a Claude Code plugin marketplace built as a software factory: the output is not plugins, it's the system that produces and governs plugins. Thirteen plugins run through it today, including the meta-plugins that scaffold, validate, and release the others.
+
+The architecture hangs on one seam. Claude Code consumes a `marketplace.json` at a stable URL, and that catalog is the output of a pure function:
+
+```typescript
+deriveCatalog(plugins, opts) -> marketplace.json
+```
+
+In development, `deriveCatalog` reads `./plugins/*` from git and writes the committed file. In production, the same function runs in a Hono handler, reads a Turso/libSQL database on Fly.io, and serves the catalog at `registry.objectcore.ai/v1/marketplace.json`. Flipping the source from Git to DB changed no route and no contract — a relocation, not a rewrite. Releases follow the compiler discipline too: changesets drive semver tags (`{plugin}--v{semver}`), catalog entries are SHA-pinned, builds carry SLSA provenance, and OIDC publish is the single release path into the registry.
+
+## Tech Stack
+
+| Project | Technology | Why |
+|---------|------------|-----|
+| base | Rust 1.85+, plain files in git | A config compiler should be one fast binary; all state must diff in git. |
+| skillsmith | Bun + TypeScript, no build step | The pipeline is validation and codegen; Bun runs TypeScript directly. |
+| ObjectCore | Bun + TypeScript, Hono, Turso/libSQL, Fly.io | Zero-dependency pure cores behind ports; the DB dependency is confined to one package. |
+| All three | CI drift gates | The invariant is enforced by machines, not review vigilance. |
+
+## The Gates, by the Numbers
+
+| Gate | Threshold |
+|------|-----------|
+| skillsmith quality rules | 14 (V1–V14) |
+| skillsmith security rules | 7 (S1–S7) |
+| Trigger hit-rate floor | 0.85 |
+| Eval cases per skill | ≥3 should-trigger, ≥3 should-not-trigger |
+| Skill body cap | 500 lines ≈ 5,000 tokens. |
+| Harness targets compiled by base | 3 (Claude Code, Codex, Copilot) |
+| Plugins governed by ObjectCore | 13 |
+| Allowed drift in CI | 0 bytes. |
+
+## When Not to Compile
+
+The pipeline is a tax, and the honest accounting matters more than the pitch.
+
+The complexity cost is real: this is three repos of tooling built to avoid hand-editing config files. Every quick fix becomes a three-step loop — edit the source, regenerate, commit both — and a byte-exact drift gate fails CI for a trailing newline. That friction is the mechanism working, but it is still friction, and contributors feel it before they value it.
+
+Hand-editing wins in specific conditions. If you maintain fewer than five skills, target one harness, and change config less than monthly, the pipeline costs more than the rot it prevents. Exploration phases are worse than neutral under a drift gate — when you don't know what the skill should say yet, validation rules slow the discovery. skillsmith acknowledges this with a `drafts/` staging area that gets schema checks only and is excluded from generation.
+
+Two failure modes to plan for. LLM-judged evals (trigger activation, delegation) need an API key, cost money per run, and shift as models change — treat their thresholds as trend lines, not constants. And a live registry is a service: `registry.objectcore.ai` means uptime, database backups, and an on-call surface that a static `marketplace.json` in git never had.
+
+## Conclusion
+
+STUDIO and APL made the agent loop supervisable. base, skillsmith, and ObjectCore make the agentic system around the loop reproducible. The through-line is one sentence: sources are hand-edited, artifacts are generated — never the reverse. Everything else — the hash manifests, the V-rules and S-rules, the eval floors, `deriveCatalog` — is enforcement machinery for that sentence.
+
+**Key Takeaways:**
+
+- Agent config rots in predictable ways: dead trigger descriptions, bloated bodies, unreviewed scripts, hand-synced harness copies. Treat them as compiler problems.
+- Sources are hand-edited, artifacts are generated — never the reverse. A byte-exact drift gate in CI makes the invariant enforceable without review vigilance.
+- Validate before you generate: schema, quality rules, security rules, and trigger evals catch rot at the source, where the fix is cheap.
+- Stable seams beat stable implementations. ObjectCore swapped its catalog source from Git to a database without changing the contract.
+- Pay the pipeline tax only when it's cheaper than the rot: multiple harnesses, more than a handful of skills, or external consumers.
+
+All three are on GitHub: [base](https://github.com/smithdak/base), [skillsmith](https://github.com/smithdak/skillsmith), and [ObjectCore](https://github.com/smithdak/objectcore). Install the skillsmith plugins directly: `/plugin marketplace add smithdak/skillsmith`, then `/plugin install engineering-core@skillsmith-marketplace`.

@@ -39,7 +39,7 @@ APL proved that phased execution with self-learning produces working software. I
 
 If three agents couldn't prevent drift, nineteen might.
 
-[ORC](https://github.com/twofoldtech-dakota/ORC) decomposed development into specialists: Architect, Security Engineer, Database Engineer, Frontend Specialist, QA, Technical Writer, and more. It added codebase analysis, Epic→Feature→Story planning, anti-slop detection, and pattern learning.
+[ORC](https://github.com/smithdak/ORC) decomposed development into specialists: Architect, Security Engineer, Database Engineer, Frontend Specialist, QA, Technical Writer, and more. It added codebase analysis, Epic→Feature→Story planning, anti-slop detection, and pattern learning.
 
 The system was powerful. One prompt could generate complete features with tests, docs, and security review. But 19 agents meant 19 opinions. The coordination overhead ate tokens—each specialist wanted to weigh in on every decision. Debugging required figuring out which agent introduced a problem. Specialists sometimes disagreed (the Architect wanted one pattern, the Security Engineer wanted another), and resolving conflicts took longer than building the feature manually.
 
@@ -55,7 +55,7 @@ ALLOY proved something important: the problem wasn't capability. It was accounta
 
 ## Generation 4: STUDIO — Supervision Over Scale
 
-[STUDIO](https://github.com/twofoldtech-dakota/studio) returns to three agents: Planner, Builder, Content Writer. The difference is supervision.
+[STUDIO](https://github.com/smithdak/studio) returns to three agents: Planner, Builder, Content Writer. The difference is supervision.
 
 Before any plan executes, STUDIO runs a mandatory questioning phase. It consults domain expert personas, challenges its own plan against five criteria (requirements coverage, edge cases, simplicity, integration fit, failure modes), and presents a confidence score. Low confidence triggers more questions. High confidence proceeds to execution.
 
@@ -131,11 +131,13 @@ Install STUDIO:
 
 ```bash
 claude
-/plugin marketplace add https://github.com/twofoldtech-dakota/studio.git
-/plugin install studio@twofoldtech-dakota
+/plugin marketplace add https://github.com/smithdak/studio.git
+/plugin install studio@studio-marketplace
 /build "your goal here"
 ```
 
 Watch the questioning phase. See the confidence score before execution begins. That visibility—knowing the system's uncertainty before it writes code—is the difference between supervised and autonomous development.
 
-GitHub: [twofoldtech-dakota/studio](https://github.com/twofoldtech-dakota/studio)
+GitHub: [smithdak/studio](https://github.com/smithdak/studio)
+
+Where this thesis went next: [Compile Your Agentic System](/blog/compile-your-agentic-system) covers base, skillsmith, and ObjectCore — three projects that apply the same discipline to the config around the loop.
