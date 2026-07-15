@@ -9,7 +9,7 @@ permissions:
 
 env:
   NEXT_PUBLIC_SITE_URL: https://dak-dev.vercel.app
-  NEXT_PUBLIC_GISCUS_REPO: twofoldtech-dakota/my-site
+  NEXT_PUBLIC_GISCUS_REPO: smithdak/dak-dev
   NEXT_PUBLIC_GISCUS_REPO_ID: R_kgDONxWbPw
   NEXT_PUBLIC_GISCUS_CATEGORY: General
   NEXT_PUBLIC_GISCUS_CATEGORY_ID: DIC_kwDONxWbP84Cmgsy

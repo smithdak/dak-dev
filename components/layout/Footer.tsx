@@ -18,7 +18,7 @@ const socialLinks = [
   },
   {
     name: 'GitHub',
-    href: 'https://github.com/twofoldtech-dakota',
+    href: 'https://github.com/smithdak',
     icon: (
       <svg
         className="h-6 w-6"

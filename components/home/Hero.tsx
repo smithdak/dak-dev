@@ -70,7 +70,7 @@ export function Hero() {
           {/* Social Links */}
           <motion.div variants={slideUpVariants} className="flex flex-wrap gap-4 mb-8">
             <a
-              href="https://github.com/twofoldtech-dakota"
+              href="https://github.com/smithdak"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 border-2 border-text px-4 py-2 text-sm font-semibold hover:bg-text hover:text-background transition-colors focus:outline-none focus:ring-4 focus:ring-text focus:ring-offset-4 focus:ring-offset-background"

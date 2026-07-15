@@ -66,7 +66,7 @@ export default async function AboutPage() {
                     </a>
                     <div className="flex gap-3">
                       <a
-                        href="https://github.com/twofoldtech-dakota"
+                        href="https://github.com/smithdak"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center w-12 h-12 border-2 border-text/30 text-muted hover:text-accent hover:border-accent transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"

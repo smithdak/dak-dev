@@ -2,7 +2,7 @@
 **Principal Architect | Enterprise DXP & Agentic Orchestration**
 
 dakota@twofold.tech
-[GitHub](https://github.com/twofoldtech-dakota) | [Twofold Tech](https://www.twofold.tech/)
+[GitHub](https://github.com/smithdak) | [Twofold Tech](https://www.twofold.tech/)
 
 ---
 

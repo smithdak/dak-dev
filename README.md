@@ -2,9 +2,9 @@
 
 > High-performance Next.js blog with neo-brutalist design, built for speed and accessibility.
 
-[![Performance](https://img.shields.io/badge/Lighthouse-100-brightgreen)](https://github.com/twofoldtech-dakota/my-site)
-[![Accessibility](https://img.shields.io/badge/Accessibility-95-green)](https://github.com/twofoldtech-dakota/my-site)
-[![SEO](https://img.shields.io/badge/SEO-100-brightgreen)](https://github.com/twofoldtech-dakota/my-site)
+[![Performance](https://img.shields.io/badge/Lighthouse-100-brightgreen)](https://github.com/smithdak/dak-dev)
+[![Accessibility](https://img.shields.io/badge/Accessibility-95-green)](https://github.com/smithdak/dak-dev)
+[![SEO](https://img.shields.io/badge/SEO-100-brightgreen)](https://github.com/smithdak/dak-dev)
 
 ## Features
 
@@ -33,8 +33,8 @@
 
 1. Clone and install:
 ```bash
-git clone https://github.com/twofoldtech-dakota/my-site.git
-cd my-site
+git clone https://github.com/smithdak/dak-dev.git
+cd dak-dev
 npm install
 ```
 
@@ -156,4 +156,4 @@ All rights reserved by Dakota Smith.
 
 ---
 
-Built by Dakota Smith | GitHub: @twofoldtech-dakota
+Built by Dakota Smith | GitHub: @smithdak
