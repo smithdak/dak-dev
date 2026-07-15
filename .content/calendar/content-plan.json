@@ -262,7 +262,46 @@
       "priority": "high",
       "target_date": "2026-07-15",
       "tags": ["ai", "claude-code", "agents", "developer-tools"],
-      "notes": "Umbrella post for the three 2026 factory projects. Thesis: sources are hand-edited, artifacts are generated — never the reverse; CI drift gates enforce it. Covers base (Rust CLI, 3 harness targets), skillsmith (V1–V14/S1–S7 rules, 0.85 trigger floor, byte-exact check), ObjectCore (deriveCatalog seam, Git→DB flip, registry.objectcore.ai, SHA-pin + SLSA). Validation 100/100. Placeholder images generated — replace with real art before publish. Linked from studio post (topic_005). Primary keyword: agentic system. Seeds deep-dives idea_003–idea_005.",
+      "notes": "Umbrella post for the three 2026 factory projects. Thesis: sources are hand-edited, artifacts are generated — never the reverse; CI drift gates enforce it. Covers base (Rust CLI, 3 harness targets), skillsmith (V1–V14/S1–S7 rules, 0.85 trigger floor, byte-exact check), ObjectCore (deriveCatalog seam, Git→DB flip, registry.objectcore.ai, SHA-pin + SLSA). Validation 100/100. Placeholder images generated — replace with real art before publish. Linked from studio post (topic_005). Primary keyword: agentic system. Seeds deep-dives topics 020–022.",
+      "created_at": "2026-07-15",
+      "updated_at": "2026-07-15"
+    },
+    {
+      "id": "topic_020",
+      "title": "Compiling Agent Config to Claude Code, Codex, and Copilot",
+      "slug": "base-compile-agent-config",
+      "type": "project",
+      "status": "review",
+      "priority": "high",
+      "target_date": "2026-07-15",
+      "tags": ["ai", "claude-code", "rust", "developer-tools"],
+      "notes": "Deep dive 1 of 3 (from topic_019). Canon kinds, pipelines-as-data-compiled-to-prose, adapter fidelity (enforced/assisted/advisory incl. the PATH-probe honesty detail), hash manifest, work/runs/history.jsonl. Grounded in docs/SPEC.md + DECISIONS.md + ADAPTERS.md. Validation 100/100. Placeholder images — replace before publish. Primary keyword: agent config. Publish together with 021/022 so cross-links resolve.",
+      "created_at": "2026-07-15",
+      "updated_at": "2026-07-15"
+    },
+    {
+      "id": "topic_021",
+      "title": "Quality Gates for Claude Code Skills: Inside skillsmith",
+      "slug": "skillsmith-quality-gates-claude-code-skills",
+      "type": "project",
+      "status": "review",
+      "priority": "high",
+      "target_date": "2026-07-15",
+      "tags": ["ai-tools", "claude-code", "skills", "developer-tools"],
+      "notes": "Deep dive 2 of 3. Three invariants, byte-exact GeneratePlan gate, V-rules that bite (V1–V8 highlights, 1536-char listing cap), selectivity evals (whole-catalog judge, near-miss cases, 112 calls/run, eval results as committed source). Grounded in docs/validation-rules.md + evals.md + architecture.md. Validation 100/100. Placeholder images — replace before publish. Primary keyword: Claude Code skills.",
+      "created_at": "2026-07-15",
+      "updated_at": "2026-07-15"
+    },
+    {
+      "id": "topic_022",
+      "title": "ObjectCore Deep Dive: A Plugin Marketplace as a Software Factory",
+      "slug": "objectcore-plugin-marketplace-software-factory",
+      "type": "project",
+      "status": "review",
+      "priority": "high",
+      "target_date": "2026-07-15",
+      "tags": ["ai", "claude-code", "architecture", "open-source"],
+      "notes": "Deep dive 3 of 3. The deriveCatalog seam + ports/adapters, byte-matched committed catalog vs SHA-pinned served catalog, Git→Turso flip, OIDC single publish path, 5 eval layers (majority-of-3 judging, haiku judge, fragile-green evidence), meta-plugin self-replication. Grounded in CLAUDE.md + AGENTS.md. Validation 100/100. Placeholder images — replace before publish. Primary keyword: plugin marketplace.",
       "created_at": "2026-07-15",
       "updated_at": "2026-07-15"
     }
@@ -287,36 +326,6 @@
       "tags": ["accessibility", "react", "components"],
       "source": "WCAG compliance work on this blog",
       "created_at": "2026-01-25"
-    },
-    {
-      "id": "idea_003",
-      "title": "base Deep Dive: Compiling One Agentic System to Three Harnesses",
-      "type": "project",
-      "priority": "high",
-      "notes": "Deep dive on base (github.com/smithdak/base). Canon schema, global/project overlay resolution, hash-manifest protection, gate fidelity validation, durable runs (.base/runs/, history.jsonl), why the CLI never runs the agent loop. Follow-up to compile-your-agentic-system.",
-      "tags": ["ai", "claude-code", "rust", "developer-tools"],
-      "source": "smithdak/base",
-      "created_at": "2026-07-15"
-    },
-    {
-      "id": "idea_004",
-      "title": "skillsmith Deep Dive: Quality Gates That Keep Skills From Rotting",
-      "type": "project",
-      "priority": "high",
-      "notes": "Deep dive on skillsmith (github.com/smithdak/skillsmith). The V1–V14 quality rules and S1–S7 security rules with examples, trigger-hit-rate evals (0.85 floor, ≥3/≥3 cases), drafts/ staging, script inventory with SHA-256, byte-exact drift gate design. Follow-up to compile-your-agentic-system.",
-      "tags": ["ai", "claude-code", "skills", "developer-tools"],
-      "source": "smithdak/skillsmith",
-      "created_at": "2026-07-15"
-    },
-    {
-      "id": "idea_005",
-      "title": "ObjectCore Deep Dive: A Plugin Marketplace as a Software Factory",
-      "type": "project",
-      "priority": "high",
-      "notes": "Deep dive on ObjectCore (github.com/smithdak/objectcore). The deriveCatalog seam, Git→DB source flip with zero contract change, Hono/Turso/Fly.io backend, SHA-pinned releases with SLSA provenance, OIDC publish, the self-improvement loop (kb-writer, reflection, gate-health trend). Follow-up to compile-your-agentic-system.",
-      "tags": ["ai", "claude-code", "architecture", "developer-tools"],
-      "source": "smithdak/objectcore",
-      "created_at": "2026-07-15"
     }
   ]
 }

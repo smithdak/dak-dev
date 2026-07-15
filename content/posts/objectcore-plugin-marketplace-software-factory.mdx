@@ -1,0 +1,95 @@
+---
+title: "ObjectCore Deep Dive: A Plugin Marketplace as a Software Factory"
+date: "2026-07-15"
+excerpt: "Explore how ObjectCore serves one plugin marketplace from git in dev and a database in production — same pure function, SHA-pinned, provenance-attested."
+slug: "objectcore-plugin-marketplace-software-factory"
+tags: ["ai", "claude-code", "architecture", "open-source"]
+thumbnail: "/images/posts/objectcore-plugin-marketplace-software-factory/thumbnail.jpg"
+thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAEDBv/EABsQAQAABwAAAAAAAAAAAAAAAAACAxESEzNT/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMVjlV2lZB0SAP/Z"
+hero: "/images/posts/objectcore-plugin-marketplace-software-factory/hero.jpg"
+heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAEDBv/EABsQAQAABwAAAAAAAAAAAAAAAAACAxESEzNT/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMVjl12lZB0TAP/Z"
+published: false
+author: "Dakota Smith"
+keywords: ["plugin marketplace", "Claude Code plugins", "software factory", "SLSA provenance", "ports and adapters", "eval gate"]
+---
+
+[ObjectCore](https://github.com/smithdak/objectcore) is a Claude Code plugin marketplace where the marketplace itself is a build artifact. One pure function — `deriveCatalog(plugins, opts)` — produces the catalog everywhere it exists: the committed file in git, the dev server's response, and the production endpoint at `registry.objectcore.ai`. Nobody edits `marketplace.json`. The factory derives it.
+
+This is the third deep dive from [Compile Your Agentic System](/blog/compile-your-agentic-system), and it sits at the top of the stack: [base](/blog/base-compile-agent-config) compiles the system around the session, and [skillsmith](/blog/skillsmith-quality-gates-claude-code-skills) compiles the skills. ObjectCore operates the plugin marketplace those artifacts ship through. It's the only one of the three that runs production infrastructure, which makes its tradeoffs the most expensive — and the most instructive.
+
+## The Seam: One Pure Function
+
+Claude Code consumes exactly one thing from a marketplace: a valid `marketplace.json` at a stable URL. ObjectCore freezes that URL as the permanent seam and builds ports and adapters around the derivation:
+
+```typescript
+deriveCatalog(plugins, opts) -> marketplace.json
+```
+
+A `CatalogSource` reads plugins: `GitWorkspaceSource` reads `./plugins/*` off disk for the dev loop, and `RegistryDbSource` reads the registry database for the live backend — with a last-known-good, stale-if-error fallback so a transient database failure never turns the seam into a 500. A `CatalogSink` publishes: `GitFileSink` writes the committed file, `HttpServeSink` holds the catalog in memory for the HTTP server. The same `deriveCatalog` runs in the CI build script and inside the Hono request handler. Because the HTTP adapter runs on every dev loop and the contract tests run on every CI push, the backend path never rots while waiting for production traffic.
+
+## The Plugin Marketplace Is a Build Artifact
+
+The hard rules in `AGENTS.md` read like a compiler's guarantees. `marketplace.json` is never hand-edited — change a plugin, re-derive. All derivation goes through `deriveCatalog`; a second derivation path is forbidden. And `check:catalog` enforces it in CI: it re-derives the catalog, validates every plugin, and asserts the committed file *byte-matches* the derivation, so a hand-edit or a forgotten rebuild fails the pipeline.
+
+The subtlest rule governs pinning. The committed `marketplace.json` stays unpinned and byte-checked, while the catalog served over the registry URL is the SHA-pinned form — every entry locked to a git commit. Pins live only in the release artifact, the registry database, and the served response. Same function, one `shaPin` option — never a fork of the logic.
+
+## Git in Dev, Turso in Production
+
+Stage 3 moved the catalog source from git to a Turso/libSQL database on Fly.io, and the architecture's claim held: the route didn't change, the contract didn't change, and the source swap is one line behind the app factory. A relocation, not a rewrite.
+
+Publishing is deliberately narrow. Release CI authenticates with a GitHub-Actions OIDC token and posts each plugin to `/v1/plugins` — that is the *single* publish path, credential-free by construction. Direct database ingest exists but is documented as manual break-glass. Release mechanics follow the factory pattern too: changeset files drive semver bumps per plugin, tags are `{plugin}--v{semver}`, catalog entries get SHA-pinned, and builds carry SLSA provenance. One hard rule extends the threat model to consumers: every MCP-bundling plugin is treated as a managed credential, blocked from publish without provenance.
+
+## Evals Gate What Validation Can't
+
+Validation proves a plugin loads. The eval gate proves it works — "a plugin that parses but never activates is worse than one that fails to parse." Five layers run behind `bun run check`:
+
+- **Output evals** (deterministic): the derived catalog entry must match the plugin's declared expectations.
+- **Coverage evals** (deterministic): every skill needs a positive activation case, and every agent needs a positive delegation case — nothing enters the catalog ungated.
+- **Readiness evals** (deterministic): shippable plugins need *negative* cases too — proof the skill stays quiet on near-misses — and no body may still carry a scaffold stub marker.
+- **Activation evals** (judged): a judge routes prompts against the whole catalog's skill trigger surfaces. A failing sample is re-judged and the majority of 3 decides — flake absorption for run-to-run variance, not gate weakening.
+- **Delegation evals** (judged): the same machinery for agents, whose descriptions are trigger surfaces for the orchestrator's delegation decisions.
+
+The judge defaults to claude-haiku-4-5, because routing is a classification task and the model-routing doctrine sends classification to cheap models — the frontier tier is reserved for authoring prose. Every run, green or red, writes structured evidence: failures plus near-misses, the "fragile green" routes that passed below a confidence threshold. On a red gate, a reflection hook reads that evidence and nudges a self-reflection pass — the gate feeds the improvement loop instead of only blocking the merge.
+
+## Self-Replication: Meta-Plugins
+
+Thirteen plugins run through the factory, and the load-bearing ones build plugins. `plugin-forge` ships the `/forge` pipeline — grill, plan, scaffold, gate — whose deterministic engine refuses to emit a skill without activation cases or an agent without delegation cases. `plugin-validator` and `marketplace-builder` are governance runbooks over the rule set. And `meta-generator` generates *other meta-plugins* from two archetypes drawn from the ones already running: generator (like forge) and governance (like validator). The output of the factory is, recursively, more factory.
+
+## Tech Stack
+
+| Category | Technology | Why |
+|---|---|---|
+| Runtime | Bun + TypeScript, workspaces monorepo | Pure cores are zero-dependency; the database dependency is confined to one package. |
+| HTTP | Hono | One thin handler over `deriveCatalog`; additive routes stay behind the frozen seam. |
+| Data | Turso/libSQL on Fly.io | The production `CatalogSource`; git remains the source in dev and CI. |
+| Releases | Changesets file format, SLSA provenance, OIDC publish | Versioning plugins (not npm packages), with attestation on every release. |
+| Gate | `bun run check` = tsc + catalog + KB + design + tests + evals | CI runs the same command verbatim, so the local gate can't drift from CI. |
+
+## ObjectCore, by the Numbers
+
+| Fact | Value |
+|---|---|
+| Plugins governed | 13. |
+| Build stages shipped | 4 — seam, meta-plugins + gate, releases, live backend. |
+| Eval layers | 5 — output, coverage, readiness, activation, delegation. |
+| Judge samples per contested route | 3, majority decides. |
+| Publish paths into production | 1 — OIDC; direct ingest is break-glass. |
+| Hand edits to marketplace.json | 0. |
+
+## When Not to Build a Factory
+
+A bare `marketplace.json` in a git repo serves a personal plugin marketplace fine — that's what [skillsmith](/blog/skillsmith-quality-gates-claude-code-skills) does, and the difference is deliberate. ObjectCore's extra machinery buys immutable versioned releases, provenance, and a live endpoint, and it charges for them: a registry is a service with uptime, database backups, and an on-call surface that a static file never has. The judged evals bill per run and drift as judge models change. And the meta-plugin layer pays off only past a dozen plugins or the moment external consumers depend on your catalog — below that, the factory is heavier than its output.
+
+## Conclusion
+
+ObjectCore is what happens when you refuse to let a plugin marketplace be a file someone edits. One pure function derives the catalog; ports swap git for a database without touching the contract; releases are pinned and attested; and an eval gate holds the line validation can't — whether any of it fires when a user types.
+
+**Key Takeaways:**
+
+- Freeze the seam, swap everything behind it. One derivation function serving dev, CI, and production is what made the git-to-database migration a relocation, not a rewrite.
+- Byte-match the committed artifact in CI, and keep pinned variants as outputs of the same function — a second derivation path is where drift is born.
+- Gate on behavior, not parsing: positive and negative activation cases per skill, delegation cases per agent, majority-of-3 judging for flake absorption.
+- Route by task shape: cheap models for classification (the judge), frontier models for prose (the plugin bodies).
+- Don't run a registry you don't need — a committed catalog in git is the right factory for most plugin sets.
+
+The repo is [smithdak/objectcore](https://github.com/smithdak/objectcore); the live catalog is at `registry.objectcore.ai/v1/marketplace.json` if you want to point Claude Code at the factory's output directly.
