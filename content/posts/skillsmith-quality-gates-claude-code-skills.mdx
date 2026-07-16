@@ -1,0 +1,106 @@
+---
+title: "Quality Gates for Claude Code Skills: Inside skillsmith"
+date: "2026-07-15"
+excerpt: "Discover the pipeline that keeps Claude Code skills honest: 14 quality rules, 7 security rules, trigger evals with a 0.85 floor, and a byte-exact drift gate."
+slug: "skillsmith-quality-gates-claude-code-skills"
+tags: ["ai-tools", "claude-code", "skills", "developer-tools"]
+thumbnail: "/images/posts/skillsmith-quality-gates-claude-code-skills/thumbnail.jpg"
+thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIEBv/EABwQAAMAAQUAAAAAAAAAAAAAAAABAhIRIjFRkf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8Aw+FLmWAaqrB7n6T6vsI//9k="
+hero: "/images/posts/skillsmith-quality-gates-claude-code-skills/hero.jpg"
+heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIDBv/EABsQAAMAAgMAAAAAAAAAAAAAAAABAhESIjGR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDDaUu5YBqqtHyfpDIR/9k="
+published: true
+author: "Dakota Smith"
+keywords: ["Claude Code skills", "skill validation", "trigger evals", "drift gate", "quality rules", "skill authoring"]
+---
+
+A Claude Code skill that never fires is dead weight. One that fires on everything is worse. [skillsmith](https://github.com/smithdak/skillsmith) measures the difference: every skill ships eval cases, a judge model scores each description's selectivity against the whole catalog, and any skill below a 0.85 hit rate fails the build.
+
+This is the second deep dive from [Compile Your Agentic System](/blog/compile-your-agentic-system). skillsmith is the middle layer of the stack: [base](/blog/base-compile-agent-config) compiles the system around the session, and skillsmith compiles the Claude Code skills the session invokes. The catalog holds 15 of them across 4 plugins, with every installable artifact generated from validated sources.
+
+This post walks the pipeline: the rot it targets, the rules that catch it, the evals that measure triggering, and the honest cases where the whole apparatus is overkill.
+
+## How Claude Code Skills Rot
+
+Claude Code skills decay in three predictable ways, and each gets a named countermeasure. Descriptions stop matching how users phrase requests, so the skill never triggers — rule V3 rejects descriptions without "use when" phrasing or a quoted user phrase, because the description is the trigger surface. Bodies accumulate instructions until they crowd out the task — rule V4 caps every body at 500 lines and 5,000 estimated tokens, because a skill body is a briefing, not a manual. And scripts ship unreviewed inside plugins — the validator builds a per-skill script inventory (path, interpreter, network flag, SHA-256) and publishes it in the catalog, so consumers can audit exactly what a skill can execute.
+
+None of this is enforced by convention or code review. It's enforced by a compiler.
+
+## Three Invariants and a Byte-Exact Gate
+
+The architecture rests on three invariants. First: sources are hand-edited, artifacts are generated — never the reverse. Second: the drift gate is byte-exact, and it works because `check` doesn't re-implement generation — it compares committed artifacts against the *identical* `GeneratePlan` bytes that `generate` would write. Third: everything that tracks a Claude Code behavior that can change per minor release — schema targets, length limits, known hook events — lives in one constants file. A harness update is a single edit.
+
+```sh
+bun packages/cli/src/main.ts validate --strict   # schema + V-rules + S-rules
+bun packages/cli/src/main.ts generate            # emit plugins/, marketplace.json, catalog/
+bun packages/cli/src/main.ts check               # drift gate: byte-exact or fail
+```
+
+Byte-exactness demands determinism, and the generator earns it the boring way: JSON keys render in schema-defined order (not insertion order), and every list is sorted before rendering. All output uses LF endings with exactly one trailing newline — on Windows too. If any of that slipped, `check` would flag phantom drift on every machine with different locale or line-ending defaults.
+
+## The Rules That Bite
+
+Fourteen quality rules (V1–V14) and seven security rules (S1–S7) run on every validate. A few do most of the work:
+
+- **V1** — the skill name must equal its folder name and cannot contain `claude` or `anthropic` (reserved substrings).
+- **V2** — the listing projection (description plus when-to-use) must fit 1,536 characters: that's the budget each skill gets in the system-prompt listing, and blowing it degrades every skill's triggering, not only yours.
+- **V4** — the 500-line / 5,000-token body ceiling. Deterministic work belongs in `scripts/`, on-demand detail in `references/`.
+- **V5** — references sit exactly one level deep and never link to other references; chains defeat on-demand loading.
+- **V7** — voice: bodies open imperative ("Run the script"), never "I will run the script".
+- **V8** — evals must exist, have at least 3 should-trigger and 3 should-not-trigger cases, contain no `TODO` placeholders, and pass the hit-rate floor.
+
+Findings carry a profile — `standard`, `claude-code`, or `cowork` — because the three validators this repo targets enforce different rules. `argument-hint` in frontmatter is fine in Claude Code and a hard error in the Cowork importer; the diagnostic system encodes that instead of forcing the strictest common denominator.
+
+## Evals Measure Selectivity, Not String-Matching
+
+The eval design is the part worth stealing. The runner builds the skill listing exactly as the runtime presents it — every non-draft skill's name and description. Then it asks a judge model, per eval case, which single skill would fire for this user message. A should-trigger case passes only when the judge picks the skill under test. A should-not-trigger case passes when it picks anything else, *including a different skill* — so confusion with a sibling counts against you. That makes the score a measure of selectivity against the whole catalog, not of the skill in isolation.
+
+The authoring guidance follows directly: write should-trigger prompts the way real users type, not paraphrases of the description — otherwise the eval measures string-matching. The strongest should-not-trigger cases are near misses, requests adjacent to the skill's territory that belong to a sibling. Failing cases print the judge's pick, which tells you exactly which sibling is absorbing your traffic:
+
+```text
+feature-spec: 88% (7/8)
+  FAIL [expected trigger] "spec out the export feature" → judged: architecture-spec
+```
+
+Evals are the one intentionally non-deterministic stage, so their output is treated as a **source**, not an artifact: `.skillsmith/eval-results.json` is committed, changes only when a human reruns `eval`, and stamps its run date at day precision so same-day reruns stay byte-stable. `generate` renders the results as a Triggering badge in the catalog — measured triggering, not claimed triggering. A full run is 14 skills × 8 cases = 112 judge calls at roughly 2k input tokens each, which is why CI runs evals on manual dispatch instead of every push.
+
+## Tech Stack
+
+| Category | Technology | Why |
+|---|---|---|
+| Runtime | Bun ≥ 1.3.14, TypeScript | No build step — the pipeline runs its sources directly. |
+| Schemas | zod v4, one schema per source shape | Shape errors surface at parse time with path-anchored messages. |
+| Eval judge | claude-sonnet-4-6 at temperature 0 | Selectivity scoring against the full listing; variance absorbed by committed results. |
+| CI | validate --strict, generate, check | The pre-PR gate; warnings are failures under --strict. |
+
+## skillsmith, by the Numbers
+
+| Gate | Threshold |
+|---|---|
+| Quality rules | 14 (V1–V14). |
+| Security rules | 7 (S1–S7). |
+| Trigger hit-rate floor | 0.85. |
+| Eval cases per skill | ≥3 should-trigger, ≥3 should-not-trigger. |
+| Listing projection cap | 1,536 characters. |
+| Body ceiling | 500 lines ≈ 5,000 tokens. |
+| Catalog today | 15 skills across 4 plugins. |
+| Drift allowed in CI | 0 bytes. |
+
+## When Not to Run a Pipeline
+
+The repo answers this inside its own design. Exploration hates gates, so `skills/drafts/` is a staging area that gets schema parsing only — no V-rules, no S-rules, no generation. When you don't know what a skill should say yet, validation slows the discovery. Promotion out of drafts is the moment the gates apply.
+
+Scale is the other boundary. Below roughly five Claude Code skills in one repo, the pipeline costs more than the rot it prevents — hand-review covers what fourteen rules automate. And the judged evals carry operational weight: they need a billed API key, cost real money per full run, and shift as judge models change. Treat the 0.85 floor as a trend line to watch, not a physical constant.
+
+## Conclusion
+
+skillsmith treats a skill catalog the way a compiler treats source code: parse it, then type-check it against rules that encode known failure modes. Measure the one property that determines whether any of it matters — triggering — and refuse to ship a byte that wasn't generated from source.
+
+**Key Takeaways:**
+
+- The description is the trigger surface. Validate it for trigger phrasing (V3), budget it against the listing cap (V2), and measure it with evals against the whole catalog.
+- Selectivity is relative: a should-not-trigger case that fires a sibling skill is a pass for the catalog and a signal about your boundaries. Rerun evals when any description changes.
+- Byte-exact drift gates require deterministic generation — schema-ordered keys, sorted lists, LF endings — and they're only trustworthy when `check` compares the same plan bytes `generate` writes.
+- Non-deterministic outputs (eval results) become committed sources with day-precision dates, so determinism survives contact with an LLM judge.
+- Keep a drafts tier with the gates off. Validation is for shipping, not discovering.
+
+Browse the catalog — script inventory and Triggering badges included — at [smithdak/skillsmith](https://github.com/smithdak/skillsmith), or install it directly: `/plugin marketplace add smithdak/skillsmith`.

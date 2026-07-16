@@ -30,7 +30,7 @@ jobs:
           # --base-url resolves root-relative links (e.g. /blog/<slug>) against the
           # production site so internal links are checked over HTTP instead of failing
           # with "Cannot convert path ... provide a root dir" (false positives, issue #35).
-          args: '--verbose --no-progress --base-url https://dak-dev.vercel.app content/posts/*.mdx'
+          args: '--verbose --no-progress --base-url https://daksmith.dev content/posts/*.mdx'
           fail: false
 
       - name: Post PR comment (on PR)

@@ -13,7 +13,7 @@ const AUTHOR_NAME = 'Dakota Smith';
 // On-site author page — the canonical entity URL for "Dakota Smith". Off-site
 // profiles live in `sameAs` so knowledge graphs resolve them to this one node.
 const AUTHOR_URL = `${SITE_URL}/about`;
-const GITHUB_URL = 'https://github.com/twofoldtech-dakota';
+const GITHUB_URL = 'https://github.com/smithdak';
 const LINKEDIN_URL = 'https://linkedin.com/in/dakota-smith-a855b230';
 // The publishing organisation ("the house, not the person"). Article-class
 // schema expects an Organization publisher carrying a logo, distinct from the
@@ -232,7 +232,7 @@ export function generateResumeSchema(): ProfilePageSchema {
       url: `${SITE_URL}/resume`,
       sameAs: [
         'https://linkedin.com/in/dakota-smith-a855b230',
-        'https://github.com/twofoldtech-dakota',
+        'https://github.com/smithdak',
       ],
       knowsAbout: [
         'Next.js',

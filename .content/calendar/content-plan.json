@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updated_at": "2026-06-09",
+  "updated_at": "2026-07-15",
   "workflow_stages": ["idea", "outlined", "drafting", "review", "ready", "published"],
   "topics": [
     {
@@ -252,6 +252,58 @@
       "notes": "Companion to topic_017 (Managed Agents / agent-workflow series). ANONYMIZED. Thesis: match the research-workflow shape to the job. Centerpiece: the deep-research command (Claude Code Workflow) — Scope/Search/Fetch/3-vote adversarial Verify/Synthesize, ~97 model calls per question, structured output every hop. Contrast: anonymized single-call daily web-search scanner (claude-sonnet-4-6 + web_search_20250305 server tool, cron, materiality×relevance×recency scoring, sha1 fingerprint dedup, no verify). Neither uses Managed Agents — deliberate teaching point. Primary keyword: deep research. Links to topics 017, 014. Validation 99/100. NEEDS: hero+thumbnail images, then images:process. Orphan until a published post links back.",
       "created_at": "2026-06-09",
       "updated_at": "2026-06-09"
+    },
+    {
+      "id": "topic_019",
+      "title": "Compile Your Agentic System: base, skillsmith, and ObjectCore",
+      "slug": "compile-your-agentic-system",
+      "type": "project",
+      "status": "review",
+      "priority": "high",
+      "target_date": "2026-07-15",
+      "tags": ["ai", "claude-code", "agents", "developer-tools"],
+      "notes": "Umbrella post for the three 2026 factory projects. Thesis: sources are hand-edited, artifacts are generated — never the reverse; CI drift gates enforce it. Covers base (Rust CLI, 3 harness targets), skillsmith (V1–V14/S1–S7 rules, 0.85 trigger floor, byte-exact check), ObjectCore (deriveCatalog seam, Git→DB flip, registry.objectcore.ai, SHA-pin + SLSA). Validation 100/100. Placeholder images generated — replace with real art before publish. Linked from studio post (topic_005). Primary keyword: agentic system. Seeds deep-dives topics 020–022.",
+      "created_at": "2026-07-15",
+      "updated_at": "2026-07-15"
+    },
+    {
+      "id": "topic_020",
+      "title": "Compiling Agent Config to Claude Code, Codex, and Copilot",
+      "slug": "base-compile-agent-config",
+      "type": "project",
+      "status": "review",
+      "priority": "high",
+      "target_date": "2026-07-15",
+      "tags": ["ai", "claude-code", "rust", "developer-tools"],
+      "notes": "Deep dive 1 of 3 (from topic_019). Canon kinds, pipelines-as-data-compiled-to-prose, adapter fidelity (enforced/assisted/advisory incl. the PATH-probe honesty detail), hash manifest, work/runs/history.jsonl. Grounded in docs/SPEC.md + DECISIONS.md + ADAPTERS.md. Validation 100/100. Placeholder images — replace before publish. Primary keyword: agent config. Publish together with 021/022 so cross-links resolve.",
+      "created_at": "2026-07-15",
+      "updated_at": "2026-07-15"
+    },
+    {
+      "id": "topic_021",
+      "title": "Quality Gates for Claude Code Skills: Inside skillsmith",
+      "slug": "skillsmith-quality-gates-claude-code-skills",
+      "type": "project",
+      "status": "review",
+      "priority": "high",
+      "target_date": "2026-07-15",
+      "tags": ["ai-tools", "claude-code", "skills", "developer-tools"],
+      "notes": "Deep dive 2 of 3. Three invariants, byte-exact GeneratePlan gate, V-rules that bite (V1–V8 highlights, 1536-char listing cap), selectivity evals (whole-catalog judge, near-miss cases, 112 calls/run, eval results as committed source). Grounded in docs/validation-rules.md + evals.md + architecture.md. Validation 100/100. Placeholder images — replace before publish. Primary keyword: Claude Code skills.",
+      "created_at": "2026-07-15",
+      "updated_at": "2026-07-15"
+    },
+    {
+      "id": "topic_022",
+      "title": "ObjectCore Deep Dive: A Plugin Marketplace as a Software Factory",
+      "slug": "objectcore-plugin-marketplace-software-factory",
+      "type": "project",
+      "status": "review",
+      "priority": "high",
+      "target_date": "2026-07-15",
+      "tags": ["ai", "claude-code", "architecture", "open-source"],
+      "notes": "Deep dive 3 of 3. The deriveCatalog seam + ports/adapters, byte-matched committed catalog vs SHA-pinned served catalog, Git→Turso flip, OIDC single publish path, 5 eval layers (majority-of-3 judging, haiku judge, fragile-green evidence), meta-plugin self-replication. Grounded in CLAUDE.md + AGENTS.md. Validation 100/100. Placeholder images — replace before publish. Primary keyword: plugin marketplace.",
+      "created_at": "2026-07-15",
+      "updated_at": "2026-07-15"
     }
   ],
   "ideas_backlog": [

@@ -1,0 +1,112 @@
+---
+title: "Compiling Agent Config to Claude Code, Codex, and Copilot"
+date: "2026-07-15"
+excerpt: "Learn how base compiles one vendor-neutral canon into native agent config for Claude Code, Codex, and GitHub Copilot — with drift protection in CI."
+slug: "base-compile-agent-config"
+tags: ["ai", "claude-code", "rust", "developer-tools"]
+thumbnail: "/images/posts/base-compile-agent-config/thumbnail.jpg"
+thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAEEBv/EABwQAAICAgMAAAAAAAAAAAAAAAECABEhURIiMf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8Aw/BgMqYYjZmo9j5uT2dwj//Z"
+hero: "/images/posts/base-compile-agent-config/hero.jpg"
+heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAEDBv/EABwQAAICAgMAAAAAAAAAAAAAAAACARESMSEiUf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8Aw2DRtZDgbM1T2nXpCwj/2Q=="
+published: true
+author: "Dakota Smith"
+keywords: ["agent config", "Claude Code", "Codex", "GitHub Copilot", "agentic system", "Rust CLI"]
+---
+
+Claude Code reads `CLAUDE.md`. Codex reads `AGENTS.md`. GitHub Copilot reads `.github/copilot-instructions.md`. Same rules, three hand-synced copies — and every edit is a chance for them to drift apart. [base](https://github.com/smithdak/base) ends the hand-syncing: you define the agentic system once in a vendor-neutral canon, and `base sync` compiles it into all three harnesses' native surfaces.
+
+This is the first deep dive from [Compile Your Agentic System](/blog/compile-your-agentic-system). The umbrella post covered the thesis; this one covers the mechanics — how the canon is structured, how agent config compiles per harness, and how the CLI reports what each harness can and cannot enforce. The companion post on [skillsmith](/blog/skillsmith-quality-gates-claude-code-skills) covers the same discipline one layer up.
+
+## Why Agent Config Needs a Compiler
+
+A rule updated in `CLAUDE.md` but not in `AGENTS.md` is a silent behavioral fork: the same repo behaves differently depending on which coding agent you opened. Multiply that by every rule, every pipeline, and every approval gate, and multi-harness agent config rots the way untested code does — invisibly, then all at once.
+
+base treats this as a compilation problem, built on two founding decisions from its decision log. Files are the substrate: all definitions and all state are plain Markdown, TOML, and JSON in git — diffable, agent-legible from every harness, zero infrastructure. And the CLI never runs the agent loop: base compiles, validates, and records, while the agents execute inside whichever harness you opened. The harness is the engine; base builds what the engine runs.
+
+## The Canon: Define Once
+
+Everything definitional lives in the canon: `rules` (always-on constraints), `agents` (role definitions), `pipelines` (staged, gated units of work), and `stages` (reusable modules pipelines compose). `knowledge` holds on-demand know-how behind an index; gates and config live in `base.toml`. Prose the agent reads is Markdown with YAML frontmatter; structure the CLI reads is TOML. A global canon at `~/.base/` seeds every project, and each repo carries a thin overlay that wins on conflict.
+
+Pipelines are the sharpest design decision: **declared as data, compiled to prose**. The frontmatter names an ordered stage sequence; the stage bodies are human-authored prose that `sync` composes into one prompt per target.
+
+```yaml
+# canon/pipelines/build.md (frontmatter)
+id: build
+stages:
+  - use: intake            # task → runs/<date>-<slug>/task.md
+  - use: plan
+    gate: plan-approval
+  - use: execute
+  - use: record            # always last: history.jsonl line — every exit path
+```
+
+Stage parameters stay caps, flags, and on/off switches. The moment a declaration wants branching or expressions, that logic moves into a stage module's prose — prompts express conditionals natively, and interpreted declarations are how you accidentally build an engine.
+
+## Adapters and Honest Fidelity
+
+Each harness gets one adapter — a pure function from canon to files on disk.
+
+| Canon kind | Claude Code | Codex | Copilot |
+|---|---|---|---|
+| rules | `CLAUDE.md` | `AGENTS.md` | `.github/copilot-instructions.md` |
+| pipelines | `.claude/skills/*/SKILL.md` | `.agents/skills/*/SKILL.md` | `.github/prompts/*.prompt.md` |
+| gates | hooks + permission rules — enforced. | project rules — assisted. | prose — advisory. |
+| knowledge | pointer index in `CLAUDE.md` | pointer index in `AGENTS.md` | pointer index. |
+
+The gates row is where base is most honest. The three harnesses have wildly different enforcement power, and `base check` reports every gate × target pairing as **enforced**, **assisted**, or **advisory** — per cell, measured, never assumed. On Claude Code, a standing default-branch denial is enforced by a deny rule plus a deterministic `PreToolUse` hook that also blocks GitHub MCP calls targeting the default branch. On Codex, project rules forbid the ordinary refspecs, and the rest is assisted. Copilot receives gate prose only, so everything there is advisory.
+
+The honesty goes one level deeper: the Claude Code hook runs the `base` binary from PATH, and Claude Code treats a missing hook command as non-blocking. So `check` probes PATH and downgrades its own report to *assisted* with a warning when the binary doesn't resolve. The tool audits its own enforcement claims.
+
+## Drift Protection and Durable State
+
+Every generated file carries a do-not-edit header, and its hash is stamped into `base.toml`. From there the contract is mechanical: `sync` refuses to overwrite a hand-modified generated file without `--force`, and `sync --check` fails CI when output is missing, stale, or hand-edited. Fixing a generated file means fixing the canon and recompiling — the same invariant that drives [skillsmith's byte-exact gate](/blog/skillsmith-quality-gates-claude-code-skills).
+
+State flows the other direction, from harness back to files. Work items live in `work/` folders with required acceptance criteria and a four-stage status. Every pipeline run writes durable task, plan, and result artifacts to `.base/runs/`, and every exit path appends one line to `history.jsonl`. You review what the system did with the same tools you review code.
+
+```console
+base work new "Ship the RSS feed" --criterion "validates against W3C"
+base work board                  # todo | doing | review | done
+base log                         # inspect the latest run's artifacts
+base sync --check                # the CI drift gate
+```
+
+Every public command accepts `--json`, so agents can drive the work state programmatically.
+
+## Tech Stack
+
+| Layer | Technology | Why |
+|---|---|---|
+| CLI | Rust 1.85+ | One static binary, no Node or Python runtime; the recorded tradeoff is hand-rolling plumbing TypeScript gets free. |
+| Definitions | Markdown + YAML frontmatter, TOML | Prose for the agent to read, structure for the CLI to parse. |
+| State | Plain files in git | Diffable, agent-legible, zero infrastructure to operate. |
+| Enforcement | Each harness's strongest native mechanism | Hooks and permission rules on Claude Code; rules on Codex; prose on Copilot. |
+
+## base, by the Numbers
+
+| Fact | Value |
+|---|---|
+| Harness targets compiled | 3 — Claude Code, Codex, GitHub Copilot. |
+| Canon kinds | 7 — rules, agents, pipelines, stages, knowledge, gates, config. |
+| Gate fidelity levels reported | 3 — enforced, assisted, advisory. |
+| Work item statuses | 4 — todo, doing, review, done. |
+| Hand edits allowed in generated files | 0. |
+
+## When Not to Use base
+
+If you work in one harness and your config changes a few times a year, edit the native files and skip the compile step. The abstraction costs more than the drift it prevents. The same math applies to gates. If enforcement matters most and Copilot is your primary harness, base will tell you your gates are advisory — but it cannot make a harness enforce what it has no mechanism for.
+
+Maturity is a real boundary too. The decision log is explicit that v1 is built for one user, and team features — shared parts, onboarding kits, cross-team governance — are out of scope until the personal system earns daily use. Evidence-gated verification ("done requires captured proof, not an agent's say-so") is deferred; the `runs/` layout reserves an `evidence/` folder so it can land later without a breaking change. This is a walking skeleton with its load-bearing invariants in place, not a finished platform.
+
+## Conclusion
+
+base applies compiler discipline to the layer most agentic setups leave to copy-paste. One vendor-neutral canon, three native targets, a hash manifest between them, and a fidelity report that refuses to pretend all harnesses enforce equally.
+
+**Key Takeaways:**
+
+- Multi-harness agent config is a compilation problem: one canon, per-harness adapters, and generated files nobody hand-edits.
+- Declare pipelines as data, write stages as prose. The moment declarations want branching, you're building an engine — put the logic in the prompt instead.
+- Enforcement honesty beats enforcement theater: report every gate as enforced, assisted, or advisory per harness, and audit your own hooks.
+- Durable run state (`runs/`, `history.jsonl`) makes agent work reviewable with ordinary git tooling.
+- Skip the compiler when one harness and rare config changes are your reality — the drift gate only pays for itself under real churn.
+
+The code is at [smithdak/base](https://github.com/smithdak/base). Start with `docs/SPEC.md` for the architecture and `docs/DECISIONS.md` for the reasoning — the decision log is the part most projects never write down.

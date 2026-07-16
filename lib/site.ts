@@ -10,5 +10,5 @@
  * re-deriving the origin inline.
  */
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app'
+  process.env.NEXT_PUBLIC_SITE_URL || 'https://daksmith.dev'
 ).replace(/\/+$/, '');

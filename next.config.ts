@@ -14,6 +14,14 @@ const bundleAnalyzer = withBundleAnalyzer({
 // object-src none, base-uri self, and tightly scoped connect/frame/img.
 const isDev = process.env.NODE_ENV !== 'production';
 
+// TLS-ONLY DIRECTIVES — gated on Vercel (VERCEL=1 at build time), where TLS
+// terminates in front of the app. HSTS and CSP upgrade-insecure-requests are
+// correct on the real domain but poisonous from a local `pnpm start` on plain
+// HTTP: Chrome caches the HSTS pin for `localhost` (host-wide, every port,
+// two years — chrome://net-internals/#hsts to purge) and upgrades every asset
+// request to https://, which a plain-HTTP server cannot answer.
+const isVercel = process.env.VERCEL === '1';
+
 // RUNNABLE CODE EMBEDS (Codapi) — opt-in, OFF by default.
 // The <RunnableSnippet> component only loads its scripts when
 // NEXT_PUBLIC_ENABLE_CODAPI === 'true'. The CSP relaxation it needs is wired to
@@ -52,12 +60,20 @@ const contentSecurityPolicy = [
   'frame-src https://giscus.app',
   "worker-src 'self' blob:",
   "manifest-src 'self'",
-  'upgrade-insecure-requests',
+  // TLS-only; see isVercel above.
+  ...(isVercel ? ['upgrade-insecure-requests'] : []),
 ].join('; ');
 
 const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
+
+  // The OG image generator reads brand font files at runtime (Satori needs raw
+  // font data; next/font can't be used server-side in ImageResponse). Trace
+  // them into the /api/og serverless bundle or Vercel omits them.
+  outputFileTracingIncludes: {
+    '/api/og': ['./assets/fonts/*.ttf'],
+  },
 
   // Disable X-Powered-By header
   poweredByHeader: false,
@@ -117,10 +133,15 @@ const nextConfig: NextConfig = {
             key: 'X-DNS-Prefetch-Control',
             value: 'on',
           },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
-          },
+          // TLS-only; see isVercel above.
+          ...(isVercel
+            ? [
+                {
+                  key: 'Strict-Transport-Security',
+                  value: 'max-age=63072000; includeSubDomains; preload',
+                },
+              ]
+            : []),
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',

@@ -453,6 +453,10 @@ Defined in `next.config.ts:17-36`. The shape:
   `giscus.app`; `img-src` only `self`, `data:`, Unsplash.
 - Dev-only: `'unsafe-eval'` and `ws:` are appended *only* when not production
   (`:24`, `:30`) for HMR — they never ship.
+- Vercel-only: `upgrade-insecure-requests` (and HSTS, §10.2) are emitted only
+  when `VERCEL=1` — behind Vercel's TLS they're correct; from a local
+  `pnpm start` on plain HTTP they upgrade every asset to `https://` and HSTS-pin
+  `localhost` in the browser for two years, breaking local prod-server testing.
 
 **The accepted weakness, documented at the weakness:** `script-src` includes
 `'unsafe-inline'`. The rationale is in the file comment (`next.config.ts:8-15`):
@@ -472,7 +476,7 @@ security scanner's "missing header" finding doesn't get it re-added.
 ### 10.2 Transport and isolation headers
 
 All from `next.config.ts:96-135`: HSTS `max-age=63072000; includeSubDomains;
-preload` (2y), `X-Content-Type-Options: nosniff`, `X-Frame-Options:
+preload` (2y, Vercel-only — see §10.1), `X-Content-Type-Options: nosniff`, `X-Frame-Options:
 SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`,
 `Cross-Origin-Opener-Policy: same-origin`, `X-Permitted-Cross-Domain-Policies:
 none`, `Permissions-Policy` denying camera/mic/geolocation/`browsing-topics`/

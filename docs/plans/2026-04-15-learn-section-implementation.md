@@ -276,7 +276,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageTransition } from '@/components/ui/PageTransition';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://daksmith.dev';
 
 export const metadata: Metadata = {
   title: 'Learn | Dakota Smith',
@@ -1204,7 +1204,7 @@ import Link from 'next/link';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { TOOLKIT_TOPICS, getToolkitPage } from '@/lib/toolkit';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://daksmith.dev';
 
 export const metadata: Metadata = {
   title: 'Claude Code Toolkit | Dakota Smith',
@@ -1310,7 +1310,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { TableOfContents } from '@/components/blog/TableOfContents';
 import { extractTableOfContents } from '@/lib/toc';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://daksmith.dev';
 
 export function generateStaticParams() {
   return getAllToolkitTopicSlugs().map((topic) => ({ topic }));
@@ -1437,7 +1437,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { TableOfContents } from '@/components/blog/TableOfContents';
 import { extractTableOfContents } from '@/lib/toc';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://daksmith.dev';
 const VALID_SUB_PAGES: ToolkitSubPage[] = ['mental-model', 'playbook', 'compositions', 'pitfalls'];
 
 export function generateStaticParams() {
@@ -1695,7 +1695,7 @@ import { PageTransition } from '@/components/ui/PageTransition';
 import { LearnHero } from '@/components/learn/LearnHero';
 import { ConnectionsMap } from '@/components/learn/ConnectionsMap';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dak-dev.vercel.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://daksmith.dev';
 
 export const metadata: Metadata = {
   title: 'Learn | Dakota Smith',

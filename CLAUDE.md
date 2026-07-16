@@ -58,6 +58,7 @@ Skills (slash commands; load on demand, zero cost until invoked):
 
 | Skill | Use when |
 |---|---|
+| `/dak` | **Start here** — the entry point; orients, routes any task to the right skill/subagent, and fans work out to the team |
 | `/write-post` | Drafting a new post (brand-consistent scaffold) |
 | `/review-post` | Pre-publish brand + SEO review |
 | `/brand-check` | Quick brand-voice check on any text |

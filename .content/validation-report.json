@@ -1,13 +1,21 @@
 {
-  "generated_at": "2026-02-11T05:00:34.667Z",
+  "generated_at": "2026-07-15T21:44:32.325Z",
   "summary": {
-    "total": 9,
-    "passed": 9,
+    "total": 18,
+    "passed": 18,
     "failed": 0,
-    "warnings": 34,
-    "average_score": 96
+    "warnings": 81,
+    "average_score": 97
   },
   "results": [
+    {
+      "slug": "agent-operating-system-multi-agent-pipelines",
+      "title": "The Agent Operating System: Multi-Agent Pipelines with Claude",
+      "passed": true,
+      "score": 96,
+      "issueCount": 0,
+      "warningCount": 6
+    },
     {
       "slug": "ai-isnt-just-for-coders-claude-skills",
       "title": "AI Isn't Just for Coders: How Claude Skills Bridge the Gap",
@@ -22,7 +30,7 @@
       "passed": true,
       "score": 96,
       "issueCount": 0,
-      "warningCount": 3
+      "warningCount": 4
     },
     {
       "slug": "building-claude-marketplace-cms-analyzers",
@@ -30,15 +38,47 @@
       "passed": true,
       "score": 98,
       "issueCount": 0,
+      "warningCount": 3
+    },
+    {
+      "slug": "building-plugin-architect-zero-code-claude-plugin",
+      "title": "Building Plugin Architect: A Zero-Code Claude Code Plugin",
+      "passed": true,
+      "score": 100,
+      "issueCount": 0,
       "warningCount": 2
+    },
+    {
+      "slug": "building-plugin-gtm-go-to-market-engine",
+      "title": "Building Plugin GTM: A Go-To-Market Engine Inside Claude Code",
+      "passed": true,
+      "score": 95,
+      "issueCount": 0,
+      "warningCount": 6
+    },
+    {
+      "slug": "building-plugin-ops-maintenance-engine",
+      "title": "Building Plugin Ops: A Claude Code Plugin for Plugin Maintenance",
+      "passed": true,
+      "score": 96,
+      "issueCount": 0,
+      "warningCount": 5
     },
     {
       "slug": "claude-code-skills-agent-skills-standard",
       "title": "Claude Code Skills and the Agent Skills Open Standard",
       "passed": true,
+      "score": 96,
+      "issueCount": 0,
+      "warningCount": 4
+    },
+    {
+      "slug": "claude-managed-agents-end-of-diy-infrastructure",
+      "title": "Claude Managed Agents: The End of DIY Agent Infrastructure",
+      "passed": true,
       "score": 98,
       "issueCount": 0,
-      "warningCount": 3
+      "warningCount": 5
     },
     {
       "slug": "claude-skills-power-user-guide",
@@ -47,6 +87,22 @@
       "score": 96,
       "issueCount": 0,
       "warningCount": 4
+    },
+    {
+      "slug": "deep-research-agent-fan-out-adversarial-verification",
+      "title": "Building a Deep Research Agent That Verifies Its Sources",
+      "passed": true,
+      "score": 99,
+      "issueCount": 0,
+      "warningCount": 3
+    },
+    {
+      "slug": "durable-agent-orchestration-claude-managed-agents",
+      "title": "Durable Agent Orchestration with Claude Managed Agents",
+      "passed": true,
+      "score": 99,
+      "issueCount": 0,
+      "warningCount": 2
     },
     {
       "slug": "how-apl-built-this-blog",
@@ -60,9 +116,9 @@
       "slug": "mcp-apps-interactive-ui-inside-ai-chat",
       "title": "MCP Apps: Interactive UI Has Entered the Chat",
       "passed": true,
-      "score": 99,
+      "score": 98,
       "issueCount": 0,
-      "warningCount": 2
+      "warningCount": 3
     },
     {
       "slug": "my-2026-dev-setup",
@@ -70,13 +126,29 @@
       "passed": true,
       "score": 93,
       "issueCount": 0,
-      "warningCount": 6
+      "warningCount": 7
+    },
+    {
+      "slug": "preparing-for-mythos-ai-security-checklist",
+      "title": "Preparing for Mythos: Enterprise CMS Security Checklist",
+      "passed": true,
+      "score": 94,
+      "issueCount": 0,
+      "warningCount": 7
     },
     {
       "slug": "supervisor-in-the-machine-why-i-built-studio",
       "title": "Why I Built STUDIO: Four Generations of AI Code Supervision",
       "passed": true,
       "score": 95,
+      "issueCount": 0,
+      "warningCount": 6
+    },
+    {
+      "slug": "webmcp-chrome-ai-agent-protocol",
+      "title": "WebMCP: How Chrome Turns Websites Into AI Agent APIs",
+      "passed": true,
+      "score": 98,
       "issueCount": 0,
       "warningCount": 5
     }

@@ -87,7 +87,7 @@ export function Header() {
                 </svg>
               </a>
               <a
-                href="https://github.com/twofoldtech-dakota"
+                href="https://github.com/smithdak"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center w-8 h-8 text-muted hover:text-accent hover:rotate-12 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
@@ -185,7 +185,7 @@ export function Header() {
                     </svg>
                   </a>
                   <a
-                    href="https://github.com/twofoldtech-dakota"
+                    href="https://github.com/smithdak"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center w-10 h-10 border-2 border-text bg-surface text-muted hover:bg-text hover:text-background transition-colors focus:outline-none focus:ring-2 focus:ring-accent"

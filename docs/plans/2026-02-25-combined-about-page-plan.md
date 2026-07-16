@@ -226,7 +226,7 @@ Insert after the tools section, still inside `<div className="space-y-16">`:
           </svg>
         </a>
         <a
-          href="https://github.com/twofoldtech-dakota"
+          href="https://github.com/smithdak"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center w-12 h-12 border-4 border-text text-muted hover:bg-text hover:text-background transition-colors focus:outline-none focus:ring-4 focus:ring-accent"
