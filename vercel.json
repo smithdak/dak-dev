@@ -6,7 +6,7 @@
   "framework": "nextjs",
   "regions": ["iad1"],
   "env": {
-    "NEXT_PUBLIC_SITE_URL": "https://dak-dev.vercel.app",
+    "NEXT_PUBLIC_SITE_URL": "https://daksmith.dev",
     "NEXT_PUBLIC_GISCUS_REPO": "smithdak/dak-dev",
     "NEXT_PUBLIC_GISCUS_REPO_ID": "R_kgDONxWbPw",
     "NEXT_PUBLIC_GISCUS_CATEGORY": "General",
