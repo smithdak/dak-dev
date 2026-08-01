@@ -169,7 +169,8 @@ body {
 
 .mdx-content pre {
   padding: 0;
-  background-color: var(--color-background) !important;
+  /* Shiki emits a dark-only palette, so its canvas remains dark in both site themes. */
+  background-color: var(--color-background-dark) !important;
   overflow-x: auto;
 }
 
@@ -207,7 +208,7 @@ body {
   width: 1.5rem;
   margin-right: 1.5rem;
   text-align: right;
-  color: var(--color-muted);
+  color: var(--color-muted-dark);
   user-select: none;
 }
 

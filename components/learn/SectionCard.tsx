@@ -52,7 +52,7 @@ export function SectionCard({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
         </svg>
         <span
-          className={`font-mono font-bold text-4xl ${t.text} opacity-70 leading-none tabular-nums`}
+          className={`font-mono font-bold text-4xl ${t.text} opacity-75 leading-none tabular-nums`}
           aria-hidden="true"
         >
           {number}
