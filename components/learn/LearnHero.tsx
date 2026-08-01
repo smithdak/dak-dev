@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { staggerContainerVariants, slideUpVariants, drawLineVariants } from '@/lib/animations';
-import { TextDecode } from '@/components/ui/TextDecode';
 import { ScrollReveal, ScrollRevealItem } from '@/components/ui/ScrollReveal';
 
 interface LearnHeroProps {
@@ -136,7 +135,7 @@ export function LearnHero({
               variants={slideUpVariants}
               className="text-5xl md:text-7xl font-bold leading-tight mb-6"
             >
-              <TextDecode text="Agentic Engineering" delay={400} />
+              Agentic Engineering
             </motion.h1>
 
             <motion.div

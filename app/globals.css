@@ -30,7 +30,7 @@
   --color-chapter-1: #00ff88;
   --color-chapter-2: #00d4ff;
   --color-chapter-3: #ff6b35;
-  --color-chapter-4: #b264ff;
+  --color-chapter-4: #c084fc;
   --color-chapter-5: #facc15;
   --color-chapter-6: #ff3366;
 
@@ -182,6 +182,9 @@ body {
 .mdx-content pre > code {
   display: grid;
   min-width: max-content;
+  /* The inline-code component also renders fenced code. Keep Shiki's
+     contrast-calibrated pre background instead of layering surface/50. */
+  background-color: transparent !important;
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
