@@ -1,30 +1,64 @@
-import { generateSearchIndex, searchPosts } from '@/lib/search';
+import assert from 'node:assert/strict';
+import { gzipSync } from 'node:zlib';
+import { generateSearchIndex } from '@/lib/search/index-generator';
+import { searchPosts } from '@/lib/search';
+import { getAllPosts } from '@/lib/posts';
+import { getAllPatterns } from '@/lib/patterns';
+import { getAllToolkitPages } from '@/lib/toolkit';
+import { getAllHarnessChapters } from '@/lib/harness';
+import { getAllSecurityChapters } from '@/lib/security';
+import { getAllDemos, getAllExplainers, GLOSSARY_TERMS } from '@/lib/onramp';
 
-// Generate the search index
 const index = generateSearchIndex();
+const expectedCount =
+  getAllPosts().length +
+  getAllPatterns().length +
+  getAllToolkitPages().length +
+  getAllHarnessChapters().length +
+  getAllSecurityChapters().length +
+  getAllDemos().length +
+  getAllExplainers().length +
+  GLOSSARY_TERMS.length;
 
-console.log('Generated search index:');
-console.log(`Total posts indexed: ${index.length}`);
-console.log('');
+assert.equal(index.length, expectedCount, 'Every published leaf record should be indexed once');
+assert.equal(
+  new Set(index.map((item) => item.href)).size,
+  index.length,
+  'Search hrefs must be unique'
+);
+assert.ok(
+  index.every((item) => item.contentPreview.length <= 500),
+  'Previews must stay bounded'
+);
+assert.ok(
+  index.some((item) => item.href === '/learn/toolkit/agent-teams/compositions'),
+  'Nested Toolkit pages must be indexed'
+);
+assert.ok(
+  index.some((item) => item.href === '/learn/start/decoder#term-context-window'),
+  'Decoder term anchors must match the rendered page'
+);
+assert.ok(
+  !index.some((item) => item.href === '/blog/agent-delivery-harness'),
+  'Unpublished posts must stay out of the search index'
+);
+assert.ok(
+  searchPosts(index, 'delivery control').some(
+    (item) => item.href === '/learn/harness/delivery-control-above-agent-loop'
+  ),
+  'Delivery Harness chapter must be queryable'
+);
 
-if (index.length > 0) {
-  console.log('Sample index item:');
-  console.log(JSON.stringify(index[0], null, 2));
-  console.log('');
-
-  // Test search functionality
-  console.log('Testing search with query "AI":');
-  const results = searchPosts(index, 'AI');
-  console.log(`Found ${results.length} results`);
-  results.forEach((result) => {
-    console.log(`- ${result.title} (${result.slug})`);
-  });
+for (const type of ['post', 'pattern', 'toolkit', 'harness', 'security', 'start'] as const) {
+  assert.ok(
+    index.some((item) => item.type === type),
+    `Missing ${type} search records`
+  );
 }
 
-// Measure size
-const jsonSize = Buffer.from(JSON.stringify(index)).length;
-const gzipEstimate = Math.round(jsonSize * 0.3); // Rough estimate
+const gzipBytes = gzipSync(JSON.stringify(index)).byteLength;
+assert.ok(gzipBytes < 50 * 1024, `Search index exceeds 50 KiB gzipped: ${gzipBytes} bytes`);
 
-console.log('');
-console.log(`Index size: ${(jsonSize / 1024).toFixed(2)} KB`);
-console.log(`Estimated gzipped size: ${(gzipEstimate / 1024).toFixed(2)} KB`);
+console.log(
+  `Search index verified: ${index.length} records, ${(gzipBytes / 1024).toFixed(1)} KiB gzipped.`
+);

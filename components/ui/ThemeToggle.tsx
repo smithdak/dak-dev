@@ -1,8 +1,7 @@
 'use client';
 
 import { useTheme } from '@/contexts/ThemeContext';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 
 // SVG Icons
 function SunIcon() {
@@ -87,10 +86,9 @@ const themeConfig = {
   },
 };
 
-export function ThemeToggle() {
+export function ThemeToggle({ className = '' }: { className?: string }) {
   const { theme, setTheme } = useTheme();
   const prefersReducedMotion = useReducedMotion();
-  const [showTooltip, setShowTooltip] = useState(false);
 
   const config = themeConfig[theme];
   const Icon = config.icon;
@@ -100,66 +98,18 @@ export function ThemeToggle() {
   };
 
   return (
-    <div className="relative">
-      <button
-        onClick={handleToggle}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-        onFocus={() => setShowTooltip(true)}
-        onBlur={() => setShowTooltip(false)}
-        className={`
-          p-3
-          bg-surface
-          border-4 border-text
-          text-text
-          shadow-[4px_4px_0_0_var(--color-text)]
-          focus:outline-none focus:ring-4 focus:ring-accent
-          ${
-            prefersReducedMotion
-              ? ''
-              : `
-            transition-all duration-200
-            hover:transform hover:-translate-x-1 hover:-translate-y-1
-            hover:shadow-[6px_6px_0_0_var(--color-accent)]
-            active:transform active:translate-x-1 active:translate-y-1
-            active:shadow-[2px_2px_0_0_var(--color-text)]
-          `
-          }
-        `}
-        aria-label={`Switch to ${config.next} mode. Currently ${config.label}`}
-        type="button"
-      >
-        <span
-          className={`
-            flex items-center justify-center
-            ${prefersReducedMotion ? '' : 'transition-opacity duration-200'}
-          `}
-        >
-          <Icon />
-        </span>
-      </button>
-
-      {/* Tooltip */}
-      {showTooltip && (
-        <div
-          className={`
-            absolute top-full mt-2 right-0
-            px-3 py-2
-            bg-surface border-2 border-text
-            text-text text-sm font-medium whitespace-nowrap
-            shadow-[2px_2px_0_0_rgba(245,245,245,0.3)]
-            pointer-events-none
-            ${
-              prefersReducedMotion
-                ? 'opacity-100'
-                : 'animate-in fade-in duration-200'
-            }
-          `}
-          role="tooltip"
-        >
-          {config.label}
-        </div>
-      )}
-    </div>
+    <button
+      onClick={handleToggle}
+      className={`inline-flex h-11 w-11 shrink-0 items-center justify-center bg-surface border-2 border-text text-text shadow-[2px_2px_0_0_var(--color-text)] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background ${
+        prefersReducedMotion
+          ? ''
+          : 'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_var(--color-accent)] active:translate-y-0 active:shadow-none'
+      } ${className}`}
+      aria-label={`Switch to ${config.next} mode. Currently ${config.label}`}
+      title={`${config.label}; switch to ${config.next} mode`}
+      type="button"
+    >
+      <Icon />
+    </button>
   );
 }

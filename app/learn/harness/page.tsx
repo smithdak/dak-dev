@@ -12,18 +12,20 @@ import { SITE_URL as siteUrl } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'Harness Engineering',
   description:
-    'The runtime layer beneath the model — the agent loop, context window economics, compaction, tool-result curation, and system-prompt architecture.',
+    'Runtime control beneath the model and delivery control above it: agent loops, context, evidence, policy, and accountable authorization.',
   keywords: [
     'harness engineering',
+    'delivery harness',
+    'agent delivery architecture',
     'context engineering',
     'agent loop',
     'agent runtime',
     'context window management',
   ],
   openGraph: {
-    title: 'Harness Engineering — The Runtime Beneath the Model',
+    title: 'Harness Engineering — Runtime and Delivery Control',
     description:
-      'Six deep-dives into the agent runtime layer: the loop, context economics, compaction, tool-result curation, and the system prompt.',
+      'Seven deep-dives from the agent runtime loop through evidence-bound delivery control above it.',
     url: `${siteUrl}/learn/harness`,
   },
   alternates: { canonical: '/learn/harness' },
@@ -37,6 +39,16 @@ const CONNECTS = [
   { label: 'Memory System', href: '/learn/toolkit/memory', kind: 'Toolkit' },
   { label: 'Agents & Subagents', href: '/learn/toolkit/agents', kind: 'Toolkit' },
   { label: 'CLAUDE.md', href: '/learn/toolkit/claude-md', kind: 'Toolkit' },
+  {
+    label: 'Permission Architecture',
+    href: '/learn/security/permission-architecture',
+    kind: 'Security',
+  },
+  {
+    label: 'Supply Chain & Audit',
+    href: '/learn/security/supply-chain-and-audit',
+    kind: 'Security',
+  },
 ];
 
 export default function HarnessIndexPage() {
@@ -50,16 +62,13 @@ export default function HarnessIndexPage() {
       <LearnSectionHero
         section="Harness"
         color="purple"
-        eyebrow={`Runtime · ${HARNESS_CHAPTERS.length} Chapters`}
+        eyebrow={`Runtime + Delivery · ${HARNESS_CHAPTERS.length} Chapters`}
         title="Harness Engineering"
         description={HARNESS_BOUNDARY}
       />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0">
-        <nav
-          aria-label="Jump to section"
-          className="flex flex-wrap gap-4 mb-12"
-        >
+        <nav aria-label="Jump to section" className="flex flex-wrap gap-4 mb-12">
           {[
             { num: '01', label: 'Chapters', href: '#chapters' },
             { num: '02', label: 'Connections', href: '#connects' },
@@ -77,21 +86,14 @@ export default function HarnessIndexPage() {
           ))}
         </nav>
 
-        <section
-          id="chapters"
-          aria-labelledby="chapters-heading"
-          className="scroll-mt-20"
-        >
+        <section id="chapters" aria-labelledby="chapters-heading" className="scroll-mt-20">
           <div className="border-l-8 border-l-chapter-4 border-b-2 border-text/30 pl-5 pb-4 mb-8">
-            <h2
-              id="chapters-heading"
-              className="text-2xl md:text-3xl font-bold tracking-tight"
-            >
-              The Six Chapters
+            <h2 id="chapters-heading" className="text-2xl md:text-3xl font-bold tracking-tight">
+              The {HARNESS_CHAPTERS.length} Chapters
             </h2>
             <p className="text-sm text-muted mt-2 max-w-3xl leading-relaxed">
-              Read top to bottom — this is the floor, and each chapter assumes
-              the one before it.
+              Read top to bottom. The sequence starts inside one runtime and ends at the delivery
+              layer above one or more runtimes.
             </p>
           </div>
 
@@ -122,7 +124,7 @@ export default function HarnessIndexPage() {
           id="connects"
           color="purple"
           heading="Where This Connects"
-          intro="Harness Engineering is the floor under the other two pillars. These patterns and toolkit deep-dives are the same ideas at the layer above."
+          intro="Harness Engineering spans runtime execution and delivery control. These patterns, toolkit features, and security controls meet it at different authority boundaries."
           links={CONNECTS}
         />
       </div>

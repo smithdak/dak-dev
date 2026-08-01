@@ -154,7 +154,7 @@ export function generateWebSiteSchema(): WebSiteSchema {
     name: SITE_NAME,
     url: SITE_URL,
     description:
-      'High-performance personal blog featuring engineering projects, web development insights, and technical tutorials.',
+      'Agentic systems, harness engineering, governed delivery, and enterprise software architecture.',
     author: generatePersonSchema(),
     inLanguage: 'en-US',
     // Sitelinks search box eligibility — maps to the on-site ⌘K search.
@@ -226,14 +226,11 @@ export function generateResumeSchema(): ProfilePageSchema {
     mainEntity: {
       '@type': 'Person',
       name: AUTHOR_NAME,
-      jobTitle: 'Principal Architect | Enterprise DXP & Agentic Orchestration',
+      jobTitle: 'Principal Architect | Agentic Systems & Enterprise Platforms',
       description:
-        'Systems Architect with 15 years in enterprise software, specializing in Sitecore/.NET modernization and Deterministic AI Orchestration. 30+ production-ready projects.',
+        'Principal architect with 15 years in enterprise software, focused on Sitecore/.NET modernization, agentic systems, and governed delivery architecture.',
       url: `${SITE_URL}/resume`,
-      sameAs: [
-        'https://linkedin.com/in/dakota-smith-a855b230',
-        'https://github.com/smithdak',
-      ],
+      sameAs: ['https://linkedin.com/in/dakota-smith-a855b230', 'https://github.com/smithdak'],
       knowsAbout: [
         'Next.js',
         'React',
@@ -242,6 +239,9 @@ export function generateResumeSchema(): ProfilePageSchema {
         'Sitecore',
         'Enterprise CMS',
         'AI Integration',
+        'Agentic Systems',
+        'Harness Engineering',
+        'Governed Delivery',
         'Solution Architecture',
       ],
     },
@@ -251,10 +251,7 @@ export function generateResumeSchema(): ProfilePageSchema {
 /**
  * Generate TechArticle schema for individual pattern pages
  */
-export function generatePatternSchema(
-  pattern: PatternFrontmatter,
-  chapter: ChapterMeta
-) {
+export function generatePatternSchema(pattern: PatternFrontmatter, chapter: ChapterMeta) {
   const patternUrl = `${SITE_URL}/learn/patterns/${pattern.slug}`;
 
   return {
@@ -270,7 +267,12 @@ export function generatePatternSchema(
       '@id': patternUrl,
     },
     keywords: pattern.keywords || [],
-    proficiencyLevel: pattern.difficulty === 'beginner' ? 'Beginner' : pattern.difficulty === 'intermediate' ? 'Intermediate' : 'Expert',
+    proficiencyLevel:
+      pattern.difficulty === 'beginner'
+        ? 'Beginner'
+        : pattern.difficulty === 'intermediate'
+          ? 'Intermediate'
+          : 'Expert',
     articleSection: `Chapter ${chapter.number}: ${chapter.name}`,
   };
 }
@@ -278,10 +280,7 @@ export function generatePatternSchema(
 /**
  * Generate CollectionPage schema for the patterns index
  */
-export function generatePatternCollectionSchema(
-  patternCount: number,
-  chapterCount: number
-) {
+export function generatePatternCollectionSchema(patternCount: number, chapterCount: number) {
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -299,10 +298,7 @@ export function generatePatternCollectionSchema(
 /**
  * Generate CollectionPage schema for a chapter page
  */
-export function generateChapterSchema(
-  chapter: ChapterMeta,
-  patternCount: number
-) {
+export function generateChapterSchema(chapter: ChapterMeta, patternCount: number) {
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -320,10 +316,7 @@ export function generateChapterSchema(
 /**
  * Generate TechArticle schema for toolkit topic pages
  */
-export function generateToolkitTopicSchema(
-  topic: ToolkitTopicMeta,
-  page: ToolkitFrontmatter
-) {
+export function generateToolkitTopicSchema(topic: ToolkitTopicMeta, page: ToolkitFrontmatter) {
   const topicUrl = `${SITE_URL}/learn/toolkit/${topic.slug}`;
 
   return {
@@ -351,7 +344,7 @@ export function generateToolkitCollectionSchema(topicCount: number) {
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: 'Claude Code Toolkit — Expert\'s Guide to Agentic Engineering',
+    name: "Claude Code Toolkit — Expert's Guide to Agentic Engineering",
     description: `${topicCount} expert deep-dives into Claude Code features for production agentic engineering.`,
     url: `${SITE_URL}/learn/toolkit`,
     author: generatePersonSchema(),
@@ -387,7 +380,7 @@ export function generateLearnCollectionSchema() {
       name: 'The Harness',
       url: `${SITE_URL}/learn/harness`,
       description:
-        'How the agent loop, context, and tools fit together — the runtime around the model.',
+        'Runtime control beneath the model and delivery control above one or more runtimes.',
     },
     {
       name: 'Security',

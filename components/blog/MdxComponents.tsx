@@ -70,13 +70,7 @@ function P({ children }: { children?: ReactNode }) {
 }
 
 // Links with external link indicator
-function A({
-  href,
-  children,
-}: {
-  href?: string;
-  children?: ReactNode;
-}) {
+function A({ href, children }: { href?: string; children?: ReactNode }) {
   const isExternal = href?.startsWith('http');
   const isAnchor = href?.startsWith('#');
 
@@ -182,20 +176,12 @@ function Blockquote({ children }: { children?: ReactNode }) {
 
 // Unordered lists
 function Ul({ children }: { children?: ReactNode }) {
-  return (
-    <ul className="my-6 ml-6 space-y-2 list-none">
-      {children}
-    </ul>
-  );
+  return <ul className="my-6 ml-6 space-y-2 list-none">{children}</ul>;
 }
 
 // Ordered lists
 function Ol({ children }: { children?: ReactNode }) {
-  return (
-    <ol className="my-6 ml-6 space-y-2 list-none counter-reset-[item]">
-      {children}
-    </ol>
-  );
+  return <ol className="my-6 ml-6 space-y-2 list-none counter-reset-[item]">{children}</ol>;
 }
 
 // List items with custom bullets/numbers
@@ -225,9 +211,7 @@ function Em({ children }: { children?: ReactNode }) {
 // Inline code
 function Code({ children }: { children?: ReactNode }) {
   return (
-    <code className="px-1.5 py-0.5 bg-surface/50 text-text text-sm font-mono">
-      {children}
-    </code>
+    <code className="px-1.5 py-0.5 bg-surface/50 text-text text-sm font-mono">{children}</code>
   );
 }
 
@@ -269,14 +253,12 @@ function Td({ children }: { children?: ReactNode }) {
   if (text === 'Yes') {
     content = <span className="text-accent font-medium">✓ Yes</span>;
   } else if (text === 'No') {
-    content = <span className="text-muted/50">✗ No</span>;
+    content = <span className="text-muted">✗ No</span>;
   } else if (text === 'Experimental') {
     content = <span className="text-yellow-400 font-medium">◆ Experimental</span>;
   }
 
-  return (
-    <td className="px-4 py-3 text-muted border-b border-muted/30">{content}</td>
-  );
+  return <td className="px-4 py-3 text-muted border-b border-muted/30">{content}</td>;
 }
 
 /**

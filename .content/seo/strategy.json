@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updated_at": "2026-06-01",
+  "updated_at": "2026-08-01",
   "domain_authority_estimate": "new",
   "target_keywords": {
     "primary": [
@@ -215,6 +215,16 @@
         "posts": ["learn/harness/building-a-harness"]
       },
       {
+        "keyword": "agent delivery harness",
+        "parent_primary": "harness engineering",
+        "posts": ["agent-delivery-harness"]
+      },
+      {
+        "keyword": "runtime harness vs delivery harness",
+        "parent_primary": "harness engineering",
+        "posts": ["learn/harness/delivery-control-above-agent-loop"]
+      },
+      {
         "keyword": "AI data privacy context window",
         "parent_primary": "AI security",
         "posts": ["learn/security/data-and-pii"]
@@ -301,7 +311,7 @@
     {
       "id": "cluster_003",
       "name": "Harness Engineering",
-      "description": "Authority cluster on the agent runtime layer — the loop, context economics, compaction, tool-result curation, and system-prompt architecture. Lives in the Learn section as the third pillar (the floor beneath Patterns and Toolkit). Closes gap_002.",
+      "description": "Authority cluster on two harness layers: runtime control beneath a model — loop, context, compaction, tool-result curation, and prompt architecture — and delivery control above one or more runtimes through exact-candidate evidence, policy, and accountable authorization. The Learn index retains ownership of harness engineering; Chapter 07 owns runtime harness vs delivery harness; the draft flagship owns agent delivery harness. Closes gap_002 without targeting the multi-model agent orchestration cluster.",
       "pillar_post": "learn/harness",
       "cluster_posts": [
         "learn/harness/agent-loop",
@@ -309,7 +319,9 @@
         "learn/harness/compaction-continuity",
         "learn/harness/tool-result-curation",
         "learn/harness/system-prompt-architecture",
-        "learn/harness/building-a-harness"
+        "learn/harness/building-a-harness",
+        "learn/harness/delivery-control-above-agent-loop",
+        "agent-delivery-harness"
       ],
       "planned_posts": [],
       "created_at": "2026-05-19"
@@ -363,7 +375,11 @@
       "id": "gap_001",
       "topic": "Claude Code plugin development tutorials",
       "priority": "high",
-      "suggested_keywords": ["claude code plugin tutorial", "build claude plugin", "claude code extension"],
+      "suggested_keywords": [
+        "claude code plugin tutorial",
+        "build claude plugin",
+        "claude code extension"
+      ],
       "notes": "Growing ecosystem with limited tutorial content. Good opportunity for authority building.",
       "created_at": "2026-01-25"
     },
@@ -373,8 +389,12 @@
       "priority": "medium",
       "status": "addressed",
       "addressed_by": "cluster_003",
-      "suggested_keywords": ["LLM agent patterns", "multi-agent architecture", "autonomous AI design"],
-      "notes": "Closed 2026-05-19 by the Harness Engineering cluster (cluster_003) — the Learn section's third pillar covers the agent loop, context economics, compaction, tool-result curation, and system-prompt architecture. APL post partially filled this earlier.",
+      "suggested_keywords": [
+        "LLM agent patterns",
+        "multi-agent architecture",
+        "autonomous AI design"
+      ],
+      "notes": "Closed 2026-05-19 by the Harness Engineering cluster (cluster_003), then broadened 2026-08-01 from runtime-only coverage to explicit runtime and delivery layers. The peer Learn pillar now runs from the agent loop, context, compaction, result curation, and prompt architecture through exact-candidate evidence and accountable authorization. APL post partially filled the original runtime gap.",
       "created_at": "2026-01-25"
     },
     {
@@ -383,7 +403,13 @@
       "priority": "high",
       "status": "addressed",
       "addressed_by": "cluster_004",
-      "suggested_keywords": ["prompt injection defense", "AI data privacy", "LLM PII context window", "agent permission architecture", "AI secrets management"],
+      "suggested_keywords": [
+        "prompt injection defense",
+        "AI data privacy",
+        "LLM PII context window",
+        "agent permission architecture",
+        "AI secrets management"
+      ],
       "notes": "Closed 2026-05-19 by the AI Security & Privacy cluster (cluster_004) — the Learn section's fourth pillar. Two accessible on-ramps (the-real-risks, data-and-pii) target top-of-funnel privacy intent; six engineering chapters establish builder authority. Distinct from topic_016 (web-security checklist for deploying teams) — the two reinforce rather than overlap.",
       "created_at": "2026-05-19"
     },
@@ -393,7 +419,13 @@
       "priority": "high",
       "status": "addressed",
       "addressed_by": "cluster_005",
-      "suggested_keywords": ["AI adoption strategy", "AI governance framework", "agentic engineering", "getting employees to use AI", "autonomous agent fleet"],
+      "suggested_keywords": [
+        "AI adoption strategy",
+        "AI governance framework",
+        "agentic engineering",
+        "getting employees to use AI",
+        "autonomous agent fleet"
+      ],
       "notes": "The four existing clusters are all how-to/technical depth (Dev Tools, Skills-for-every-role, Harness, Security) — there was no narrative/POV anchor answering 'how the practice itself changes and why it matters'. Opened and addressed 2026-06-01 by cluster_005. Cannibalization check vs cluster_002 (Claude Skills for Every Role): NO overlap. cluster_002 targets product/how-to intent ('claude skills', 'how to use skills'); cluster_005's adoption post targets adoption/change-management intent ('AI adoption strategy', 'getting employees to use AI', 'rolling out AI tools company-wide'). The adoption post REINFORCES cluster_002 by linking down to it as 'what you actually distribute', capturing a higher-funnel audience that then descends into the Skills cluster. Different SERPs, different searcher, complementary internal links.",
       "created_at": "2026-06-01"
     }
@@ -433,17 +465,47 @@
     "getting-a-company-to-use-ai": {
       "outbound": [],
       "inbound": [],
-      "recommended": ["ai-isnt-just-for-coders-claude-skills", "learn/security", "building-claude-marketplace-cms-analyzers", "agentic-catalog-design-principles"]
+      "recommended": [
+        "ai-isnt-just-for-coders-claude-skills",
+        "learn/security",
+        "building-claude-marketplace-cms-analyzers",
+        "agentic-catalog-design-principles"
+      ]
     },
     "agentic-catalog-design-principles": {
       "outbound": [],
       "inbound": [],
-      "recommended": ["learn/security/permission-architecture", "learn/security/supply-chain-and-audit", "learn/harness/system-prompt-architecture", "getting-a-company-to-use-ai", "how-engineering-became-agentic"]
+      "recommended": [
+        "learn/security/permission-architecture",
+        "learn/security/supply-chain-and-audit",
+        "learn/harness/system-prompt-architecture",
+        "getting-a-company-to-use-ai",
+        "how-engineering-became-agentic"
+      ]
     },
     "how-engineering-became-agentic": {
       "outbound": [],
       "inbound": [],
-      "recommended": ["learn/harness", "learn/harness/building-a-harness", "building-apl-autonomous-coding-agent", "supervisor-in-the-machine-why-i-built-studio", "agentic-catalog-design-principles"]
+      "recommended": [
+        "learn/harness",
+        "learn/harness/building-a-harness",
+        "building-apl-autonomous-coding-agent",
+        "supervisor-in-the-machine-why-i-built-studio",
+        "agentic-catalog-design-principles"
+      ]
+    },
+    "agent-delivery-harness": {
+      "outbound": [
+        "learn/harness",
+        "learn/harness/delivery-control-above-agent-loop",
+        "learn/security/permission-architecture"
+      ],
+      "inbound": [],
+      "recommended": [
+        "learn/security/supply-chain-and-audit",
+        "compile-your-agentic-system",
+        "how-engineering-became-agentic"
+      ]
     }
   }
 }

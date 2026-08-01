@@ -1,0 +1,15 @@
+# Supply-chain policy lives here because both the project-pinned pnpm 10
+# runtime and newer pnpm launchers read workspace settings from this file.
+# A packages key is intentionally omitted: this repository is a single package.
+minimumReleaseAge: 4320
+verifyDepsBeforeRun: warn
+
+# Dependency lifecycle scripts are blocked unless explicitly approved here.
+allowBuilds:
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+
+# Keep transitive PostCSS installs on the patched line.
+overrides:
+  postcss@<8.5.10: '>=8.5.10'

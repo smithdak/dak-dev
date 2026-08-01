@@ -31,9 +31,9 @@ Giscus) that are not caused by this project's configuration.
 
 This project applies defense-in-depth:
 
-- **pnpm** with a 3-day install cooldown (`minimum-release-age`) and
-  dependency build scripts blocked by default (`onlyBuiltDependencies`
-  allowlist only).
+- **pnpm** with a 3-day install cooldown (`minimumReleaseAge`) and
+  dependency build scripts blocked by default (`allowBuilds` in
+  `pnpm-workspace.yaml` is the explicit allowlist).
 - **Frozen lockfile** installs in CI and on Vercel.
 - **Least-privilege CI**: workflows default to `contents: read`; write
   scopes are granted per-job only where required.

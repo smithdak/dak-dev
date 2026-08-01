@@ -39,9 +39,7 @@ export function QuickReferenceCard({
   const isStandalone = variant === 'standalone';
 
   const Wrapper = isStandalone ? Link : 'div';
-  const wrapperProps = isStandalone
-    ? { href: `/learn/patterns/${frontmatter.slug}` }
-    : {};
+  const wrapperProps = isStandalone ? { href: `/learn/patterns/${frontmatter.slug}` } : {};
   const TitleTag = isHero ? 'h1' : 'h3';
 
   return (
@@ -73,9 +71,7 @@ export function QuickReferenceCard({
           </span>
         )}
         <DifficultyBadge difficulty={frontmatter.difficulty} />
-        {readingTime && (
-          <span className="text-xs text-muted font-mono">{readingTime}</span>
-        )}
+        {readingTime && <span className="text-xs text-muted font-mono">{readingTime}</span>}
       </div>
 
       {/* Name */}
@@ -103,16 +99,18 @@ export function QuickReferenceCard({
       {/* Signals */}
       {signals.length > 0 && (
         <div className="relative">
-          <p className={`font-mono font-bold uppercase tracking-wider text-muted ${
-            isHero ? 'text-[11px] mb-2' : 'text-[10px] mb-1.5'
-          }`}>
+          <p
+            className={`font-mono font-bold uppercase tracking-wider text-muted ${
+              isHero ? 'text-[11px] mb-2' : 'text-[10px] mb-1.5'
+            }`}
+          >
             Signals
           </p>
           <ul className={isHero ? 'space-y-1.5' : 'space-y-1'}>
             {signals.map((signal, i) => (
               <li
                 key={i}
-                className={`text-muted/80 leading-snug pl-3 relative before:content-['›'] before:absolute before:left-0 before:text-muted/50 before:font-mono ${
+                className={`text-muted leading-snug pl-3 relative before:content-['›'] before:absolute before:left-0 before:text-muted before:font-mono ${
                   isHero ? 'text-sm' : 'text-xs'
                 }`}
               >
@@ -129,7 +127,7 @@ export function QuickReferenceCard({
           {frontmatter.keywords.slice(0, isHero ? 5 : 4).map((kw) => (
             <span
               key={kw}
-              className={`font-mono text-muted/70 border border-text/20 px-1.5 py-0.5 ${
+              className={`font-mono text-muted border border-text/20 px-1.5 py-0.5 ${
                 isHero ? 'text-[11px]' : 'text-[10px]'
               }`}
             >

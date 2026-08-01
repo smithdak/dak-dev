@@ -53,8 +53,8 @@ export default function LearnLayout({ children }: { children: ReactNode }) {
           />
         </div>
 
-        {/* Main content */}
-        <main className="min-w-0">{children}</main>
+        {/* Learn content — the root layout owns the page's single main landmark. */}
+        <div className="min-w-0">{children}</div>
       </div>
     </div>
   );

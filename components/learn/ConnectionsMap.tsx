@@ -17,8 +17,7 @@ interface RelationshipBlock {
   pairs: Pair[];
 }
 
-const ARROW_BIDIRECTIONAL =
-  'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4';
+const ARROW_BIDIRECTIONAL = 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4';
 const ARROW_UP = 'M5 10l7-7m0 0l7 7m-7-7v18';
 
 // Patterns and toolkit topics that reinforce each other.
@@ -44,13 +43,16 @@ const PATTERN_TOOLKIT: Pair[] = [
     right: { name: 'Skills', href: '/learn/toolkit/skills' },
   },
   {
-    left: { name: 'Agent-Friendly Architecture', href: '/learn/patterns/agent-friendly-architecture' },
+    left: {
+      name: 'Agent-Friendly Architecture',
+      href: '/learn/patterns/agent-friendly-architecture',
+    },
     right: { name: 'MCP Servers', href: '/learn/toolkit/mcp' },
   },
 ];
 
-// Harness Engineering is the floor under the other two pillars. Each chapter
-// is a pattern or toolkit idea seen at the runtime layer.
+// Harness Engineering spans runtime execution beneath the model and delivery
+// control above it. Each pair shows where another pillar meets that boundary.
 const HARNESS_LINKS: Pair[] = [
   {
     left: { name: 'Context Window Economics', href: '/learn/harness/context-economics' },
@@ -68,6 +70,13 @@ const HARNESS_LINKS: Pair[] = [
     left: { name: 'The Agent Loop', href: '/learn/harness/agent-loop' },
     right: { name: 'Checkpoint Loop', href: '/learn/patterns/checkpoint-loop' },
   },
+  {
+    left: {
+      name: 'Delivery Control Above the Agent Loop',
+      href: '/learn/harness/delivery-control-above-agent-loop',
+    },
+    right: { name: 'Supply Chain & Audit', href: '/learn/security/supply-chain-and-audit' },
+  },
 ];
 
 // Security is the trust surface cutting across all three pillars. Each chapter
@@ -75,7 +84,10 @@ const HARNESS_LINKS: Pair[] = [
 const SECURITY_LINKS: Pair[] = [
   {
     left: { name: 'Prompt Injection', href: '/learn/security/prompt-injection' },
-    right: { name: 'System Prompt Architecture', href: '/learn/harness/system-prompt-architecture' },
+    right: {
+      name: 'System Prompt Architecture',
+      href: '/learn/harness/system-prompt-architecture',
+    },
   },
   {
     left: { name: 'Data & PII in Context', href: '/learn/security/data-and-pii' },
@@ -101,9 +113,9 @@ const BLOCKS: RelationshipBlock[] = [
     pairs: PATTERN_TOOLKIT,
   },
   {
-    eyebrow: 'Harness · The Floor Beneath',
+    eyebrow: 'Harness · Below and Above the Loop',
     thesis:
-      'Harness Engineering is the runtime layer the patterns and toolkit stand on — each chapter is an idea above it, seen at the loop level.',
+      'Harness Engineering controls execution inside the runtime and accountable acceptance above it.',
     leftBorder: 'border-l-chapter-4',
     arrowColor: 'text-chapter-4',
     arrow: ARROW_UP,
@@ -128,15 +140,10 @@ export function ConnectionsMap() {
     >
       <ScrollReveal>
         <div className="mb-10 border-b-4 border-text pb-6">
-          <h2
-            id="learn-connections-heading"
-            className="text-3xl md:text-4xl font-bold mb-2"
-          >
+          <h2 id="learn-connections-heading" className="text-3xl md:text-4xl font-bold mb-2">
             How It Connects
           </h2>
-          <p className="text-lg text-muted">
-            The four pillars are one system, not four silos.
-          </p>
+          <p className="text-lg text-muted">The four pillars are one system, not four silos.</p>
         </div>
       </ScrollReveal>
 

@@ -19,6 +19,7 @@
     "thumbnail:create": "tsx scripts/generate-thumbnail.ts",
     "resume:generate": "tsx scripts/generate-resume-pdf.ts",
     "rss:test": "tsx scripts/test-rss-feed.ts",
+    "test:search": "tsx scripts/test-search.ts",
     "publish:prepare": "tsx scripts/publish-prepare.ts",
     "publish:prepare:fix": "tsx scripts/publish-prepare.ts --fix",
     "publish:prepare:all": "tsx scripts/publish-prepare.ts --all",
@@ -78,15 +79,5 @@
     "tailwindcss": "^4.3.2",
     "tsx": "^4.23.0",
     "typescript": "6.0.3"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "sharp",
-      "unrs-resolver"
-    ],
-    "overrides": {
-      "postcss@<8.5.10": ">=8.5.10"
-    }
   }
 }

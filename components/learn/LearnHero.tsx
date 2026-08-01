@@ -35,8 +35,7 @@ export function LearnHero({
   harnessChapterCount,
   securityChapterCount,
 }: LearnHeroProps) {
-  const totalGuides =
-    patternCount + toolkitTopicCount + harnessChapterCount + securityChapterCount;
+  const totalGuides = patternCount + toolkitTopicCount + harnessChapterCount + securityChapterCount;
 
   const pillars: Pillar[] = [
     {
@@ -68,8 +67,8 @@ export function LearnHero({
       title: 'Harness Engineering',
       href: '/learn/harness',
       description:
-        'The runtime layer beneath the model — the agent loop, context economics, compaction, and the system prompt.',
-      stat: `${harnessChapterCount} chapters · the floor`,
+        'Runtime control beneath the model and delivery control above it — from the agent loop to accountable authorization.',
+      stat: `${harnessChapterCount} chapters · two layers`,
       cta: 'Go deeper',
       topBorder: 'border-t-chapter-4',
       iconColor: 'text-chapter-4',
@@ -123,7 +122,7 @@ export function LearnHero({
         </span>
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-          <motion.div variants={staggerContainerVariants} initial="hidden" animate="visible">
+          <motion.div variants={staggerContainerVariants} initial={false} animate="visible">
             <motion.div
               variants={slideUpVariants}
               className="mb-6 inline-block border-4 border-accent bg-surface px-6 py-2"
@@ -152,10 +151,10 @@ export function LearnHero({
               className="mb-10 max-w-3xl text-muted text-lg leading-relaxed"
             >
               Four pillars, one stack. <span className="text-text font-semibold">Patterns</span> are
-              the portable techniques. The{' '}
-              <span className="text-text font-semibold">Toolkit</span> is the Claude Code features.{' '}
-              <span className="text-text font-semibold">Harness Engineering</span> is the runtime
-              floor the other two stand on.{' '}
+              the portable techniques. The <span className="text-text font-semibold">Toolkit</span>{' '}
+              is the Claude Code features.{' '}
+              <span className="text-text font-semibold">Harness Engineering</span> spans runtime
+              execution beneath the model and delivery control above it.{' '}
               <span className="text-text font-semibold">Security</span> is the trust surface that
               cuts across all three.
             </motion.p>

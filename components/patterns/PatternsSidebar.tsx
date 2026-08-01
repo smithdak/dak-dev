@@ -86,7 +86,7 @@ export function PatternsSidebar({ chapters, patterns }: PatternsSidebarProps) {
   const activePattern = patterns.find((p) => p.slug === activePatternSlug);
   const activeChapterNum = activePattern?.chapter ?? null;
   const activeChapterFromPage = activeChapterSlug
-    ? chapters.find((c) => c.slug === activeChapterSlug)?.number ?? null
+    ? (chapters.find((c) => c.slug === activeChapterSlug)?.number ?? null)
     : null;
 
   const [expanded, setExpanded] = useState<Set<number>>(() => {
@@ -132,8 +132,19 @@ export function PatternsSidebar({ chapters, patterns }: PatternsSidebarProps) {
           isActive={isOnPatternsIndex}
           label="All Patterns"
           icon={
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           }
         />
@@ -142,8 +153,19 @@ export function PatternsSidebar({ chapters, patterns }: PatternsSidebarProps) {
           isActive={isOnGraphPage}
           label="Language Map"
           icon={
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+              />
             </svg>
           }
         />
@@ -152,8 +174,19 @@ export function PatternsSidebar({ chapters, patterns }: PatternsSidebarProps) {
           isActive={isOnCardsPage}
           label="Quick-Ref Cards"
           icon={
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
             </svg>
           }
         />
@@ -165,13 +198,10 @@ export function PatternsSidebar({ chapters, patterns }: PatternsSidebarProps) {
       {/* Chapter blocks */}
       <div className="space-y-1.5">
         {chapters.map((chapter) => {
-          const chapterPatterns = patterns.filter(
-            (p) => p.chapter === chapter.number
-          );
+          const chapterPatterns = patterns.filter((p) => p.chapter === chapter.number);
           const isExpanded = expanded.has(chapter.number);
           const isActiveChapter =
-            activeChapterNum === chapter.number ||
-            activeChapterFromPage === chapter.number;
+            activeChapterNum === chapter.number || activeChapterFromPage === chapter.number;
           const hasPatterns = chapterPatterns.length > 0;
 
           return (
@@ -191,23 +221,17 @@ export function PatternsSidebar({ chapters, patterns }: PatternsSidebarProps) {
                   }`}
                 >
                   <span
-                    className={`font-mono font-bold text-lg leading-none ${TEXT_COLORS[chapter.number]} ${
-                      isActiveChapter ? 'opacity-100' : 'opacity-50'
-                    }`}
+                    className={`font-mono font-bold text-lg leading-none ${TEXT_COLORS[chapter.number]}`}
                   >
                     {chapter.number}
                   </span>
-                  <span className="text-sm font-semibold truncate">
-                    {chapter.name}
-                  </span>
+                  <span className="text-sm font-semibold truncate">{chapter.name}</span>
                 </Link>
 
                 {hasPatterns && (
                   <button
                     onClick={(e) => toggleChapter(chapter.number, e)}
-                    className={`flex items-center gap-1 mr-2 px-1.5 py-1 text-muted hover:text-text transition-all focus:outline-none focus:ring-2 focus:ring-accent ${
-                      isExpanded ? 'opacity-100' : 'opacity-60 hover:opacity-100'
-                    }`}
+                    className="flex min-h-11 min-w-11 items-center justify-center gap-1 mr-1 px-1.5 py-1 text-muted hover:text-text transition-all focus:outline-none focus:ring-2 focus:ring-accent"
                     aria-expanded={isExpanded}
                     aria-controls={`chapter-${chapter.number}-patterns`}
                     aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${chapter.name} patterns`}
@@ -222,7 +246,12 @@ export function PatternsSidebar({ chapters, patterns }: PatternsSidebarProps) {
                       viewBox="0 0 24 24"
                       aria-hidden="true"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2.5}
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   </button>
                 )}
@@ -230,10 +259,7 @@ export function PatternsSidebar({ chapters, patterns }: PatternsSidebarProps) {
 
               {/* Pattern list */}
               {isExpanded && hasPatterns && (
-                <ul
-                  id={`chapter-${chapter.number}-patterns`}
-                  className="pb-1"
-                >
+                <ul id={`chapter-${chapter.number}-patterns`} className="pb-1">
                   {chapterPatterns.map((pattern) => {
                     const isActive = activePatternSlug === pattern.slug;
 
@@ -241,19 +267,15 @@ export function PatternsSidebar({ chapters, patterns }: PatternsSidebarProps) {
                       <li key={pattern.slug}>
                         <Link
                           href={`/learn/patterns/${pattern.slug}`}
-                          className={`group flex items-center gap-2.5 pl-8 pr-3 py-2 text-sm transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent ${
+                          className={`group flex min-h-11 items-center gap-2.5 pl-8 pr-3 py-2 text-sm transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent ${
                             isActive
                               ? `font-bold text-text border-l-4 ${BORDER_COLORS[pattern.chapter]} ${BG_COLORS[pattern.chapter]} -ml-px`
-                              : 'text-muted/70 border-l border-text/10 hover:text-text hover:border-l-2 hover:border-text/30 hover:bg-surface/20'
+                              : 'text-muted border-l border-text/10 hover:text-text hover:border-l-2 hover:border-text/30 hover:bg-surface/20'
                           }`}
                           aria-current={isActive ? 'page' : undefined}
                         >
                           <span
-                            className={`font-mono text-xs tabular-nums shrink-0 ${
-                              isActive
-                                ? `${TEXT_COLORS[pattern.chapter]} opacity-100`
-                                : `${TEXT_COLORS[pattern.chapter]} opacity-40 group-hover:opacity-70`
-                            }`}
+                            className={`font-mono text-xs tabular-nums shrink-0 ${TEXT_COLORS[pattern.chapter]}`}
                           >
                             {pattern.number}
                           </span>
@@ -271,7 +293,7 @@ export function PatternsSidebar({ chapters, patterns }: PatternsSidebarProps) {
 
       {/* Footer accent */}
       <div className="mt-5 pt-3 border-t border-text/10">
-        <p className="text-[10px] font-mono text-muted/40 uppercase tracking-widest">
+        <p className="text-[10px] font-mono text-muted uppercase tracking-widest">
           {patterns.length} patterns &middot; {chapters.length} chapters
         </p>
       </div>

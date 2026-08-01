@@ -38,10 +38,7 @@ export function Card({
   });
 
   return (
-    <motion.article
-      variants={staggerItemVariants}
-      className={`group ${className}`}
-    >
+    <motion.article variants={staggerItemVariants} className={`group ${className}`}>
       <Link
         href={`/blog/${slug}`}
         className="block bg-surface border-4 border-text shadow-[8px_8px_0_0_var(--color-text)] hover:shadow-[12px_12px_0_0_var(--color-accent)] hover:border-accent transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
@@ -82,9 +79,7 @@ export function Card({
           </h2>
 
           {/* Excerpt */}
-          <p className="text-muted leading-relaxed mb-4 line-clamp-3">
-            {excerpt}
-          </p>
+          <p className="text-muted leading-relaxed mb-4 line-clamp-3">{excerpt}</p>
 
           {/* Tags */}
           {tags.length > 0 && (
@@ -118,7 +113,7 @@ export function CardList({ posts, className = '' }: CardListProps) {
   return (
     <motion.div
       variants={staggerContainerVariants}
-      initial="hidden"
+      initial={false}
       whileInView="visible"
       viewport={{ once: true, margin: '-50px' }}
       className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 ${className}`}

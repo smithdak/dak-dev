@@ -4,7 +4,7 @@ import { SearchContent } from './SearchContent';
 // SEO metadata with noindex
 export const metadata: Metadata = {
   title: 'Search | Dakota Smith',
-  description: 'Search blog posts',
+  description: 'Search articles, agent patterns, and technical guides across the site.',
   robots: {
     index: false,
     follow: true,

@@ -38,33 +38,33 @@ what prevents a wrong assumption:
 - Accessibility regressions fail the build by design — interactive/icon
   elements need accessible names, images need alt text (`DESIGN.md` §9).
 - Security controls live **at the point of the control**: CSP and headers in
-  `next.config.ts`, supply chain in `.npmrc`. Adding an external origin
-  requires a CSP edit *with a comment* or it is blocked in production
+  `next.config.ts`, supply-chain policy in `pnpm-workspace.yaml`. Adding an external origin
+  requires a CSP edit _with a comment_ or it is blocked in production
   (`DESIGN.md` §10).
 - Static only, no cookies, single author. Giscus (GitHub auth) for comments;
   page-view-only analytics.
 
 ## Commands
 
-| Command | Purpose |
-|---|---|
-| `pnpm dev` | Local dev (Turbopack; no Shiki — see above) |
-| `pnpm build` | Production build — **run before claiming MDX/content done** |
-| `pnpm lint` | ESLint |
-| `pnpm validate:content` / `:all` | Validate published / all posts |
-| `pnpm analyze` | Bundle analysis |
+| Command                          | Purpose                                                     |
+| -------------------------------- | ----------------------------------------------------------- |
+| `pnpm dev`                       | Local dev (Turbopack; no Shiki — see above)                 |
+| `pnpm build`                     | Production build — **run before claiming MDX/content done** |
+| `pnpm lint`                      | ESLint                                                      |
+| `pnpm validate:content` / `:all` | Validate published / all posts                              |
+| `pnpm analyze`                   | Bundle analysis                                             |
 
 Skills (slash commands; load on demand, zero cost until invoked):
 
-| Skill | Use when |
-|---|---|
-| `/write-post` | Drafting a new post (brand-consistent scaffold) |
-| `/review-post` | Pre-publish brand + SEO review |
-| `/brand-check` | Quick brand-voice check on any text |
-| `/content-calendar` | Managing the content pipeline/backlog |
-| `/content-strategist` | SEO: keywords, gaps, clusters, audits |
-| `/frontend-design` | UI/component design work |
-| `/product-owner` | Scoping/prioritizing product work |
+| Skill                 | Use when                                        |
+| --------------------- | ----------------------------------------------- |
+| `/write-post`         | Drafting a new post (brand-consistent scaffold) |
+| `/review-post`        | Pre-publish brand + SEO review                  |
+| `/brand-check`        | Quick brand-voice check on any text             |
+| `/content-calendar`   | Managing the content pipeline/backlog           |
+| `/content-strategist` | SEO: keywords, gaps, clusters, audits           |
+| `/frontend-design`    | UI/component design work                        |
+| `/product-owner`      | Scoping/prioritizing product work               |
 
 ## Conventions Codex can't infer from the code
 
@@ -87,16 +87,16 @@ Skills (slash commands; load on demand, zero cost until invoked):
 Deep docs are referenced, not imported, to keep this file lean. Read the
 relevant one when the task calls for it:
 
-| Doc | Read when |
-|---|---|
-| **`DESIGN.md`** | Any structural/architectural change |
-| `docs/README.md` | You need the doc-system map / where new material goes |
-| `docs/content-ops.md` | Content workflow, brand voice, or SEO work |
-| `docs/ui-workflow.md` | UI work with the Pencil.dev MCP |
-| `docs/project-history.md` | You need the original plan, epics, or decisions |
-| `docs/research/*` | Questions about Codex mechanics |
-| `docs/plans/*` | Prior per-feature design/plan docs |
-| `.content/brand/voice.md`, `.content/brand/guidelines.json` | Canonical brand voice + rules (don't restate them) |
+| Doc                                                         | Read when                                             |
+| ----------------------------------------------------------- | ----------------------------------------------------- |
+| **`DESIGN.md`**                                             | Any structural/architectural change                   |
+| `docs/README.md`                                            | You need the doc-system map / where new material goes |
+| `docs/content-ops.md`                                       | Content workflow, brand voice, or SEO work            |
+| `docs/ui-workflow.md`                                       | UI work with the Pencil.dev MCP                       |
+| `docs/project-history.md`                                   | You need the original plan, epics, or decisions       |
+| `docs/research/*`                                           | Questions about Codex mechanics                       |
+| `docs/plans/*`                                              | Prior per-feature design/plan docs                    |
+| `.content/brand/voice.md`, `.content/brand/guidelines.json` | Canonical brand voice + rules (don't restate them)    |
 
 ---
 

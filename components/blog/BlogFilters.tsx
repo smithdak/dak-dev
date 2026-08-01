@@ -39,9 +39,7 @@ export function BlogFilters({ tagCounts, className = '' }: BlogFiltersProps) {
           aria-controls="blog-filters-panel"
           className="flex w-full items-center justify-between p-6 text-left focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
         >
-          <span className="text-sm font-semibold text-muted">
-            Filter by tag
-          </span>
+          <span className="text-sm font-semibold text-muted">Filter by tag</span>
           <span className="flex items-center gap-2">
             <span className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 text-xs font-bold border-2 border-text text-text">
               {totalTags}
@@ -71,7 +69,7 @@ export function BlogFilters({ tagCounts, className = '' }: BlogFiltersProps) {
               >
                 <motion.div
                   variants={fastStaggerContainer}
-                  initial="hidden"
+                  initial={false}
                   animate="visible"
                   className="flex flex-wrap gap-2 px-6 pt-2 pb-6"
                 >
@@ -88,11 +86,14 @@ export function BlogFilters({ tagCounts, className = '' }: BlogFiltersProps) {
       </nav>
 
       {/* Desktop: always visible with scroll entrance */}
-      <nav aria-label="Filter by tag" className="hidden md:block border-b-4 border-surface bg-surface/20 p-6">
+      <nav
+        aria-label="Filter by tag"
+        className="hidden md:block border-b-4 border-surface bg-surface/20 p-6"
+      >
         <p className="text-sm font-semibold text-muted mb-3">Filter by tag</p>
         <motion.div
           variants={fastStaggerContainer}
-          initial="hidden"
+          initial={false}
           whileInView="visible"
           viewport={{ once: true, margin: '-50px' }}
           className="flex flex-wrap gap-2"

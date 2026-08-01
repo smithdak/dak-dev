@@ -11,10 +11,7 @@ import { ShareButtons } from '@/components/blog/ShareButtons';
 import { TagList } from '@/components/ui/Tag';
 import { mdxComponents } from '@/components/blog/MdxComponents';
 import { JsonLd } from '@/components/seo/JsonLd';
-import {
-  generateBlogPostingSchema,
-  generateBreadcrumbSchema,
-} from '@/lib/schema';
+import { generateBlogPostingSchema, generateBreadcrumbSchema } from '@/lib/schema';
 import { SITE_URL as baseUrl } from '@/lib/site';
 import { getMdxOptions } from '@/lib/mdx-options';
 import Image from 'next/image';
@@ -25,11 +22,7 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
 
@@ -50,6 +43,7 @@ export async function generateMetadata({
     title: post.frontmatter.title,
     description: post.frontmatter.excerpt,
     keywords: post.frontmatter.keywords,
+    robots: post.frontmatter.published ? undefined : { index: false, follow: false },
     alternates: { canonical: `/blog/${slug}` },
     openGraph: {
       title: post.frontmatter.title,
@@ -76,11 +70,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function BlogPost({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function BlogPost({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
 
@@ -104,14 +94,11 @@ export default async function BlogPost({
 
   const mdxOptions: any = await getMdxOptions();
 
-  const formattedDate = new Date(post.frontmatter.date).toLocaleDateString(
-    'en-US',
-    {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }
-  );
+  const formattedDate = new Date(post.frontmatter.date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 
   // Generate Schema.org structured data
   const blogPostingSchema = generateBlogPostingSchema(post.frontmatter);
@@ -223,7 +210,10 @@ export default async function BlogPost({
                     className="object-cover object-center"
                     sizes="(max-width: 1024px) 100vw, 65vw"
                     placeholder="blur"
-                    blurDataURL="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 225'%3E%3Cfilter id='b' color-interpolation-filters='sRGB'%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3CfeColorMatrix values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 100 -1' result='s'/%3E%3CfeFlood x='0' y='0' width='100%25' height='100%25'/%3E%3CfeComposite operator='out' in='s'/%3E%3CfeComposite in2='SourceGraphic'/%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' fill='%230a0a0a'/%3E%3C/svg%3E"
+                    blurDataURL={
+                      post.frontmatter.heroBlur ??
+                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 225'%3E%3Crect width='100%25' height='100%25' fill='%230a0a0a'/%3E%3C/svg%3E"
+                    }
                   />
                 </div>
               </figure>
@@ -235,14 +225,9 @@ export default async function BlogPost({
               style={{ maxWidth: '65ch' }}
             >
               <CodeBlockWrapper>
-                <MDXRemote
-                  source={post.content}
-                  options={mdxOptions}
-                  components={mdxComponents}
-                />
+                <MDXRemote source={post.content} options={mdxOptions} components={mdxComponents} />
               </CodeBlockWrapper>
             </div>
-
           </div>
 
           {/* Sidebar */}
@@ -253,9 +238,7 @@ export default async function BlogPost({
               {/* Share Buttons */}
               <div className="mt-6">
                 <div className="border-4 border-text bg-surface p-6">
-                  <h2 className="text-lg font-bold mb-4 uppercase tracking-wider">
-                    Share
-                  </h2>
+                  <h2 className="text-lg font-bold mb-4 uppercase tracking-wider">Share</h2>
                   <ShareButtons
                     title={post.frontmatter.title}
                     url={fullUrl}
@@ -268,9 +251,7 @@ export default async function BlogPost({
         </div>
 
         {/* Related Posts */}
-        {relatedPosts.length > 0 && (
-          <RelatedPosts posts={relatedPosts} className="mt-16" />
-        )}
+        {relatedPosts.length > 0 && <RelatedPosts posts={relatedPosts} className="mt-16" />}
 
         {/* Comments Section */}
         <Comments className="mt-16" />

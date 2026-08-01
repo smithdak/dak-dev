@@ -11,14 +11,14 @@
 
 ## 0. How to read this document
 
-This document is the *why* and the *how it actually works* — the canonical
+This document is the _why_ and the _how it actually works_ — the canonical
 architecture reference. `CLAUDE.md` is the lean operational spine (rules,
 constraints, commands, pointers); the original build plan and product
 clarifications are archived in `docs/project-history.md`; `docs/README.md` maps
 the whole documentation system. Where any of these disagree with the code, the
 code is the source of truth. Two stack decisions diverged from the initial spec
 during implementation and are called out here because they change the
-*implemented* architecture, not just a value:
+_implemented_ architecture, not just a value:
 
 - **Tailwind v4, not v3.** There is no `tailwind.config.ts`. Configuration is
   CSS-first in `app/globals.css` (`@import "tailwindcss"` + `@theme inline`).
@@ -59,7 +59,7 @@ the tie.
 
 ## 2. Design principles
 
-These are the durable rules. They exist so a new contributor can make a *new*
+These are the durable rules. They exist so a new contributor can make a _new_
 decision the same way the existing ones were made.
 
 1. **Static by default; dynamic only when it earns the budget.** Every page is
@@ -75,7 +75,7 @@ decision the same way the existing ones were made.
    (Drives §6.)
 4. **Invariants live next to the data they constrain, in prose, and they state
    their blast radius.** See the `FLAT-ONLY CONSTRAINT` comment in
-   `lib/security-types.ts:6-9`: it says what the invariant is, *and* what
+   `lib/security-types.ts:6-9`: it says what the invariant is, _and_ what
    breaks if you violate it (sidebar slug parsing). This is the house style for
    load-bearing constraints. (Drives §4.)
 5. **Accessibility is a mechanism, not a checklist.** Every a11y claim in this
@@ -133,7 +133,7 @@ Five content types, one app. Routes under `app/`:
 ### 3.3 Caching
 
 Set entirely via response headers in `next.config.ts:70-149`, because there is
-no server to cache *in*:
+no server to cache _in_:
 
 - Immutable static assets (`svg|jpg|png|webp|avif|woff|woff2`) and
   `/_next/static/*`: `public, max-age=31536000, immutable`.
@@ -151,27 +151,34 @@ erode, so it gets its own section.
 `Learn` has four **peer** pillars, each a content type with its own `lib/`
 loader and types module:
 
-| Pillar   | Concept                          | Loader            | Types / constants        | Routing |
-|----------|----------------------------------|-------------------|--------------------------|---------|
-| Patterns | Portable techniques              | `lib/patterns.ts` | (chaptered, 6 chapters)  | nested  |
-| Toolkit  | Claude Code features             | `lib/toolkit.ts`  | `lib/toolkit-types.ts`   | topic/sub |
-| Harness  | The runtime beneath the model    | `lib/harness.ts`  | `lib/harness-types.ts`   | flat    |
-| Security | The trust & privacy surface      | `lib/security.ts` | `lib/security-types.ts`  | flat    |
+| Pillar   | Concept                        | Loader            | Types / constants       | Routing   |
+| -------- | ------------------------------ | ----------------- | ----------------------- | --------- |
+| Patterns | Portable techniques            | `lib/patterns.ts` | (chaptered, 6 chapters) | nested    |
+| Toolkit  | Claude Code features           | `lib/toolkit.ts`  | `lib/toolkit-types.ts`  | topic/sub |
+| Harness  | Runtime and delivery machinery | `lib/harness.ts`  | `lib/harness-types.ts`  | flat      |
+| Security | The trust & privacy surface    | `lib/security.ts` | `lib/security-types.ts` | flat      |
 
 Two engineering patterns hold this together:
 
 **Boundary statements.** Each pillar exports a prose constant defining what it
-*is not* (`HARNESS_BOUNDARY` in `lib/harness-types.ts:33-34`,
+_is not_ (`HARNESS_BOUNDARY` in `lib/harness-types.ts:33-34`,
 `SECURITY_BOUNDARY` in `lib/security-types.ts:40-41`). These render on the
 Learn hero and section indexes. They exist because a four-pillar model decays
 into overlapping mush without a maintained fence. The comment says it plainly:
-*"that fence is what makes it this site, not an OWASP checklist."* **A new
+_"that fence is what makes it this site, not an OWASP checklist."_ **A new
 pillar must ship a boundary statement.** This is not optional polish; it is the
 mechanism that keeps the IA legible.
 
+Harness contains two explicit layers without changing its flat routing model.
+Chapters 01–06 cover the runtime harness beneath a model: loop, context,
+compaction, tools, prompt architecture, and custom runtime construction.
+Chapter 07 covers the delivery harness above one or more runtimes: durable work
+state, exact-candidate evidence, independent verification, and bounded
+authorization. The boundary is authority, not model count or vendor topology.
+
 **Colocated routing invariants.** `lib/security-types.ts:6-9` declares the
 `FLAT-ONLY CONSTRAINT` directly above the data it governs: routes are
-`/learn/security/<chapter>`, never `/<chapter>/<sub>`, *because* the sidebar
+`/learn/security/<chapter>`, never `/<chapter>/<sub>`, _because_ the sidebar
 and mobile-nav active-slug parsing assume a single segment. The constraint, its
 reason, and its blast radius are one comment. Replicate this pattern for any
 invariant a future contributor could plausibly violate without noticing.
@@ -190,7 +197,7 @@ ops) who watched an agentic-engineering demo and want to understand it, not
 build it. It decodes the vocabulary (the **Decoder**, a thematic glossary at
 `/learn/start/decoder`) and the core mental models (**explainers** at
 `/learn/start/explain/<slug>` and **Demo, Decoded** walkthroughs at
-`/learn/start/demo/<slug>`), then links *into* the four pillars.
+`/learn/start/demo/<slug>`), then links _into_ the four pillars.
 
 **Define-on-first-use toggletips are site-wide.** `lib/rehype-glossary.ts` runs
 in the shared MDX pipeline (`lib/mdx-options.ts`) and wraps the first occurrence
@@ -218,7 +225,7 @@ pillar nav. Wiring the on-ramp into that nav means revisiting both components.
 ## 5. Content pipeline
 
 File-based content store. No CMS, no database. Content is `.mdx` under
-`content/{posts,patterns,toolkit,harness,security}/` plus JSON sidecars
+`content/{posts,patterns,toolkit,harness,security,onramp}/` plus JSON sidecars
 (`content/referrals.json`, products, pattern tool examples).
 
 ### 5.1 File → HTML
@@ -272,47 +279,50 @@ There is **no `tailwind.config.ts`**. Tailwind v4 is configured CSS-first in
 `app/globals.css`:
 
 - `:root` defines raw values for both themes plus the active aliases
-  (`app/globals.css:7-44`).
+  (`app/globals.css:7-45`).
 - `html.light` / `html.dark` rebind the active aliases
-  (`app/globals.css:46-62`).
-- `@theme inline` (`app/globals.css:65-78`) maps the CSS variables to Tailwind
+  (`app/globals.css:47-68`).
+- `@theme inline` (`app/globals.css:71-84`) maps the CSS variables to Tailwind
   utility names so `bg-background`, `text-text`, `border-accent` resolve to
   live variables.
 
 Core palette (dark default → light):
 
-| Token        | Dark      | Light     | Role                          |
-|--------------|-----------|-----------|-------------------------------|
-| `background` | `#0a0a0a` | `#f5f5f5` | Page base                     |
-| `surface`    | `#333333` | `#e0e0e0` | Cards, code, panels           |
-| `text`       | `#f5f5f5` | `#0a0a0a` | Foreground                    |
-| `muted`      | `#a9a9a9` | `#666666` | Secondary text, hairlines     |
-| `accent`     | `#00ff88` | `#00cc6a` | Links, focus, active state    |
+| Token        | Dark      | Light     | Role                       |
+| ------------ | --------- | --------- | -------------------------- |
+| `background` | `#0a0a0a` | `#f5f5f5` | Page base                  |
+| `surface`    | `#333333` | `#e0e0e0` | Cards, code, panels        |
+| `text`       | `#f5f5f5` | `#0a0a0a` | Foreground                 |
+| `muted`      | `#a9a9a9` | `#626262` | Secondary text, hairlines  |
+| `accent`     | `#00ff88` | `#00723f` | Links, focus, active state |
 
-Six `--color-chapter-N` tokens (`app/globals.css:29-43`) give each Patterns
-chapter its own accent, with light-mode-muted variants — the only place the
-palette is allowed to expand, and it expands by token, never by literal.
+Six `--color-chapter-N` tokens give each Patterns chapter its own accent. The
+light theme rebinds each one to a darker same-hue variant so chapter text stays
+at least WCAG AA against both the page and surface tokens. This is the only
+place the palette expands, and it expands by token, never by component literal.
 
 **Why CSS variables and not Tailwind's dark variant:** theme switching must not
 cause a layout shift or a React re-render of the tree. A class swap on
 `<html>` re-resolves every variable in one paint. This is principle #3, and it
-is *why* the bootstrap script in §6.3 exists.
+is _why_ the bootstrap script in §6.3 exists.
 
 ### 6.2 Typography
 
-`Space_Grotesk` via `next/font/google` (`app/layout.tsx:16-21`), weights
+`Space_Grotesk` via `next/font/google` (`app/layout.tsx:13-18`), weights
 400/600/700, `display: 'swap'`, exposed as `--font-space-grotesk` and mapped to
 `--font-sans` in `@theme inline`. `next/font` self-hosts the font files at
 build time — there is no runtime request to Google. That is both a performance
 property (no third-party round trip, no FOIT) and a privacy/security property
-that is *consistent with* the CSP `font-src 'self'` (`next.config.ts:28`). The
+that is _consistent with_ the CSP `font-src 'self'` (`next.config.ts:28`). The
 coherence is the point: the font strategy and the CSP were designed together.
 
 ### 6.3 The theme bootstrap (and why it costs us a CSP control)
 
-`app/layout.tsx:90-110` injects a blocking inline `<script>` in `<head>` that
+`app/layout.tsx:84-109` injects a blocking inline `<script>` in `<head>` that
 reads `localStorage['theme-preference']` (default `dark`, `system` resolved via
-`matchMedia`) and sets the class on `documentElement` *before* CSS applies.
+`matchMedia`), removes any stale theme class, and sets exactly one resolved
+class on `documentElement` _before_ CSS applies. `ThemeToggle` is mounted in
+the desktop and mobile header controls.
 `<html suppressHydrationWarning>` covers the resulting server/client class
 mismatch.
 
@@ -332,11 +342,14 @@ numbers, highlight ranges, and `+/-` diff markers driven by `data-` attributes
 from `rehype-pretty-code` (`app/globals.css:172-220+`).
 
 Motion is governed globally by `<MotionConfig reducedMotion="user">`
-(`app/layout.tsx:127`). This is the *mechanism* behind every "respects
+(`app/layout.tsx:126`). This is the _mechanism_ behind every "respects
 `prefers-reduced-motion`" claim — Framer Motion reads the OS setting at the
 provider, so individual components do not each re-implement the check. New
 animation goes through Framer Motion so it inherits this for free; bespoke CSS
 keyframe animation must add its own `@media (prefers-reduced-motion)` guard.
+Primary content renders in its visible state (`initial={false}`); reveal and
+page motion are progressive enhancement, never a prerequisite for reading SSG
+HTML when hydration or an intersection observer fails.
 
 ---
 
@@ -368,7 +381,7 @@ identical everywhere it appears.
 
 **Interactive "explorable" components** live in `components/interactive/`
 (`AgentLoopStepper`, `ScrollStory`, `RunnableSnippet`) and are registered in the
-*base* `mdxComponents` map (`components/blog/MdxComponents.tsx`), so they are
+_base_ `mdxComponents` map (`components/blog/MdxComponents.tsx`), so they are
 available to blog, harness, and pattern prose alike (the pattern map spreads the
 base). They are small `'use client'` islands that receive already-shaped props
 and inherit the global reduced-motion contract (§6.4). Following the
@@ -438,8 +451,8 @@ in `lighthouserc.json` is specific rather than just `categories:accessibility`.
 ## 10. Security architecture
 
 The `security-hardening` branch treats the trust surface as a deliverable. The
-controls and, more importantly, the *reasoning* are in `next.config.ts` and
-`.npmrc` so they are reviewed alongside the code they protect.
+controls and, more importantly, the _reasoning_ are in `next.config.ts` and
+`pnpm-workspace.yaml` so they are reviewed alongside the code they protect.
 
 ### 10.1 Content-Security-Policy
 
@@ -451,7 +464,7 @@ Defined in `next.config.ts:17-36`. The shape:
 - Narrowly opened: `script-src` adds only `va.vercel-scripts.com` and
   `giscus.app`; `connect-src` only Vercel analytics/insights; `frame-src` only
   `giscus.app`; `img-src` only `self`, `data:`, Unsplash.
-- Dev-only: `'unsafe-eval'` and `ws:` are appended *only* when not production
+- Dev-only: `'unsafe-eval'` and `ws:` are appended _only_ when not production
   (`:24`, `:30`) for HMR — they never ship.
 - Vercel-only: `upgrade-insecure-requests` (and HSTS, §10.2) are emitted only
   when `VERCEL=1` — behind Vercel's TLS they're correct; from a local
@@ -464,7 +477,7 @@ a strict nonce-based policy requires per-request middleware, which forces
 dynamic rendering and breaks the SSG performance budget — and the theme
 bootstrap (§6.3) is exactly such a required inline script. The decision: accept
 `'unsafe-inline'` for scripts, then make it as close to harmless as possible by
-eliminating every *other* injection vector (no external script origins beyond
+eliminating every _other_ injection vector (no external script origins beyond
 two, no `eval`, no `object`, no `base` hijack, no form exfil). The revisit
 condition: if this site ever gains a server/middleware tier, move to nonces.
 
@@ -485,22 +498,24 @@ none`, `Permissions-Policy` denying camera/mic/geolocation/`browsing-topics`/
 
 ### 10.3 Supply chain
 
-`.npmrc` encodes a defense against the publish-then-yank worm class
-(Shai-Hulud), with the threat model written into the file:
+`pnpm-workspace.yaml` encodes a defense against the publish-then-yank worm
+class, in a form understood by the project-pinned pnpm 10 runtime and newer
+pnpm launchers:
 
-- `minimum-release-age=4320` — refuse any dependency version younger than 3
-  days; the detection-and-unpublish window for malicious releases is shorter
-  than that, so this site is never patient zero.
-- `verify-deps-before-run=warn` — flag `node_modules`/lockfile drift before
+- `minimumReleaseAge: 4320` — refuse dependency versions younger than 3 days,
+  reducing exposure to short-lived malicious releases.
+- `verifyDepsBeforeRun: warn` — flag `node_modules`/lockfile drift before
   scripts run.
-- Lifecycle scripts blocked by default (pnpm 10); only
-  `pnpm.onlyBuiltDependencies` (`package.json:78-82`: `esbuild`, `sharp`,
-  `unrs-resolver`) may run them. Keep that list minimal.
-- `overrides` pins `postcss` to a patched range (`package.json:83-85`).
+- Lifecycle scripts are blocked unless `allowBuilds` explicitly approves the
+  package (`esbuild`, `sharp`, and `unrs-resolver`). Keep that map minimal.
+- `overrides` pins `postcss` to a patched range in the same workspace file.
+
+`.npmrc` contains only the non-security `fund=false` noise preference. Frozen
+lockfile installs remain a CI and Vercel command-level control.
 
 CI reinforces it (§12): every workflow runs `pnpm install --frozen-lockfile`,
 Node is pinned by `.nvmrc` (single source), pnpm is pinned via `packageManager`
-(`package.json:34`), and **every GitHub Action is pinned to a commit SHA**, not
+(`package.json:35`), and **every GitHub Action is pinned to a commit SHA**, not
 a tag (`ci.yml:23,26,27` etc.) — a moved tag cannot inject code. Workflows
 declare `permissions: contents: read` at the top and widen to
 `pull-requests: write` only on the one job that comments
@@ -521,7 +536,7 @@ declare `permissions: contents: read` at the top and widen to
   `app/layout.tsx` (`metadataBase`, OpenGraph, Twitter card, `robots` with
   `max-image-preview: large`); pages override via `generateMetadata`.
   `title.template` adds `| Dakota Smith` once and is **not** applied to the
-  segment that defines it (the root `page.tsx`), so child pages return a *bare*
+  segment that defines it (the root `page.tsx`), so child pages return a _bare_
   title — a pre-suffixed string double-suffixes. Home and every `/blog` route
   set `alternates.canonical`, matching the Learn routes.
 - **Structured data** — `lib/schema.ts` generators rendered through
@@ -532,11 +547,18 @@ declare `permissions: contents: read` at the top and widen to
   Article-class `publisher` is the `Organization` (Twofold) carrying a logo
   (`app/twofold-logo` ImageObject), not the author Person. Breadcrumb schema is
   what earns rich results, so it is not optional on nested pages.
-- **Sitemap** — `app/sitemap.ts` enumerates all five content types plus tag
-  pages with tiered priorities; it reads the same `lib/` loaders as the pages,
-  so it cannot drift out of sync with what actually exists.
+- **Sitemap** — `app/sitemap.ts` enumerates blog, every Learn leaf (including
+  Toolkit subpages and Start explainers/demos), and tag pages with tiered
+  priorities. It reads the same published-only loaders as the pages.
+- **Search** — `lib/search/index-generator.ts` normalizes those same published
+  leaf loaders into records that own their canonical `href`; the client never
+  reconstructs nested routes from a slug. Decoder terms are the one synthetic
+  source because their anchors render from client-safe glossary data rather
+  than MDX. Collection pages are excluded to prevent duplicate results.
 - **robots / RSS / llms.txt** — `app/robots.ts` allows `/`, disallows `/api/`
-  and `/components-demo/` (no legacy `Host` directive); `app/feed.xml/route.ts`
+  (no legacy `Host` directive); `/components-demo` is crawlable but emits a
+  route-level `noindex, nofollow` directive so crawlers can observe the control.
+  `app/feed.xml/route.ts`
   serves RSS (linked from `<head>`), `export const dynamic = 'force-static'` so
   it prerenders as a static asset like its sibling endpoints. `lib/rss.ts`
   emits RSS 2.0 with full-text `content:encoded` (MDX → HTML via a
@@ -556,13 +578,16 @@ CI runs on every PR to `main`. These are the real gates, not guidelines:
 
 **`ci.yml`** — three jobs; `build` depends on `typecheck` + `lint` passing
 first (`ci.yml:51`):
+
 - `pnpm exec tsc --noEmit` — strict TypeScript, zero errors.
 - `pnpm lint` — ESLint 9, zero errors.
 - `pnpm build` — production build must succeed, with `.next/cache` keyed on
   lockfile + source hash.
 
-**`lighthouse.yml`** — builds, audits `/`, `/blog`, `/about` 3× each
-(`lighthouserc.json`), posts a scored table to the PR, and **fails** on:
+**`lighthouse.yml`** — builds, then audits home, blog index, a blog detail,
+about, Learn, and Harness 3× each (`lighthouserc.json`). It posts a scored table
+to the PR and **fails** on:
+
 - Accessibility, Best Practices, SEO < `1.0` (hard 100).
 - Performance < `0.90`, aggregated `optimistic`.
 - Specific a11y audits < `1.0` (§9).
@@ -572,7 +597,7 @@ validation and **fails if average content score < 80**
 (`content-check.yml:117-124`).
 
 **One asymmetry to understand before you trust the green check:** the
-Performance gate is `0.90` with `optimistic` aggregation — the *best* of three
+Performance gate is `0.90` with `optimistic` aggregation — the _best_ of three
 runs must clear 90, not the median. Accessibility/Best-Practices/SEO are hard
 `1.0`. This is deliberate: lab performance is noisy on shared CI runners and we
 refuse to make a flaky gate block merges, but correctness-class categories have
@@ -586,21 +611,21 @@ no such excuse and get no slack. If you tighten performance, also switch off
 The load-bearing decisions, with the alternative we rejected and the condition
 that should make us revisit. Detail is in the cited section.
 
-| # | Decision | Rejected alternative | Revisit when | §  |
-|---|----------|----------------------|--------------|----|
-| 1 | SSG only, no middleware | SSR/ISR for freshness | A real backend appears | 3 |
-| 2 | CSP allows `script-src 'unsafe-inline'` | Nonce-based strict CSP | A server/middleware tier exists | 10.1 |
-| 3 | Omit `X-XSS-Protection` | Keep legacy header | Never (CSP supersedes); documented to prevent re-adding | 10.1 |
-| 4 | Tailwind v4 CSS-first, tokens as CSS vars | `tailwind.config.ts` + dark variant | Tokens outgrow CSS-var theming | 6 |
-| 5 | Dev = no Shiki, prod = Shiki | Highlight in dev too | HMR cost stops mattering | 5.2 |
-| 6 | Blocking inline theme script in `<head>` | Defer / accept theme flash | Coupled to #2 — revisit together | 6.3 |
-| 7 | 3-day dependency cooldown + SHA-pinned actions + frozen lockfile | Trust latest, tag-pinned actions | Threat model changes | 10.3 |
-| 8 | Four pillars + boundary statements + colocated routing invariants | Free-form sections | Adding a pillar (must ship a boundary) | 4 |
-| 9 | Filesystem content, no CMS, no memoization | Database/CMS, or cached reads | Thousands of docs, or non-git authoring | 5, 8 |
-| 10 | Perf gate `0.90` optimistic; correctness gates hard `1.0` | Uniform threshold | Perf is tightened (drop optimistic with it) | 12 |
-| 11 | Runnable code embeds (Codapi) opt-in, OFF by default behind `NEXT_PUBLIC_ENABLE_CODAPI` | Ship runnable by default | The CSP relaxation (wasm-unsafe-eval + unpkg origin) is accepted and Lighthouse re-verified | 10.1, 14 |
-| 12 | `robots.txt` explicitly *welcomes* major AI crawlers (per-agent rules) | Wildcard-only, or block AI bots | A crawler abuses access, or citation policy changes (flip its entry to `disallow`) | 11 |
-| 13 | `/quality-gate`: enforced prose-rubric gate + human sign-off, "gates over trust" | Trust the mechanical score alone | LLM-as-judge proves unreliable enough to drop, or a deterministic prose check replaces it | — |
+| #   | Decision                                                                                | Rejected alternative                | Revisit when                                                                                | §        |
+| --- | --------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------- | -------- |
+| 1   | SSG only, no middleware                                                                 | SSR/ISR for freshness               | A real backend appears                                                                      | 3        |
+| 2   | CSP allows `script-src 'unsafe-inline'`                                                 | Nonce-based strict CSP              | A server/middleware tier exists                                                             | 10.1     |
+| 3   | Omit `X-XSS-Protection`                                                                 | Keep legacy header                  | Never (CSP supersedes); documented to prevent re-adding                                     | 10.1     |
+| 4   | Tailwind v4 CSS-first, tokens as CSS vars                                               | `tailwind.config.ts` + dark variant | Tokens outgrow CSS-var theming                                                              | 6        |
+| 5   | Dev = no Shiki, prod = Shiki                                                            | Highlight in dev too                | HMR cost stops mattering                                                                    | 5.2      |
+| 6   | Blocking inline theme script in `<head>`                                                | Defer / accept theme flash          | Coupled to #2 — revisit together                                                            | 6.3      |
+| 7   | 3-day dependency cooldown + SHA-pinned actions + frozen lockfile                        | Trust latest, tag-pinned actions    | Threat model changes                                                                        | 10.3     |
+| 8   | Four pillars + boundary statements + colocated routing invariants                       | Free-form sections                  | Adding a pillar (must ship a boundary)                                                      | 4        |
+| 9   | Filesystem content, no CMS, no memoization                                              | Database/CMS, or cached reads       | Thousands of docs, or non-git authoring                                                     | 5, 8     |
+| 10  | Perf gate `0.90` optimistic; correctness gates hard `1.0`                               | Uniform threshold                   | Perf is tightened (drop optimistic with it)                                                 | 12       |
+| 11  | Runnable code embeds (Codapi) opt-in, OFF by default behind `NEXT_PUBLIC_ENABLE_CODAPI` | Ship runnable by default            | The CSP relaxation (wasm-unsafe-eval + unpkg origin) is accepted and Lighthouse re-verified | 10.1, 14 |
+| 12  | `robots.txt` explicitly _welcomes_ major AI crawlers (per-agent rules)                  | Wildcard-only, or block AI bots     | A crawler abuses access, or citation policy changes (flip its entry to `disallow`)          | 11       |
+| 13  | `/quality-gate`: enforced prose-rubric gate + human sign-off, "gates over trust"        | Trust the mechanical score alone    | LLM-as-judge proves unreliable enough to drop, or a deterministic prose check replaces it   | —        |
 
 ---
 
@@ -635,7 +660,7 @@ Stated plainly so nobody rediscovers them as surprises:
   success) and falls back to `mailto:` when unset. The provider origin must be
   added to `connect-src` (see the `NEWSLETTER_ORIGIN` comment in
   `next.config.ts`) or the POST is blocked in production.
-- **The four-pillar IA degrades silently.** Nothing *enforces* a boundary
+- **The four-pillar IA degrades silently.** Nothing _enforces_ a boundary
   statement or the flat-only routing invariant — they are prose contracts
   (§4). The protection is review discipline plus the colocated comments.
   Candidate future work: a unit test asserting every pillar exports a non-empty
@@ -655,7 +680,7 @@ Stated plainly so nobody rediscovers them as surprises:
   `fs`), a boundary statement, and a colocated comment for any routing
   invariant (§4).
 - New external origin (script/style/img/connect/frame): it must be added to the
-  CSP in `next.config.ts` *with a comment saying why*, or it will be blocked in
+  CSP in `next.config.ts` _with a comment saying why_, or it will be blocked in
   production — by design (§10.1).
 - Accept a weaker security control only with a comment at the weakness stating
   the alternative and the revisit condition (principle #6).
@@ -663,5 +688,5 @@ Stated plainly so nobody rediscovers them as surprises:
 
 ---
 
-*This document describes the system as built. If you change the system, change
-this document in the same PR. Anchors are `path:line` — keep them honest.*
+_This document describes the system as built. If you change the system, change
+this document in the same PR. Anchors are `path:line` — keep them honest._

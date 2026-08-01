@@ -41,17 +41,34 @@ export function Search({ className = '' }: SearchProps) {
   const [results, setResults] = useState<SearchIndexItem[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [searchIndex, setSearchIndex] = useState<SearchIndexItem[]>(cachedIndex || []);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
+  const closeSearch = useCallback((restoreFocus = true) => {
+    setIsOpen(false);
+    setQuery('');
+    setResults([]);
+    setSelectedIndex(0);
+
+    if (restoreFocus) {
+      requestAnimationFrame(() => triggerRef.current?.focus());
+    }
+  }, []);
+
   // Fetch search index once — uses module-level cache
   useEffect(() => {
-    if (cachedIndex) {
-      setSearchIndex(cachedIndex);
-      return;
-    }
-    fetchSearchIndex().then(setSearchIndex);
+    if (cachedIndex) return;
+
+    let active = true;
+    fetchSearchIndex().then((index) => {
+      if (active) setSearchIndex(index);
+    });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Keyboard shortcut handler
@@ -64,17 +81,14 @@ export function Search({ className = '' }: SearchProps) {
       }
 
       // Escape to close
-      if (e.key === 'Escape') {
-        setIsOpen(false);
-        setQuery('');
-        setResults([]);
-        setSelectedIndex(0);
+      if (e.key === 'Escape' && isOpen) {
+        closeSearch();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [closeSearch, isOpen]);
 
   // Focus input when opened
   useEffect(() => {
@@ -99,6 +113,14 @@ export function Search({ className = '' }: SearchProps) {
     return () => clearTimeout(timer);
   }, [query, searchIndex]);
 
+  const navigateToResult = useCallback(
+    (result: SearchIndexItem) => {
+      router.push(result.href);
+      closeSearch(false);
+    },
+    [closeSearch, router]
+  );
+
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -121,20 +143,8 @@ export function Search({ className = '' }: SearchProps) {
           break;
       }
     },
-    [results, selectedIndex]
+    [navigateToResult, results, selectedIndex]
   );
-
-  const navigateToResult = (result: SearchIndexItem) => {
-    const path =
-      result.type === 'pattern'
-        ? `/learn/patterns/${result.slug}`
-        : `/blog/${result.slug}`;
-    router.push(path);
-    setIsOpen(false);
-    setQuery('');
-    setResults([]);
-    setSelectedIndex(0);
-  };
 
   // Scroll selected item into view
   useEffect(() => {
@@ -153,9 +163,10 @@ export function Search({ className = '' }: SearchProps) {
     <>
       {/* Search Button */}
       <button
+        ref={triggerRef}
         onClick={() => setIsOpen(true)}
-        className={`group inline-flex items-center gap-2 px-4 py-2 bg-surface border-2 border-text text-text font-semibold hover:bg-text hover:text-background transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background ${className}`}
-        aria-label="Search"
+        className={`group inline-flex min-h-11 min-w-11 items-center justify-center gap-2 px-3 py-2 bg-surface border-2 border-text text-text font-semibold hover:bg-text hover:text-background transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background ${className}`}
+        aria-label="Search the site"
       >
         <svg
           className="w-5 h-5"
@@ -171,8 +182,8 @@ export function Search({ className = '' }: SearchProps) {
             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
           />
         </svg>
-        <span className="hidden sm:inline">Search</span>
-        <kbd className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-background border border-text group-hover:text-accent">
+        <span className="hidden lg:inline">Search</span>
+        <kbd className="hidden xl:inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-background border border-text group-hover:text-accent">
           <span className="text-[10px]">⌘</span>K
         </kbd>
       </button>
@@ -188,11 +199,7 @@ export function Search({ className = '' }: SearchProps) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="fixed inset-0 z-50 bg-background/90 backdrop-blur-sm"
-              onClick={() => {
-                setIsOpen(false);
-                setQuery('');
-                setResults([]);
-              }}
+              onClick={() => closeSearch()}
               aria-hidden="true"
             />
 
@@ -205,7 +212,7 @@ export function Search({ className = '' }: SearchProps) {
               className="fixed inset-x-2 sm:inset-x-4 top-20 z-50 mx-auto max-w-2xl"
               role="dialog"
               aria-modal="true"
-              aria-label="Search posts and patterns"
+              aria-label="Search the site"
             >
               <div className="bg-surface border-4 border-text shadow-[12px_12px_0_0_var(--color-text)]">
                 {/* Search Input */}
@@ -230,7 +237,7 @@ export function Search({ className = '' }: SearchProps) {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Search posts and patterns..."
+                    placeholder="Search articles, patterns, and guides..."
                     className="flex-1 bg-transparent text-text text-lg font-semibold placeholder:text-muted focus:outline-none"
                     role="combobox"
                     aria-label="Search query"
@@ -242,12 +249,8 @@ export function Search({ className = '' }: SearchProps) {
                     }
                   />
                   <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      setQuery('');
-                      setResults([]);
-                    }}
-                    className="flex-shrink-0 px-3 py-1 text-sm font-semibold text-muted hover:text-text border-2 border-text hover:bg-text hover:text-background transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
+                    onClick={() => closeSearch()}
+                    className="flex min-h-11 min-w-11 flex-shrink-0 items-center justify-center px-3 py-1 text-sm font-semibold text-muted hover:text-text border-2 border-text hover:bg-text hover:text-background transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
                     aria-label="Close search"
                   >
                     ESC
@@ -264,25 +267,22 @@ export function Search({ className = '' }: SearchProps) {
                   {query.trim().length === 0 ? (
                     <div className="px-6 py-12 text-center text-muted">
                       <p className="text-lg font-semibold mb-2">Start typing to search</p>
-                      <p className="text-sm">
-                        Search across titles, content, tags, and keywords
-                      </p>
+                      <p className="text-sm">Search across titles, content, tags, and keywords</p>
                     </div>
                   ) : results.length > 0 ? (
                     <div className="py-2">
                       {results.map((result, index) => {
-                        const formattedDate = new Date(result.date).toLocaleDateString(
-                          'en-US',
-                          {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          }
-                        );
+                        const formattedDate = result.date
+                          ? new Date(result.date).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })
+                          : null;
 
                         return (
                           <button
-                            key={result.slug}
+                            key={result.href}
                             id={`search-result-${index}`}
                             onClick={() => navigateToResult(result)}
                             className={`w-full text-left px-6 py-4 border-l-4 transition-colors focus:outline-none ${
@@ -294,26 +294,18 @@ export function Search({ className = '' }: SearchProps) {
                             aria-selected={index === selectedIndex}
                           >
                             <div className="flex items-center gap-2 mb-2">
-                              {result.type === 'pattern' && (
-                                <span className="text-[10px] font-mono font-bold uppercase tracking-wider border px-1.5 py-0.5 border-accent text-accent">
-                                  Pattern {result.patternNumber}
-                                </span>
-                              )}
-                              <h3 className="text-lg font-bold text-text">
-                                {result.title}
-                              </h3>
+                              <span className="text-[10px] font-mono font-bold uppercase tracking-wider border px-1.5 py-0.5 border-accent text-accent">
+                                {result.label}
+                              </span>
+                              <h3 className="text-lg font-bold text-text">{result.title}</h3>
                             </div>
-                            <p className="text-sm text-muted mb-3 line-clamp-2">
-                              {result.excerpt}
-                            </p>
+                            <p className="text-sm text-muted mb-3 line-clamp-2">{result.excerpt}</p>
                             <div className="flex flex-wrap items-center gap-2 text-xs">
-                              {result.type === 'pattern' && result.chapterName && (
-                                <span className="text-muted font-semibold">
-                                  {result.chapterName}
-                                </span>
+                              {result.section && (
+                                <span className="text-muted font-semibold">{result.section}</span>
                               )}
-                              {result.date && (
-                                <time className="text-muted font-semibold">
+                              {formattedDate && result.date && (
+                                <time dateTime={result.date} className="text-muted font-semibold">
                                   {formattedDate}
                                 </time>
                               )}
@@ -342,9 +334,7 @@ export function Search({ className = '' }: SearchProps) {
                   ) : (
                     <div className="px-6 py-12 text-center text-muted">
                       <p className="text-lg font-semibold mb-2">No results found</p>
-                      <p className="text-sm">
-                        Try different keywords or check your spelling
-                      </p>
+                      <p className="text-sm">Try different keywords or check your spelling</p>
                     </div>
                   )}
                 </div>

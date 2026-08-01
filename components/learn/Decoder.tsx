@@ -52,7 +52,7 @@ function DeeperLinkView({ deeper }: { deeper: DeeperLink }) {
 
 function FieldLabel({ children }: { children: string }) {
   return (
-    <span className="block text-[10px] font-bold uppercase tracking-widest text-text/60 mb-1">
+    <span className="block text-[10px] font-bold uppercase tracking-widest text-muted mb-1">
       {children}
     </span>
   );

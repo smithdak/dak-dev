@@ -35,10 +35,7 @@ export function RelatedPosts({ posts, className = '' }: RelatedPostsProps) {
     <section className={`${className}`} aria-labelledby="related-posts-heading">
       {/* Section Header */}
       <div className="mb-8 border-b-4 border-text pb-4">
-        <h2
-          id="related-posts-heading"
-          className="text-3xl md:text-4xl font-bold text-text"
-        >
+        <h2 id="related-posts-heading" className="text-3xl md:text-4xl font-bold text-text">
           You Might Also Like
         </h2>
       </div>
@@ -46,7 +43,7 @@ export function RelatedPosts({ posts, className = '' }: RelatedPostsProps) {
       {/* Posts Grid */}
       <motion.div
         variants={staggerContainerVariants}
-        initial="hidden"
+        initial={false}
         whileInView="visible"
         viewport={{ once: true, margin: '-50px' }}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -59,11 +56,7 @@ export function RelatedPosts({ posts, className = '' }: RelatedPostsProps) {
           });
 
           return (
-            <motion.article
-              key={post.slug}
-              variants={staggerItemVariants}
-              className="group"
-            >
+            <motion.article key={post.slug} variants={staggerItemVariants} className="group">
               <Link
                 href={`/blog/${post.slug}`}
                 className="block bg-surface border-4 border-text shadow-[8px_8px_0_0_var(--color-text)] hover:shadow-[12px_12px_0_0_var(--color-accent)] hover:border-accent transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
@@ -97,9 +90,7 @@ export function RelatedPosts({ posts, className = '' }: RelatedPostsProps) {
                   </h3>
 
                   {/* Excerpt */}
-                  <p className="text-muted leading-relaxed mb-4 line-clamp-3">
-                    {post.excerpt}
-                  </p>
+                  <p className="text-muted leading-relaxed mb-4 line-clamp-3">{post.excerpt}</p>
 
                   {/* Tags */}
                   {post.tags.length > 0 && (

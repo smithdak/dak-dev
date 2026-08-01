@@ -21,13 +21,7 @@ interface SectionConnectsProps {
  * Section-coloured header rule; reveals on scroll. Shared by all three
  * sections so "Where This Connects" reads identically everywhere.
  */
-export function SectionConnects({
-  id,
-  color,
-  heading,
-  intro,
-  links,
-}: SectionConnectsProps) {
+export function SectionConnects({ id, color, heading, intro, links }: SectionConnectsProps) {
   const t = SECTION_THEME[color];
   const headingId = `${id}-heading`;
 
@@ -38,18 +32,11 @@ export function SectionConnects({
       className="mt-20 px-4 sm:px-6 lg:px-0 scroll-mt-20"
     >
       <ScrollReveal>
-        <div
-          className={`border-l-8 ${t.borderLeft} border-b-2 border-text/30 pl-5 pb-4 mb-8`}
-        >
-          <h2
-            id={headingId}
-            className="text-2xl md:text-3xl font-bold tracking-tight"
-          >
+        <div className={`border-l-8 ${t.borderLeft} border-b-2 border-text/30 pl-5 pb-4 mb-8`}>
+          <h2 id={headingId} className="text-2xl md:text-3xl font-bold tracking-tight">
             {heading}
           </h2>
-          <p className="text-sm text-muted mt-2 max-w-3xl leading-relaxed">
-            {intro}
-          </p>
+          <p className="text-sm text-muted mt-2 max-w-3xl leading-relaxed">{intro}</p>
         </div>
       </ScrollReveal>
 
@@ -65,7 +52,7 @@ export function SectionConnects({
                 {c.label}
               </span>
               <span
-                className={`text-[10px] font-mono uppercase tracking-widest ${t.text} shrink-0 opacity-70`}
+                className={`text-[10px] font-mono uppercase tracking-widest ${t.text} shrink-0`}
               >
                 {c.kind}
               </span>
