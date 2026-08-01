@@ -5,9 +5,10 @@
 
 import { getAllPosts } from '@/lib/posts';
 import { getAllPatterns, CHAPTERS } from '@/lib/patterns';
-import { TOOLKIT_TOPICS } from '@/lib/toolkit';
+import { getAllToolkitPages } from '@/lib/toolkit';
 import { HARNESS_CHAPTERS } from '@/lib/harness';
 import { SECURITY_CHAPTERS } from '@/lib/security';
+import { getAllDemos, getAllExplainers } from '@/lib/onramp';
 import { getAllTagSlugs } from '@/lib/tags';
 import { SITE_URL } from '@/lib/site';
 import type { MetadataRoute } from 'next';
@@ -15,6 +16,9 @@ import type { MetadataRoute } from 'next';
 export default function sitemap(): MetadataRoute.Sitemap {
   const posts = getAllPosts();
   const patterns = getAllPatterns();
+  const toolkitPages = getAllToolkitPages();
+  const demos = getAllDemos();
+  const explainers = getAllExplainers();
   const tagSlugs = getAllTagSlugs(posts);
 
   // Static pages
@@ -60,6 +64,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,
+    },
+    {
+      url: `${SITE_URL}/learn/start`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/learn/start/decoder`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
     },
     {
       url: `${SITE_URL}/about`,
@@ -110,12 +126,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   // Toolkit topic pages
-  const toolkitPages: MetadataRoute.Sitemap = TOOLKIT_TOPICS.map((topic) => ({
-    url: `${SITE_URL}/learn/toolkit/${topic.slug}`,
+  const toolkitContentPages: MetadataRoute.Sitemap = toolkitPages.map((page) => ({
+    url: page.frontmatter.subPage
+      ? `${SITE_URL}/learn/toolkit/${page.frontmatter.topic}/${page.frontmatter.subPage}`
+      : `${SITE_URL}/learn/toolkit/${page.frontmatter.topic}`,
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }));
+
+  const onrampPages: MetadataRoute.Sitemap = [
+    ...demos.map((demo) => ({
+      url: `${SITE_URL}/learn/start/demo/${demo.frontmatter.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
+    ...explainers.map((explainer) => ({
+      url: `${SITE_URL}/learn/start/explain/${explainer.frontmatter.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
+  ];
 
   // Harness chapter pages
   const harnessPages: MetadataRoute.Sitemap = HARNESS_CHAPTERS.map((chapter) => ({
@@ -141,5 +174,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...staticPages, ...postPages, ...patternPages, ...patternSubPages, ...chapterPages, ...toolkitPages, ...harnessPages, ...securityPages, ...tagPages];
+  return [
+    ...staticPages,
+    ...postPages,
+    ...patternPages,
+    ...patternSubPages,
+    ...chapterPages,
+    ...toolkitContentPages,
+    ...harnessPages,
+    ...securityPages,
+    ...onrampPages,
+    ...tagPages,
+  ];
 }

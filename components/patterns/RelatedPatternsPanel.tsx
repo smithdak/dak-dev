@@ -26,14 +26,14 @@ export function RelatedPatternsPanel({ relatedPatterns }: RelatedPatternsPanelPr
 
   return (
     <div>
-      <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted/60 mb-3">
+      <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted mb-3">
         Related Patterns
       </h2>
 
       <div className="space-y-3">
         {groups.map((group) => (
           <div key={group.type}>
-            <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted/40 mb-1.5">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">
               {group.label}
             </h3>
             {group.patterns.map((pattern) => (

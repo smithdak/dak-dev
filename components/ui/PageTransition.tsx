@@ -17,7 +17,7 @@ interface PageTransitionProps {
 export function PageTransition({ children, className = '' }: PageTransitionProps) {
   return (
     <motion.div
-      initial="initial"
+      initial={false}
       animate="animate"
       exit="exit"
       variants={pageTransitionVariants}

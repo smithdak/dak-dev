@@ -34,7 +34,7 @@ escalates to subagents or a workflow when the task outgrows a single context.
    read-only `Explore` / `improve` pass to gather context first, then route. If a
    capability might exist but you don't recognize it, run `find-skills` before
    deciding it's unsupported.
-3. **Guard the budgets on every path** (see *Hard constraints*). A change that
+3. **Guard the budgets on every path** (see _Hard constraints_). A change that
    trades a budget for a nice-to-have gets sent back, not shipped.
 4. **Ground every move in an artifact.** Cite the file, the diff, the budget
    number, the `DESIGN.md` §. No hedging — this repo's brand voice bans it.
@@ -44,34 +44,34 @@ escalates to subagents or a workflow when the task outgrows a single context.
 ## Step 0 — Orient
 
 - **Read the spine:** `CLAUDE.md` (constraints + the skill/knowledge map). Pull
-  the relevant Tier-1 doc for the task area (see *Knowledge map*).
+  the relevant Tier-1 doc for the task area (see _Knowledge map_).
 - **Check reality:** `git status`, current branch, open PRs (`gh pr list`).
 - **Classify** the request into one row of the Routing table, then act.
 
 ## Routing table
 
-| You want to… | Route to | Why |
-|---|---|---|
-| Draft a new blog post *(posts only)* | `/write-post` | Brand-voice + anti-slop scaffold into `content/posts/`; iterates to score ≥ 80 |
-| Add / edit a **Learn** pillar page (Patterns · Toolkit · Harness · Security) or on-ramp | Direct MDX under `content/<pillar>/` + its `lib/<pillar>.ts` loader; `Plan` subagent for a *new* pillar; `/frontend-design` for the route UI | Structural Learn content, not a blog post — `DESIGN.md` §4. `/write-post` is posts-only |
-| Score / fix one existing post | `/review-post` | Weighted pre-publish check (frontmatter, structure, voice, SEO, images) |
-| Quick voice check on a snippet | `/brand-check` | Fast brand-voice pass on arbitrary text |
-| SEO, keywords, gaps, clusters, brand scan, batch ideas → drafts | `/content-strategist` | `keywords`/`gaps`/`cluster`/`audit`/`compete`/`scan` |
-| Manage the pipeline / backlog | `/content-calendar` | Idea backlog, stage transitions, priority |
-| Certify a drafted post for publish | `/quality-gate` | Wraps `/review-post` as Gate 1; adds voice + prose + human sign-off → promotes `review` → `ready` |
-| UI / component / visual change | `/frontend-design` | Neo-brutalist design system + token/motion/a11y discipline |
-| "Should we build this / what's next?" | `/product-owner` | Opinionated verdict + roadmap (`review`/`vision`/`roadmap`/`tech`/`decide`) |
-| A build / CI check or Lighthouse budget is **red** | Reproduce with the same gate locally (`pnpm build` · `pnpm exec tsc --noEmit` · `pnpm lint` · `pnpm validate:content`), then route the fix; `Explore` if it spans files | `DESIGN.md` §12 gates · §8 perf · §9 a11y · §11 SEO |
-| Add / bump / remove a dependency | Direct `pnpm` edit (never npm/yarn); mind the `.npmrc` 3-day cooldown + `onlyBuiltDependencies`; then build + tsc + lint; `/security-review` if supply-chain surface changes | Cooldown + hardening are load-bearing (`DESIGN.md` §10) |
-| Find bugs in the current diff | `/code-review` | Correctness review of working changes |
-| Tidy the diff (reuse/simplify/perf) | `/simplify` | Quality cleanup, no bug-hunting |
-| Security review of pending changes | `/security-review` | Threat check before shipping |
-| Confirm a change works | `/verify` / `/run` | Drives the real app, observes behavior |
-| Deep multi-source external research | `/deep-research` | Fan-out web research + cited synthesis |
-| Audit the codebase / "where next" | `improve` skill | Read-only senior audit → handoff plans |
-| Claude Code / Agent SDK / API question | `docs/research/*-expert-reference.md` + `claude-code-guide` subagent; `claude-api` skill for API/SDK | Repo-local harness truth first |
-| Review a GitHub PR by number | `/review` | PR-level review |
-| Deploy / logs / rollback | `vercel:deploy` · `vercel:logs`; rollback via *Watch & recover* | Ship + diagnose production |
+| You want to…                                                                            | Route to                                                                                                                                                                        | Why                                                                                               |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Draft a new blog post _(posts only)_                                                    | `/write-post`                                                                                                                                                                   | Brand-voice + anti-slop scaffold into `content/posts/`; iterates to score ≥ 80                    |
+| Add / edit a **Learn** pillar page (Patterns · Toolkit · Harness · Security) or on-ramp | Direct MDX under `content/<pillar>/` + its `lib/<pillar>.ts` loader; `Plan` subagent for a _new_ pillar; `/frontend-design` for the route UI                                    | Structural Learn content, not a blog post — `DESIGN.md` §4. `/write-post` is posts-only           |
+| Score / fix one existing post                                                           | `/review-post`                                                                                                                                                                  | Weighted pre-publish check (frontmatter, structure, voice, SEO, images)                           |
+| Quick voice check on a snippet                                                          | `/brand-check`                                                                                                                                                                  | Fast brand-voice pass on arbitrary text                                                           |
+| SEO, keywords, gaps, clusters, brand scan, batch ideas → drafts                         | `/content-strategist`                                                                                                                                                           | `keywords`/`gaps`/`cluster`/`audit`/`compete`/`scan`                                              |
+| Manage the pipeline / backlog                                                           | `/content-calendar`                                                                                                                                                             | Idea backlog, stage transitions, priority                                                         |
+| Certify a drafted post for publish                                                      | `/quality-gate`                                                                                                                                                                 | Wraps `/review-post` as Gate 1; adds voice + prose + human sign-off → promotes `review` → `ready` |
+| UI / component / visual change                                                          | `/frontend-design`                                                                                                                                                              | Neo-brutalist design system + token/motion/a11y discipline                                        |
+| "Should we build this / what's next?"                                                   | `/product-owner`                                                                                                                                                                | Opinionated verdict + roadmap (`review`/`vision`/`roadmap`/`tech`/`decide`)                       |
+| A build / CI check or Lighthouse budget is **red**                                      | Reproduce with the same gate locally (`pnpm build` · `pnpm exec tsc --noEmit` · `pnpm lint` · `pnpm validate:content`), then route the fix; `Explore` if it spans files         | `DESIGN.md` §12 gates · §8 perf · §9 a11y · §11 SEO                                               |
+| Add / bump / remove a dependency                                                        | Direct `pnpm` edit (never npm/yarn); mind the `pnpm-workspace.yaml` 3-day cooldown + `allowBuilds`; then build + tsc + lint; `/security-review` if supply-chain surface changes | Cooldown + hardening are load-bearing (`DESIGN.md` §10)                                           |
+| Find bugs in the current diff                                                           | `/code-review`                                                                                                                                                                  | Correctness review of working changes                                                             |
+| Tidy the diff (reuse/simplify/perf)                                                     | `/simplify`                                                                                                                                                                     | Quality cleanup, no bug-hunting                                                                   |
+| Security review of pending changes                                                      | `/security-review`                                                                                                                                                              | Threat check before shipping                                                                      |
+| Confirm a change works                                                                  | `/verify` / `/run`                                                                                                                                                              | Drives the real app, observes behavior                                                            |
+| Deep multi-source external research                                                     | `/deep-research`                                                                                                                                                                | Fan-out web research + cited synthesis                                                            |
+| Audit the codebase / "where next"                                                       | `improve` skill                                                                                                                                                                 | Read-only senior audit → handoff plans                                                            |
+| Claude Code / Agent SDK / API question                                                  | `docs/research/*-expert-reference.md` + `claude-code-guide` subagent; `claude-api` skill for API/SDK                                                                            | Repo-local harness truth first                                                                    |
+| Review a GitHub PR by number                                                            | `/review`                                                                                                                                                                       | PR-level review                                                                                   |
+| Deploy / logs / rollback                                                                | `vercel:deploy` · `vercel:logs`; rollback via _Watch & recover_                                                                                                                 | Ship + diagnose production                                                                        |
 
 If a request spans several rows, **decompose it** and route each part.
 
@@ -117,13 +117,13 @@ Security) is structural, not a blog post:
 
 Direct edit is the default. Escalate only when the shape of the work calls for it:
 
-| Signal | Tool | Use |
-|---|---|---|
-| Answering means sweeping many files; you want the conclusion, not the dumps | `Explore` subagent | Broad read-only search |
-| A structural change needs a strategy before code | `Plan` subagent | Step-by-step plan + critical files |
-| Independent chunks that can run at once | `general-purpose` subagents (parallel) | One per chunk |
-| A work-list to pipeline, findings to adversarially verify, or multi-phase understand→build→review | **Workflow** | Deterministic fan-out; verify each finding |
-| A Claude Code / Agent SDK / API mechanics question | `claude-code-guide` subagent | Harness / SDK / API |
+| Signal                                                                                            | Tool                                   | Use                                        |
+| ------------------------------------------------------------------------------------------------- | -------------------------------------- | ------------------------------------------ |
+| Answering means sweeping many files; you want the conclusion, not the dumps                       | `Explore` subagent                     | Broad read-only search                     |
+| A structural change needs a strategy before code                                                  | `Plan` subagent                        | Step-by-step plan + critical files         |
+| Independent chunks that can run at once                                                           | `general-purpose` subagents (parallel) | One per chunk                              |
+| A work-list to pipeline, findings to adversarially verify, or multi-phase understand→build→review | **Workflow**                           | Deterministic fan-out; verify each finding |
+| A Claude Code / Agent SDK / API mechanics question                                                | `claude-code-guide` subagent           | Harness / SDK / API                        |
 
 ### How to fan out (the mechanism)
 
@@ -146,16 +146,16 @@ Orient → Route → (Plan if structural) → Implement →
 pnpm build → Quality gate → Verify → Commit (Conventional) → PR → Watch & recover
 ```
 
-| Stage | Owner |
-|---|---|
-| Plan (structural only) | `Plan` subagent, or `/dak plan` |
-| Implement | direct edits, or the routed specialist skill |
-| Build | `pnpm build` — **mandatory** before claiming MDX/content done (Shiki is prod-only; `pnpm dev` hides render errors) |
-| Quality gate — **code** | `/code-review` → `/simplify` → `/security-review` (if inputs/headers/origins changed); `pnpm lint`, `pnpm exec tsc --noEmit` |
-| Quality gate — **content** | `/review-post` → `/quality-gate <slug>`; `pnpm validate:content` |
-| Verify | `/verify` or `/run` |
-| Commit | Conventional Commits (`feat:` / `fix:` / `docs:`), branch off `main` |
-| Ship | open a PR; update `DESIGN.md` in the **same PR** if architecture moved |
+| Stage                      | Owner                                                                                                                        |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Plan (structural only)     | `Plan` subagent, or `/dak plan`                                                                                              |
+| Implement                  | direct edits, or the routed specialist skill                                                                                 |
+| Build                      | `pnpm build` — **mandatory** before claiming MDX/content done (Shiki is prod-only; `pnpm dev` hides render errors)           |
+| Quality gate — **code**    | `/code-review` → `/simplify` → `/security-review` (if inputs/headers/origins changed); `pnpm lint`, `pnpm exec tsc --noEmit` |
+| Quality gate — **content** | `/review-post` → `/quality-gate <slug>`; `pnpm validate:content`                                                             |
+| Verify                     | `/verify` or `/run`                                                                                                          |
+| Commit                     | Conventional Commits (`feat:` / `fix:` / `docs:`), branch off `main`                                                         |
+| Ship                       | open a PR; update `DESIGN.md` in the **same PR** if architecture moved                                                       |
 
 ### What blocks a merge
 
@@ -163,7 +163,7 @@ The CI gates (`DESIGN.md` §12):
 
 - **`ci.yml`** — `tsc --noEmit`, `pnpm lint`, `pnpm build`.
 - **`lighthouse.yml`** — A11y / Best-Practices / SEO = **100**, Performance ≥ **90** on `/`, `/blog`, `/about`.
-- **`content-check.yml`** *(content PRs)* — average content score ≥ **80**.
+- **`content-check.yml`** _(content PRs)_ — average content score ≥ **80**.
 
 ### Watch & recover
 
@@ -177,7 +177,7 @@ The CI gates (`DESIGN.md` §12):
 
 ## Hard constraints
 
-Enforced on every path. Full list: `CLAUDE.md` → *Hard constraints*. The
+Enforced on every path. Full list: `CLAUDE.md` → _Hard constraints_. The
 highest-violation ones:
 
 - **`pnpm` only** (pinned `pnpm@10.33.4`), Node `>=22.22.2`. Never `npm`/`yarn`.
@@ -189,21 +189,21 @@ highest-violation ones:
 **Sharp edges** (see `DESIGN.md`): §10.1 don't re-add `X-XSS-Protection` ·
 §11 absolute URLs only from `SITE_URL` (`lib/site.ts`) · §7 explorable-island
 props are single-quoted JSON string literals · §4 new-pillar checklist ·
-`.npmrc` 3-day dependency cooldown.
+`pnpm-workspace.yaml` 3-day dependency cooldown.
 
 ## Knowledge map
 
-| Tier | File(s) | Read when |
-|---|---|---|
-| 0 — Spine | `CLAUDE.md` | Every session; constraints + the map |
-| 1 — Architecture | `DESIGN.md` | Any structural change (section pointers below) |
-| 1 — Doc map | `docs/README.md` | Where new knowledge belongs |
-| 1 — Content ops | `docs/content-ops.md` | Content / brand-voice / SEO work |
-| 1 — UI workflow | `docs/ui-workflow.md` | UI work + the Pencil.dev MCP flow |
-| 1 — History | `docs/project-history.md` | Original plan, epics, past decisions |
-| 1 — Harness refs | `docs/research/*-expert-reference.md` | Configuring Claude Code mechanics |
-| 1 — Prior plans | `docs/plans/*` | Per-feature design/plan history |
-| Data (SoT) | `.content/{brand,seo,calendar,templates}/*` | Voice, SEO strategy, pipeline, templates |
+| Tier             | File(s)                                     | Read when                                      |
+| ---------------- | ------------------------------------------- | ---------------------------------------------- |
+| 0 — Spine        | `CLAUDE.md`                                 | Every session; constraints + the map           |
+| 1 — Architecture | `DESIGN.md`                                 | Any structural change (section pointers below) |
+| 1 — Doc map      | `docs/README.md`                            | Where new knowledge belongs                    |
+| 1 — Content ops  | `docs/content-ops.md`                       | Content / brand-voice / SEO work               |
+| 1 — UI workflow  | `docs/ui-workflow.md`                       | UI work + the Pencil.dev MCP flow              |
+| 1 — History      | `docs/project-history.md`                   | Original plan, epics, past decisions           |
+| 1 — Harness refs | `docs/research/*-expert-reference.md`       | Configuring Claude Code mechanics              |
+| 1 — Prior plans  | `docs/plans/*`                              | Per-feature design/plan history                |
+| Data (SoT)       | `.content/{brand,seo,calendar,templates}/*` | Voice, SEO strategy, pipeline, templates       |
 
 **`DESIGN.md` section pointers:** §3 SSG rendering · §4 four-pillar Learn IA ·
 §5 MDX pipeline (dev/prod Shiki split) · §6 design system & tokens · §7

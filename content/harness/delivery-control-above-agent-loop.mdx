@@ -1,0 +1,143 @@
+---
+title: 'Delivery Control Above the Agent Loop'
+slug: 'delivery-control-above-agent-loop'
+number: '07'
+description: 'The layer above runtime harnesses: exact-candidate state, independent evidence, bounded authority, and accountable delivery decisions.'
+relatedPatterns: ['checkpoint-loop', 'safety-net', 'scope-fence']
+relatedTopics: ['permission-architecture', 'supply-chain-and-audit']
+published: true
+keywords:
+  [
+    'runtime harness vs delivery harness',
+    'delivery control above agent loop',
+    'agent delivery architecture',
+    'delivery assurance',
+    'agent governance',
+  ]
+---
+
+# Delivery Control Above the Agent Loop
+
+A runtime harness controls how a model works. A delivery harness controls what an organization may accept from that work. The first six chapters stayed inside the runtime boundary: the loop, context economics, compaction, result curation, prompt architecture, and the decision to build a custom loop. This chapter crosses the boundary above it.
+
+The distinction matters once an agent-produced change must survive beyond one session. A polished transcript is not authoritative work state. A model review is not independent verification. A passing test is not useful evidence unless it identifies the exact candidate that passed. Delivery control makes those separations explicit.
+
+## Runtime Harness vs Delivery Harness
+
+Both layers constrain agents, but they constrain different failures.
+
+| Dimension            | Runtime harness                                           | Delivery harness                                             |
+| -------------------- | --------------------------------------------------------- | ------------------------------------------------------------ |
+| Object under control | A model session or run                                    | A work item and exact candidate revision                     |
+| Responsibilities     | Loop, context, tools, compaction, prompt, stop conditions | Lifecycle, policy, evidence, verdicts, authority, acceptance |
+| State optimized for  | Model continuity                                          | Organizational accountability                                |
+| Typical endpoint     | Run stops or task appears complete                        | Exact candidate receives an evidence-backed decision         |
+| Primary risk         | Bad execution                                             | Wrongful acceptance                                          |
+| Recovery source      | Session log or runtime checkpoint                         | Authoritative records outside the session                    |
+
+The runtime harness is still necessary. It limits tools, preserves useful context, and makes the model effective. It is not sufficient because it is also the environment producing the proposal. Asking that same environment to declare its own output acceptable collapses production, verification, and authorization into one probabilistic boundary.
+
+A delivery harness may wrap one managed coding agent, several custom runtimes, or a composed CI/CD stack. Model count and vendor neutrality do not define the category. The authority contract does.
+
+## Delivery Doctrine Has Three Layers
+
+Delivery control turns organizational knowledge into state transitions. I use three doctrine layers because they fail differently when left implicit.
+
+| Doctrine layer | Question                                         | Executable form                                           |
+| -------------- | ------------------------------------------------ | --------------------------------------------------------- |
+| Intent         | What outcome is allowed for this work?           | Scope, non-goals, acceptance criteria, required artifacts |
+| Experience     | What have prior deliveries taught us to require? | Checks, risk classes, evidence rules, escalation paths    |
+| Judgment       | Who may accept uncertainty and residual risk?    | Thresholds, exception rights, named approvers, verdicts   |
+
+Intent belongs to the work item, not a transient prompt. Experience should become reusable policy and checks, not folklore that only one reviewer remembers. Judgment should become bounded authority, not a model instruction to “be careful.”
+
+The layers also prevent maximalist governance. A low-risk copy change should not inherit the evidence requirements for an authentication migration. Intent identifies the work. Experience maps its risk to the right controls. Judgment decides what happens when deterministic evidence cannot eliminate uncertainty.
+
+## The Exact-Candidate Lifecycle
+
+The lifecycle can use different names, but it needs a monotonic relationship between work, candidate, evidence, and decision:
+
+1. **Intent registered.** A durable work identifier records outcome, scope, non-goals, and authority boundary.
+2. **Candidate proposed.** An agent or human produces a revision with a stable identity.
+3. **Evidence collected.** Checks and reviews run against that exact identity. Each result records provenance and policy version.
+4. **Findings resolved or accepted.** The candidate changes, the evidence is invalidated, and checks rerun—or an authorized person records a bounded exception.
+5. **Candidate authorized.** Deterministic policy confirms the required evidence, then a named human makes the consequential decision permitted to them.
+6. **Configured endpoint completed.** The harness may stop at release authorization or continue through merge, deployment, or external acceptance.
+
+Candidate identity is the load-bearing mechanism. A commit SHA alone may be sufficient for a clean repository. A dirty working tree needs an additional digest covering the uncommitted state. Container images, generated bundles, deployment manifests, and configuration may need their own content identifiers. The rule is simple: the object accepted must be the object verified.
+
+Any mutation after a gate invalidates the gate. “Only the version changed” is still a different candidate. If policy permits a class of mechanical mutation, that permission itself must be explicit and the resulting artifact must remain attributable.
+
+## Evidence Is Not Authority
+
+Agent systems generate persuasive artifacts: plans, review summaries, confidence scores, test interpretations, and model consensus. Treat them as evidence with provenance. Do not treat them as self-executing decisions.
+
+Authority separates into three parts:
+
+- **Models propose.** A builder proposes the candidate. A reviewer or challenger proposes findings and judgments.
+- **Deterministic policy evaluates.** Code verifies required checks, candidate identity, policy version, evidence freshness, and allowed transitions.
+- **Named humans authorize.** A person with a defined role accepts residual risk, rejects the candidate, or escalates it.
+
+The human decision is meaningful only when the interface presents the bound candidate, required evidence, unresolved findings, and available authority. A generic approval button is not a control if the approver cannot tell what changed between verification and click.
+
+Independent verification does not require a second model for every change. A compiler, type checker, test suite, signature verifier, or policy engine outside the producing session can provide stronger evidence for its property than another model. Separate reviewer and challenger models are an opinionated subtype for the properties that remain judgment-dependent.
+
+## Configurable Endpoints Without Ambiguous Completion
+
+The earliest valid endpoint is **evidence-backed release authorization of an exact candidate**. That phrase is intentionally narrower than deployment.
+
+A library team may hand an authorized commit to an existing release process. A platform team may own merge and deployment. A regulated workflow may remain accountable until an external party records acceptance. All three can conform if the endpoint is named and the lifecycle does not call an earlier state “done.”
+
+Use explicit verbs in the state model:
+
+| State                | What it proves                                                  | What it does not prove                          |
+| -------------------- | --------------------------------------------------------------- | ----------------------------------------------- |
+| `candidate-proposed` | A revision is available for evaluation                          | It is correct or acceptable                     |
+| `evidence-complete`  | Policy-required evidence exists for the candidate               | A human accepted residual risk                  |
+| `release-authorized` | Policy and an accountable person authorize the candidate        | It was merged, deployed, or externally accepted |
+| `deployed`           | The authorized artifact reached a target environment            | The external outcome succeeded                  |
+| `accepted`           | The configured customer or operational endpoint acknowledged it | Every downstream effect is correct              |
+
+The names are illustrative. The semantic separation is mandatory.
+
+## Seven Conformance Tests
+
+Run these tests against the system, not its architecture deck:
+
+1. **Kill every model session.** Can a new operator recover work, candidate, evidence, policy, and verdict state?
+2. **Ask the producer to approve itself.** Does a deterministic boundary reject the transition?
+3. **Change one byte after verification.** Does the gate invalidate stale evidence?
+4. **Remove the producer from verification.** Do independent checks still establish the required properties?
+5. **Ask where ownership stops.** Is the answer one named state rather than “when the agent is done”?
+6. **Inspect a consequential decision.** Can you identify the policy and named person whose authority made it binding?
+7. **Delete the transcript.** Can you still reconstruct the delivery decision from durable records?
+
+Failure on any test means the system may still be a useful agent runtime, orchestrator, or CI pipeline. It does not satisfy the delivery-harness profile.
+
+## Common Failure Modes
+
+**Chat as the database.** The session contains the plan, approvals, and rationale. Compaction or provider loss destroys the operational record. Move authoritative state outside the conversation.
+
+**Green tests on the wrong candidate.** A model edits after CI or a human rebases before approval. The evidence remains green while its subject changed. Bind every gate and decision to content identity.
+
+**Model consensus as authorization.** Builder, reviewer, and challenger agree. Their agreement may reduce uncertainty, but shared blind spots remain. Admit the consensus as evidence; keep authority deterministic and human.
+
+**CI as lifecycle.** A pipeline knows stages but not the accountable intent, residual findings, or exception rights around the change. Extend the existing stack when possible; do not confuse stage order with authority.
+
+**Governance without an endpoint.** Tools and data are constrained, but no one can say what state the organization accepts responsibility for. Define the endpoint and use distinct verbs before adding more controls.
+
+**Doctrine that only grows.** Every incident adds a permanent gate. Latency rises, operators route around the system, and controls stop predicting risk. Version policy, measure false failures and escaped defects, and retire checks that no longer change decisions.
+
+## When the Runtime Layer Is Enough
+
+A native coding agent plus ordinary CI is enough when one accountable person owns the change and release, failures are cheap to reverse, protected branches already bind checks to the candidate, and existing review records satisfy the accountability requirement. Adding another state machine would duplicate controls without changing the decision.
+
+Add delivery control when work crosses sessions, models, teams, or trust boundaries; when candidate drift can outlive a green check; when risk-specific evidence changes acceptance; or when you cannot reconstruct why the organization accepted a change.
+
+Start with one boundary: a clean, exact candidate plus one independent check plus one named human decision. This is the [Checkpoint Loop](/learn/patterns/checkpoint-loop) at delivery scale. Add the [Safety Net](/learn/patterns/safety-net), [Scope Fence](/learn/patterns/scope-fence), [Permission Architecture](/learn/security/permission-architecture), and [Supply Chain, Audit & Governance](/learn/security/supply-chain-and-audit) controls according to observed risk—not architectural ambition.
+
+## Conclusion
+
+The runtime harness turns a model into a controlled worker. The delivery harness turns that worker’s output into an accountable organizational decision. One owns execution state. The other owns delivery state, admitted evidence, and authority.
+
+Keep the boundary hard: models propose, independent systems verify, deterministic policy evaluates, and named humans authorize. Bind all four to the exact candidate. If the state survives without the transcript and the accepted object is the verified object, you have delivery control above the agent loop.

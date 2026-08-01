@@ -3,15 +3,18 @@
  * Shared between server and client code
  */
 
+export type SearchContentType = 'post' | 'pattern' | 'toolkit' | 'harness' | 'security' | 'start';
+
 export interface SearchIndexItem {
   slug: string;
+  href: string;
   title: string;
   excerpt: string;
   contentPreview: string;
   tags: string[];
   keywords: string[];
-  date: string;
-  type?: 'post' | 'pattern';
-  patternNumber?: string;
-  chapterName?: string;
+  date?: string;
+  type: SearchContentType;
+  label: string;
+  section?: string;
 }

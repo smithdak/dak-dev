@@ -32,9 +32,7 @@ export function NewsletterSignup() {
     // No provider configured → fall back to opening the user's mail client.
     if (!ENDPOINT) {
       const subject = encodeURIComponent('Newsletter Signup');
-      const body = encodeURIComponent(
-        `I'd like to subscribe to blog updates.\n\nEmail: ${email}`
-      );
+      const body = encodeURIComponent(`I'd like to subscribe to blog updates.\n\nEmail: ${email}`);
       window.location.href = `mailto:${FALLBACK_EMAIL}?subject=${subject}&body=${body}`;
       setStatus('success');
       setEmail('');
@@ -68,12 +66,7 @@ export function NewsletterSignup() {
           viewBox="0 0 24 24"
           aria-hidden="true"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M5 13l4 4L19 7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
         <p className="text-sm font-semibold text-text">
           {ENDPOINT
@@ -92,8 +85,8 @@ export function NewsletterSignup() {
           The agentic engineering brief
         </p>
         <p className="max-w-xs text-sm text-muted">
-          New patterns, harness teardowns, and the occasional deep-dive. Free,
-          no spam, unsubscribe anytime.
+          New patterns, harness teardowns, and the occasional deep-dive. Free, no spam, unsubscribe
+          anytime.
         </p>
       </div>
 
@@ -114,7 +107,7 @@ export function NewsletterSignup() {
           placeholder="your@email.com"
           disabled={status === 'submitting'}
           aria-invalid={status === 'error'}
-          className="min-w-0 flex-1 border-2 border-text/20 bg-background px-4 py-3 text-sm text-text transition-colors placeholder:text-muted/50 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+          className="min-w-0 flex-1 border-2 border-text/20 bg-background px-4 py-3 text-sm text-text transition-colors placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
         />
         <button
           type="submit"

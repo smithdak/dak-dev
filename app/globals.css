@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /*
  * CSS Custom Properties - defined at :root for proper cascade inheritance
@@ -16,8 +16,8 @@
   --color-background-light: #f5f5f5;
   --color-surface-light: #e0e0e0;
   --color-text-light: #0a0a0a;
-  --color-muted-light: #666666;
-  --color-accent-light: #00cc6a;
+  --color-muted-light: #626262;
+  --color-accent-light: #00723f;
 
   /* Active theme colors - default to dark */
   --color-background: var(--color-background-dark);
@@ -30,17 +30,17 @@
   --color-chapter-1: #00ff88;
   --color-chapter-2: #00d4ff;
   --color-chapter-3: #ff6b35;
-  --color-chapter-4: #b264ff;
+  --color-chapter-4: #c084fc;
   --color-chapter-5: #facc15;
   --color-chapter-6: #ff3366;
 
-  /* Light-mode muted variants */
-  --color-chapter-1-muted: #00b35f;
-  --color-chapter-2-muted: #0099b8;
-  --color-chapter-3-muted: #cc5528;
-  --color-chapter-4-muted: #7c3aed;
-  --color-chapter-5-muted: #ca8a04;
-  --color-chapter-6-muted: #cc294f;
+  /* Light-mode variants retain the chapter hues at AA text contrast. */
+  --color-chapter-1-light: #006b3b;
+  --color-chapter-2-light: #00647a;
+  --color-chapter-3-light: #963a18;
+  --color-chapter-4-light: #6d28d9;
+  --color-chapter-5-light: #765000;
+  --color-chapter-6-light: #a61e45;
 }
 
 /* Light mode override - applies when html has 'light' class */
@@ -50,6 +50,12 @@ html.light {
   --color-text: var(--color-text-light);
   --color-muted: var(--color-muted-light);
   --color-accent: var(--color-accent-light);
+  --color-chapter-1: var(--color-chapter-1-light);
+  --color-chapter-2: var(--color-chapter-2-light);
+  --color-chapter-3: var(--color-chapter-3-light);
+  --color-chapter-4: var(--color-chapter-4-light);
+  --color-chapter-5: var(--color-chapter-5-light);
+  --color-chapter-6: var(--color-chapter-6-light);
 }
 
 /* Dark mode explicit (default, but explicit for clarity) */
@@ -86,7 +92,11 @@ html.dark {
 /* Smooth theme transition */
 .theme-transitioning,
 .theme-transitioning * {
-  transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s !important;
+  transition:
+    background-color 0.3s,
+    color 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s !important;
 }
 
 body {
@@ -159,7 +169,8 @@ body {
 
 .mdx-content pre {
   padding: 0;
-  background-color: var(--color-background) !important;
+  /* Shiki emits a dark-only palette, so its canvas remains dark in both site themes. */
+  background-color: var(--color-background-dark) !important;
   overflow-x: auto;
 }
 
@@ -172,7 +183,12 @@ body {
 .mdx-content pre > code {
   display: grid;
   min-width: max-content;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  /* The inline-code component also renders fenced code. Keep Shiki's
+     contrast-calibrated pre background instead of layering surface/50. */
+  background-color: transparent !important;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
   font-size: 0.875rem;
   line-height: 1.75rem;
   counter-reset: line;
@@ -192,7 +208,7 @@ body {
   width: 1.5rem;
   margin-right: 1.5rem;
   text-align: right;
-  color: var(--color-muted);
+  color: var(--color-muted-dark);
   user-select: none;
 }
 
@@ -239,10 +255,14 @@ body {
   background:
     linear-gradient(to right, var(--color-background) 30%, transparent) left center,
     linear-gradient(to left, var(--color-background) 30%, transparent) right center,
-    radial-gradient(farthest-side at 0% 50%, rgba(0,0,0,0.3), transparent) left center,
-    radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,0.3), transparent) right center;
+    radial-gradient(farthest-side at 0% 50%, rgba(0, 0, 0, 0.3), transparent) left center,
+    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.3), transparent) right center;
   background-repeat: no-repeat;
-  background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+  background-size:
+    40px 100%,
+    40px 100%,
+    14px 100%,
+    14px 100%;
   background-attachment: local, local, scroll, scroll;
 }
 
@@ -300,7 +320,9 @@ body {
   color: var(--color-text);
   border: 3px solid var(--color-text);
   box-shadow: 4px 4px 0 0 var(--color-text);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
   cursor: pointer;
   text-decoration: none;
 }
@@ -334,19 +356,27 @@ body {
   position: relative;
   background-image:
     linear-gradient(color-mix(in srgb, var(--color-surface) 50%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--color-surface) 50%, transparent) 1px, transparent 1px);
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-surface) 50%, transparent) 1px,
+      transparent 1px
+    );
   background-size: 48px 48px;
   background-position: -1px -1px;
 }
 
 /* Layer 1: accent-colored large grid, masked to focal area */
 .patterns-grid-bg-depth::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background-image:
     linear-gradient(color-mix(in srgb, var(--color-accent) 14%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 14%, transparent) 1px, transparent 1px);
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-accent) 14%, transparent) 1px,
+      transparent 1px
+    );
   background-size: 192px 192px;
   background-position: -1px -1px;
   mask-image: radial-gradient(ellipse 80% 70% at 30% 50%, black 0%, transparent 100%);
@@ -356,22 +386,45 @@ body {
 
 /* Layer 2: radial glow + edge vignette for depth */
 .patterns-grid-bg-depth::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 65% 55% at 25% 50%, color-mix(in srgb, var(--color-accent) 6%, transparent) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 40% at 75% 30%, color-mix(in srgb, var(--color-accent) 3%, transparent) 0%, transparent 60%),
-    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, color-mix(in srgb, var(--color-background) 40%, transparent) 100%);
+    radial-gradient(
+      ellipse 65% 55% at 25% 50%,
+      color-mix(in srgb, var(--color-accent) 6%, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 40% 40% at 75% 30%,
+      color-mix(in srgb, var(--color-accent) 3%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 100% 100% at 50% 50%,
+      transparent 40%,
+      color-mix(in srgb, var(--color-background) 40%, transparent) 100%
+    );
   pointer-events: none;
 }
 
 /* ── Hero scanline — slow horizontal sweep ── */
 @keyframes scanline {
-  0%   { transform: translateY(-100%); opacity: 0; }
-  5%   { opacity: 1; }
-  90%  { opacity: 1; transform: translateY(calc(100vh - 60px)); }
-  100% { transform: translateY(100vh); opacity: 0; }
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(calc(100vh - 60px));
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
 }
 
 .hero-scanline {
@@ -396,8 +449,15 @@ body {
 
 /* ── Pulsing grid-intersection dots ── */
 @keyframes grid-pulse {
-  0%, 100% { opacity: 0.2; transform: scale(1); }
-  50%      { opacity: 0.7; transform: scale(2); }
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(2);
+  }
 }
 
 .hero-grid-dot {
@@ -430,12 +490,20 @@ body {
   animation: vt-fade-in 0.3s ease-out;
 }
 @keyframes vt-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 @keyframes vt-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Reduced motion support */

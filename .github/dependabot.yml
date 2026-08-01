@@ -8,8 +8,8 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 5
-    # Mirror the pnpm minimum-release-age cooldown: don't open update PRs for
-    # versions younger than 7 days, so a compromised release is yanked first.
+    # Stricter than the 3-day minimumReleaseAge gate in pnpm-workspace.yaml:
+    # don't open update PRs for versions younger than 7 days.
     cooldown:
       default-days: 7
     groups:

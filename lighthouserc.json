@@ -6,13 +6,16 @@
       "url": [
         "http://localhost:3000/",
         "http://localhost:3000/blog",
-        "http://localhost:3000/about"
+        "http://localhost:3000/blog/base-compile-agent-config",
+        "http://localhost:3000/about",
+        "http://localhost:3000/learn",
+        "http://localhost:3000/learn/harness"
       ],
       "numberOfRuns": 3
     },
     "assert": {
       "assertions": {
-        "categories:performance": ["error", { "minScore": 0.90, "aggregationMethod": "optimistic" }],
+        "categories:performance": ["error", { "minScore": 0.9, "aggregationMethod": "optimistic" }],
         "categories:accessibility": ["error", { "minScore": 1.0 }],
         "categories:best-practices": ["error", { "minScore": 1.0 }],
         "categories:seo": ["error", { "minScore": 1.0 }],

@@ -75,8 +75,8 @@ export function LearnShowcase() {
       title: 'Harness',
       href: '/learn/harness',
       description:
-        'The runtime beneath the model — the agent loop, context economics, compaction, and the system prompt.',
-      stat: `${harnessChapterCount} chapters · the floor`,
+        'Runtime control beneath the model and delivery control above it — from the agent loop to accountable authorization.',
+      stat: `${harnessChapterCount} chapters · two layers`,
       cta: 'Go deeper',
       topBorder: 'border-t-chapter-4',
       iconColor: 'text-chapter-4',
@@ -106,15 +106,11 @@ export function LearnShowcase() {
         <ScrollReveal>
           <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between border-b-4 border-text pb-6 gap-4">
             <div>
-              <h2
-                id="learn-showcase-heading"
-                className="text-4xl md:text-5xl font-bold mb-2"
-              >
+              <h2 id="learn-showcase-heading" className="text-4xl md:text-5xl font-bold mb-2">
                 Learn
               </h2>
               <p className="text-lg text-muted">
-                Four pillars of agentic engineering — patterns, toolkit,
-                harness, and security
+                Four pillars of agentic engineering — patterns, toolkit, harness, and security
               </p>
             </div>
             <Link
@@ -160,7 +156,12 @@ export function LearnShowcase() {
                 viewBox="0 0 24 24"
                 aria-hidden="true"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </span>
           </Link>
@@ -192,12 +193,8 @@ export function LearnShowcase() {
                   <h3 className="text-2xl md:text-3xl font-bold mb-3 group-hover:text-accent transition-colors">
                     {pillar.title}
                   </h3>
-                  <p className="text-muted leading-relaxed mb-6 flex-1">
-                    {pillar.description}
-                  </p>
-                  <p className="text-sm font-mono text-muted mb-4 tabular-nums">
-                    {pillar.stat}
-                  </p>
+                  <p className="text-muted leading-relaxed mb-6 flex-1">{pillar.description}</p>
+                  <p className="text-sm font-mono text-muted mb-4 tabular-nums">{pillar.stat}</p>
                   <span className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-accent">
                     {pillar.cta}
                     <svg

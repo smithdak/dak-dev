@@ -25,7 +25,7 @@ const PILLARS = [
   {
     name: 'The Harness',
     path: '/learn/harness',
-    note: 'The runtime around the model — the agent loop, context, and tools.',
+    note: 'Runtime control beneath the model and delivery control above one or more runtimes.',
   },
   {
     name: 'Security',
@@ -47,9 +47,9 @@ function oneLine(text: string): string {
 export function generateLlmsTxt(): string {
   const posts = getAllPosts();
 
-  const learnLines = PILLARS.map(
-    (p) => `- [${p.name}](${SITE_URL}${p.path}): ${p.note}`
-  ).join('\n');
+  const learnLines = PILLARS.map((p) => `- [${p.name}](${SITE_URL}${p.path}): ${p.note}`).join(
+    '\n'
+  );
 
   const postLines = posts
     .map((post) => {
@@ -62,7 +62,7 @@ export function generateLlmsTxt(): string {
 
 > Personal engineering blog and a four-pillar Learn platform on agentic engineering — patterns, the Claude Code toolkit, the agent harness, and security.
 
-Dakota Smith is a fullstack solutions architect. This site pairs an engineering blog with structured, expert-level guides for building with AI coding agents. Content is static MDX; full article bodies render server-side without JavaScript.
+Dakota Smith is a principal architect focused on agentic systems, governed delivery, and enterprise platforms. This site pairs an engineering blog with structured, expert-level guides for building with AI coding agents. Content is static MDX; full article bodies render server-side without JavaScript.
 
 ## Learn
 

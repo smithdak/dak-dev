@@ -1,0 +1,198 @@
+---
+title: 'The Agent Delivery Harness: An Opinionated Multi-Model Layer'
+date: '2026-08-01'
+excerpt: >-
+  An agent delivery harness turns human intent, experience, and judgment into
+  accountable, evidence-bound decisions across one or more model runtimes.
+slug: agent-delivery-harness
+tags:
+  - ai
+  - agents
+  - architecture
+  - developer-tools
+thumbnail: /images/posts/agent-delivery-harness/thumbnail.jpg
+hero: /images/posts/agent-delivery-harness/hero.jpg
+published: false
+author: Dakota Smith
+keywords:
+  - agent delivery harness
+  - agent delivery assurance
+  - governed agent delivery
+  - runtime harness vs delivery harness
+  - AI agent governance
+thumbnailText: DELIVERY HARNESS
+thumbnailBlur: >-
+  data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIDBv/EABoQAQACAwEAAAAAAAAAAAAAAAEAAgMRIZH/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMQ1TqJF5BkstDa+yO4R/9k=
+heroBlur: >-
+  data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIDBv/EABoQAQACAwEAAAAAAAAAAAAAAAEAAgMRIZH/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMO1TqOoORcllobX2S3CP//Z
+---
+
+# The Agent Delivery Harness: An Opinionated Multi-Model Layer
+
+An **agent delivery harness** is the authoritative layer that turns agent-produced changes into accountable delivery decisions. It compiles delivery doctrine into explicit lifecycle state, independent evidence, and bounded authority around one or more model runtimes. The agent can write the change. It cannot decide that the organization should accept it.
+
+I am not claiming to coin an established category. I am proposing a conformance profile for an emerging term: a set of properties a system can either satisfy or fail. The strongest objection is legitimate. You can compose most of these primitives from CI/CD, policy-as-code, protected branches, attestations, and human approvals. My answer is that such a composed stack **does qualify** when it implements the agent-specific authority contract from intent through accountable acceptance. The category is about that contract, not a new box in an architecture diagram.
+
+The crux is testable: does authoritative state and accountable acceptance of an exact candidate outside model sessions materially improve delivery outcomes? If it does not, this is ceremony. If it does, the layer deserves a name, a boundary, and conformance tests.
+
+## Multi-Model Is Not a Delivery Strategy
+
+Adding models can improve coverage. A builder can produce a change, a reviewer can inspect it, and a challenger can attack the assumptions. Different model families may fail differently enough to expose defects that one model misses. None of that creates delivery authority.
+
+Three agents agreeing is still three probabilistic outputs agreeing. They may share training distributions, follow the same flawed specification, trust the same stale test, or inherit the same poisoned context. Consensus can be useful evidence. It is not a release decision.
+
+This is where multi-model systems often stop one layer too early. They define roles, routing, and handoffs, then treat a clean conversation as completion. The durable questions remain unanswered:
+
+- What exact candidate did they evaluate?
+- Which policy version applied?
+- Which checks ran independently of the producer?
+- Who had authority to accept the residual risk?
+- Can the decision be reconstructed after every chat session disappears?
+
+A multi-model topology is an implementation choice inside the broader profile. Provider neutrality, interchangeable models, and builder/reviewer/challenger roles define an **opinionated multi-model subtype** of the agent delivery harness. They are not universal category requirements. A single-model system can conform. A five-model council can fail.
+
+## Agent Delivery Harness Versus Runtime Harness
+
+The word _harness_ is already overloaded. The clean boundary is authority, not process count.
+
+A runtime harness sits beneath or around a model invocation. It owns the agent loop, context assembly, compaction, tool dispatch, sandbox interaction, stop conditions, and the system-prompt stack. Its job is to turn model capability into controlled execution. The first six chapters of [Harness Engineering](/learn/harness) cover this layer.
+
+A delivery harness sits above one or more runtime harnesses. It owns work identity, lifecycle state, policy evaluation, admitted evidence, candidate identity, decision rights, and the endpoint at which the organization accepts responsibility for the result. Its job is to turn agent-produced changes into accountable delivery decisions. [Chapter 07: Delivery Control Above the Agent Loop](/learn/harness/delivery-control-above-agent-loop) defines the bridge in detail.
+
+| Concern         | Runtime harness                      | Delivery harness                                       |
+| --------------- | ------------------------------------ | ------------------------------------------------------ |
+| Unit of control | A model session or run               | A work item and exact candidate revision               |
+| Primary state   | Context, messages, tool results      | Lifecycle, evidence, policy, verdicts, authority       |
+| Main failure    | The agent executes badly             | The organization accepts the wrong thing               |
+| Stop condition  | Turn, cost, time, or task completion | Evidence-backed authorization at a configured endpoint |
+| Recovery source | Session log or checkpoint            | Authoritative state independent of transcripts         |
+| Decision owner  | Runtime policy and tool permissions  | Deterministic policy plus named humans                 |
+
+The two layers cooperate. They should not collapse into each other. A runtime can report what happened. It should not unilaterally promote its own output into accepted delivery state.
+
+## Compile Intent, Experience, and Judgment Into Doctrine
+
+“Opinionated” should not mean a larger prompt full of preferences. Prompts influence behavior. Doctrine constrains what counts as an acceptable result.
+
+I separate doctrine into three layers:
+
+| Layer      | What it contributes                                   | How it becomes executable                                              |
+| ---------- | ----------------------------------------------------- | ---------------------------------------------------------------------- |
+| Intent     | The outcome, boundaries, and non-goals for this work  | Acceptance criteria, scope, required artifacts, forbidden changes      |
+| Experience | Lessons encoded from prior successes and failures     | Standard checks, risk classes, escalation rules, evidence requirements |
+| Judgment   | The decision rights for uncertainty and residual risk | Thresholds, exceptions, named approvers, explicit verdicts             |
+
+Intent without experience creates locally correct changes that repeat known organizational mistakes. Experience without intent creates a bureaucracy that runs every check on every change. Judgment left inside a model prompt becomes probabilistic at the exact point where accountability matters most.
+
+Compiling doctrine means each layer changes the state machine. A high-risk authentication change may require a clean candidate, a threat-model artifact, independent security checks, and a named security approver. A documentation typo may require only a deterministic build. The model can recommend the risk class. A policy-owned transition determines what evidence the class requires.
+
+This is also how an organization applies its own taste without pretending taste is universal. OpenAI’s February 11, 2026 account of [harness engineering](https://openai.com/index/harness-engineering/) describes encoding “golden principles” and repository-legible rules so agents can execute within an engineered environment. I agree with the mechanism. The delivery layer carries those principles past execution into acceptance: which rules are advisory, which are enforced, and who can authorize an exception.
+
+## Model Roles Are Evidence Roles, Not Delivery Authority
+
+The opinionated subtype I am building uses distinct roles because role separation is useful:
+
+- The **builder** proposes a candidate and explains the intended effect.
+- The **reviewer** looks for correctness, maintainability, and contract violations.
+- The **challenger** tries to falsify the assumptions and evidence.
+- Deterministic **checks** measure properties that should not depend on model judgment.
+- A named **operator** accepts, rejects, or escalates the residual risk permitted by policy.
+
+Only the last two bullets participate in consequential authority. A reviewer finding is evidence. A challenger verdict is evidence. Even unanimous model approval is evidence. The transition to an accepted delivery state belongs to deterministic policy plus a named human operating inside bounded authority.
+
+That human is not a ceremonial click. The harness should present the exact candidate, applicable doctrine, admitted evidence, unresolved findings, and the decision the person is authorized to make. If the interface asks “approve?” without that binding, it has digitized ambiguity.
+
+The same rule applies when a model triggers CI, opens a pull request, or calls a deployment tool. Tool access is capability. It is not authority. [Permission architecture](/learn/security/permission-architecture) limits what a runtime can do; the delivery harness determines what the organization may accept as done.
+
+## The Agent Delivery Harness Conformance Test
+
+A system conforms only if all seven invariants hold. Product naming, model count, and implementation style do not matter.
+
+1. **Authoritative state lives outside model sessions.** Work identity, lifecycle, policy, evidence, and decisions survive session loss.
+2. **Model outputs never self-authorize.** A model may propose a change, classification, finding, or verdict. It cannot make its own output binding.
+3. **Everything binds to an exact candidate and revision.** Policies, checks, decisions, and evidence identify the same immutable candidate. Drift invalidates the gate.
+4. **Verification is independent of the producing model.** At minimum, deterministic checks run outside its reasoning context. Higher-risk work may require a separate model, toolchain, or human review.
+5. **The endpoint is explicit.** The earliest valid endpoint is evidence-backed release authorization of an exact candidate. An organization may extend ownership through merge, deployment, or external acceptance.
+6. **Consequential authority is bounded and attributable.** Deterministic policy plus named humans own acceptance and exceptions—not model consensus.
+7. **Delivery state is recoverable without chat transcripts.** A new operator can reconstruct what happened from authoritative records and content-addressed evidence.
+
+This is deliberately falsifiable. Delete the chats and restart the runtime. Change one byte after verification. Ask which person accepted the residual risk. Remove the producing model from the verification path. If the system cannot preserve or answer those conditions, it does not conform.
+
+The endpoint clause matters. “Release authorized” is not automatically “deployed.” A regulated team may own the chain through production acceptance. A library team may stop at an authorized commit ready for an existing release process. The profile requires a named endpoint and exact-candidate binding, not one universal lifecycle.
+
+## Why This Is Not CI/CD With a New Label
+
+The strongest alternative is a well-composed delivery stack:
+
+| Existing primitive  | What it already solves                        | What must be added for conformance                                              |
+| ------------------- | --------------------------------------------- | ------------------------------------------------------------------------------- |
+| Agent orchestration | Routing work, agents, tools, and handoffs     | Durable work and candidate state plus an accountable acceptance boundary        |
+| CI/CD               | Repeatable build, test, and deployment stages | Agent work identity, proposal status, and authority transitions                 |
+| Policy-as-code      | Deterministic allow/deny rules                | Binding to intent, evidence, candidate, and accountable exceptions              |
+| Protected branches  | Merge restrictions and required checks        | Provenance across agent production, review, and acceptance                      |
+| Attestations        | Signed claims about artifacts and processes   | A lifecycle that admits claims as evidence without confusing them for decisions |
+| Human approvals     | Named accountability                          | Bounded decision context tied to exact candidate and residual risk              |
+| Agent governance    | Tool, data, identity, and behavior controls   | A delivery endpoint and evidence-backed acceptance contract                     |
+
+If your current stack supplies the right-hand column, keep it. You have an agent delivery harness whether or not you use the term. Replacing working controls with a new platform would be architecture theater.
+
+The differentiator is the span of the contract. Generic CI starts when an artifact enters a pipeline. Generic agent governance asks what an agent may access or do. Orchestration asks which worker runs next. The delivery profile starts with accountable intent, tracks the exact candidate and admitted evidence, and ends at a declared acceptance boundary.
+
+That span creates its own risk: stale doctrine. Every policy captures assumptions about models, tools, and organizational risk. Anthropic’s March 24, 2026 discussion of [harness design for long-running applications](https://www.anthropic.com/engineering/harness-design-long-running-apps) warns that evaluator scaffolding can become unnecessary overhead as models improve. Its April 8, 2026 description of [managed agents](https://www.anthropic.com/engineering/managed-agents) makes a related separation among session logs, the harness loop, and the sandbox. The mechanism applies here too: doctrine must be versioned, measured, and retired when it no longer changes outcomes.
+
+## The Category Already Has Neighbors
+
+As of **August 1, 2026**, three vendors use _harness_ for adjacent but different boundaries:
+
+- **OpenAI** uses harness engineering for the repository environment, feedback loops, and rules that let coding agents work effectively. Its documented emphasis is making the environment agent-legible and encoding human taste. That is mostly runtime and development-environment engineering, with delivery implications.
+- **Anthropic** uses harness for instructions, guardrails, tools, session state, and orchestration around model execution. Its April 9, 2026 [trustworthy agents](https://www.anthropic.com/research/trustworthy-agents) framing places the harness beside the model, tools, and environment. That is the runtime layer.
+- **Harness.io** announced pipeline-native [autonomous Worker Agents](https://www.harness.io/press-and-news/harness-launches-autonomous-worker-agents-for-software-delivery) on June 30, 2026. The vendor documents sandboxing, scoped credentials, policy enforcement, audit, multiple model providers, and governed pipeline steps. This is the closest named commercial neighbor—and the strongest proof that an existing CI/CD platform can compose much of the profile. Those are vendor-documented capabilities, not my independent runtime verification.
+
+The terminology is unsettled. That is exactly why a conformance profile is more useful than a naming argument. The profile says what must be true regardless of which vendor owns the pipeline, runtime, or model.
+
+There is also early empirical support for moving critical rules out of prompts. A July 9, 2026 paper, [_From Prompts to Contracts_](https://arxiv.org/abs/2607.08028), reports 270 model-substitution runs in which code-owned checks held while a prompt-only condition admitted violations. That is a bounded reported experiment, not proof of this full architecture. It does support the underlying mechanism: requirements that determine acceptance should compile into executable checks where possible.
+
+## My Public Delivery Harness as a Scored Self-Audit
+
+I built a public [`delivery-harness`](https://github.com/smithdak/delivery-harness) implementation to make these claims concrete enough to attack. This self-audit uses the remote `main` documentation as read on **August 1, 2026**. Its [product contract](https://github.com/smithdak/delivery-harness/blob/main/docs/product-v1.md) and [architecture](https://github.com/smithdak/delivery-harness/blob/main/docs/architecture-v1.md) define one accountable operator, bounded workers, exact-candidate gates, a hash-chained journal, content-addressed evidence, and an internal `release-authorized` verdict.
+
+Against the seven invariants, the documented local implementation scores **7/7**:
+
+| Invariant                       | Current local evidence                                                  | Score |
+| ------------------------------- | ----------------------------------------------------------------------- | ----- |
+| State outside sessions          | Projector, journal, and content-addressed evidence                      | Pass  |
+| No model self-authorization     | Agent-facing tools can submit work and evidence, not approve or release | Pass  |
+| Exact-candidate binding         | Clean HEAD plus worktree digest at gates; drift fails                   | Pass  |
+| Independent verification        | Daemon-owned trusted checks and separated roles                         | Pass  |
+| Explicit endpoint               | Internal, evidence-bound `release-authorized` operator verdict          | Pass  |
+| Bounded human authority         | Deterministic policy plus one accountable operator                      | Pass  |
+| Transcript-independent recovery | Durable journal and projections reconstruct state                       | Pass  |
+
+That score is conformance to the current **local, process-tested contract**, not production readiness. The [implementation status](https://github.com/smithdak/delivery-harness/blob/main/docs/implementation-status.md) snapshot dated **July 24, 2026** says three adapters are implemented and process-tested: Claude Agent SDK, Codex app-server, and GitHub Copilot SDK. It also says live authenticated model calls have not been proven, physical key enforcement and Windows ACLs remain unverified, checks are not yet OS-isolated, remote CI has not run, and no external delivery has occurred. Live authenticated multi-provider delivery and external delivery remain unproven.
+
+The [bounded MCP decision](https://github.com/smithdak/delivery-harness/blob/main/docs/decisions/DR-013-agent-facing-mcp-stdio.md) is the most important architectural proof. The agent-facing surface exposes work, evidence, findings, and status. It deliberately excludes approval, release, signing, and mechanical verification. That is the authority boundary expressed as an interface.
+
+The honest operational score is therefore **0/4** for the claims I have not demonstrated: live authenticated multi-provider execution, hardware-backed human authorization, OS-isolated verification, and an external delivery accepted by another party. The implementation can test the profile. It cannot yet validate the outcome thesis.
+
+## When a Native Coding Agent Plus CI Is Enough
+
+Do not build this layer because “agents are the future.” Use a native coding agent plus ordinary CI when:
+
+- one person owns both the change and the release decision;
+- the repository and protected branch already hold sufficient state;
+- failures are cheap to reverse;
+- the candidate is unambiguous at the required checks;
+- existing review and approval records satisfy the accountability requirement;
+- model specialization would add ceremony, not independent evidence.
+
+The additional layer becomes defensible when work crosses sessions, models, teams, or trust boundaries; when you cannot reconstruct why a candidate was accepted; when risk-specific evidence changes the decision; or when “the agent said it passed” has become an operational failure mode.
+
+Even then, compose before you replace. Start with one exact-candidate gate and one evidence-backed human decision. Measure escaped defects, review latency, false gate failures, recovery time, and exception frequency. Expand ownership only when the evidence says the additional doctrine changes outcomes.
+
+## Conclusion
+
+An agent delivery harness is not a smarter agent, a model router, or a branded CI pipeline. It is an authority contract around agent-produced change: durable state, exact-candidate evidence, independent verification, deterministic policy, and named human accountability.
+
+The opinionated multi-model version adds interchangeable runtimes and explicit builder, reviewer, and challenger roles. Those roles can improve the evidence. They never inherit the authority.
+
+My confidence is **moderate** that this is a useful architectural profile and buyer vocabulary. My confidence is **low to moderate** that it becomes a standalone market category; search demand and customer language are not validated. The load-bearing claim remains the crux: authoritative state and accountable exact-candidate acceptance outside model sessions must produce measurably better delivery outcomes. The next job is not to promote the term. It is to try to falsify that claim.

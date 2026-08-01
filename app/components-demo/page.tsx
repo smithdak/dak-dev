@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Tag, TagList } from '@/components/ui/Tag';
+import { TagList } from '@/components/ui/Tag';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { AgentLoopStepper } from '@/components/interactive/AgentLoopStepper';
 import { ScrollStory } from '@/components/interactive/ScrollStory';
@@ -10,34 +10,34 @@ import { RunnableSnippet } from '@/components/interactive/RunnableSnippet';
 
 const samplePosts = [
   {
-    title: 'Building High-Performance Web Apps',
+    title: 'Compiling Agent Config to Claude Code, Codex, and Copilot',
     excerpt:
-      'Learn the techniques and strategies for creating web applications that load in under a second and provide exceptional user experiences.',
-    slug: 'high-performance-web-apps',
-    thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=450&fit=crop',
-    date: '2026-01-20',
-    readingTime: '5 min read',
-    tags: ['performance', 'web development', 'optimization'],
+      'How base compiles one vendor-neutral canon into native agent config for Claude Code, Codex, and GitHub Copilot—with drift protection in CI.',
+    slug: 'base-compile-agent-config',
+    thumbnail: '/images/posts/base-compile-agent-config/thumbnail.jpg',
+    date: '2026-07-15',
+    readingTime: '9 min read',
+    tags: ['ai', 'claude-code', 'rust', 'developer-tools'],
   },
   {
-    title: 'The Art of Code Review',
+    title: 'Compile Your Agentic System: base, skillsmith, and ObjectCore',
     excerpt:
-      'Code reviews are more than finding bugs. Discover how to provide constructive feedback that improves code quality and team collaboration.',
-    slug: 'art-of-code-review',
-    thumbnail: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800&h=450&fit=crop',
-    date: '2026-01-18',
-    readingTime: '7 min read',
-    tags: ['engineering', 'best practices', 'collaboration'],
+      'Three projects that treat agent config as compiler output: validated sources in, drift-gated artifacts out.',
+    slug: 'compile-your-agentic-system',
+    thumbnail: '/images/posts/compile-your-agentic-system/thumbnail.jpg',
+    date: '2026-07-15',
+    readingTime: '8 min read',
+    tags: ['ai', 'claude-code', 'agents', 'developer-tools'],
   },
   {
-    title: 'Accessibility-First Design',
+    title: 'Durable Agent Orchestration with Claude Managed Agents',
     excerpt:
-      'Building accessible applications is not just a legal requirement - it\'s a moral imperative. Here\'s how to make accessibility a core principle.',
-    slug: 'accessibility-first-design',
-    thumbnail: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&h=450&fit=crop',
-    date: '2026-01-15',
-    readingTime: '6 min read',
-    tags: ['accessibility', 'design', 'inclusive'],
+      'Why I moved agent orchestration into durable workflow steps instead of a coordinator agent, including the safety and cost tradeoffs.',
+    slug: 'durable-agent-orchestration-claude-managed-agents',
+    thumbnail: '/images/posts/durable-agent-orchestration-claude-managed-agents/thumbnail.jpg',
+    date: '2026-06-09',
+    readingTime: '11 min read',
+    tags: ['ai', 'claude', 'agents', 'orchestration'],
   },
 ];
 
@@ -49,8 +49,8 @@ export default function ComponentsDemo() {
         <section className="mb-16 border-b-4 border-text pb-16">
           <h1 className="text-5xl font-bold mb-4">Components Demo</h1>
           <p className="text-xl text-muted max-w-3xl">
-            A showcase of all UI components in the Dakota Smith blog design system. Neo-brutalist aesthetics
-            meet modern web standards.
+            A showcase of all UI components in the Dakota Smith blog design system. Neo-brutalist
+            aesthetics meet modern web standards.
           </p>
         </section>
 
@@ -117,7 +117,12 @@ export default function ComponentsDemo() {
                   variant="primary"
                   icon={
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="square" strokeLinejoin="miter" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      <path
+                        strokeLinecap="square"
+                        strokeLinejoin="miter"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
                     </svg>
                   }
                   iconPosition="left"
@@ -151,14 +156,11 @@ export default function ComponentsDemo() {
           <div className="space-y-6">
             <div>
               <h3 className="text-xl font-semibold mb-4 text-muted">Interactive (Clickable)</h3>
-              <TagList tags={['performance', 'web development', 'accessibility', 'nextjs', 'react']} />
+              <TagList tags={['ai', 'claude-code', 'agents', 'developer-tools', 'skills']} />
             </div>
             <div>
               <h3 className="text-xl font-semibold mb-4 text-muted">Static (Display Only)</h3>
-              <TagList
-                tags={['design', 'engineering', 'optimization']}
-                interactive={false}
-              />
+              <TagList tags={['design', 'engineering', 'optimization']} interactive={false} />
             </div>
           </div>
         </section>
@@ -177,17 +179,17 @@ export default function ComponentsDemo() {
         <section className="mb-16">
           <h2 className="text-3xl font-bold mb-6 border-l-4 border-text pl-4">Typography</h2>
           <div className="space-y-4 max-w-3xl">
-            <h1 className="text-5xl font-bold">Heading 1 - Space Grotesk Bold</h1>
-            <h2 className="text-4xl font-bold">Heading 2 - Space Grotesk Bold</h2>
-            <h3 className="text-3xl font-semibold">Heading 3 - Space Grotesk Semibold</h3>
-            <h4 className="text-2xl font-semibold">Heading 4 - Space Grotesk Semibold</h4>
+            <p className="text-5xl font-bold">Heading 1 style — Space Grotesk Bold</p>
+            <p className="text-4xl font-bold">Heading 2 style — Space Grotesk Bold</p>
+            <p className="text-3xl font-semibold">Heading 3 style — Space Grotesk Semibold</p>
+            <p className="text-2xl font-semibold">Heading 4 style — Space Grotesk Semibold</p>
             <p className="text-base text-text">
-              Body text - Space Grotesk Regular. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              High contrast (#F5F5F5 on #0A0A0A) ensures readability and accessibility.
+              Body text - Space Grotesk Regular. Lorem ipsum dolor sit amet, consectetur adipiscing
+              elit. High contrast (#F5F5F5 on #0A0A0A) ensures readability and accessibility.
             </p>
             <p className="text-base text-muted">
-              Muted text - Space Grotesk Regular with muted color. Used for secondary information and
-              metadata.
+              Muted text - Space Grotesk Regular with muted color. Used for secondary information
+              and metadata.
             </p>
           </div>
         </section>
@@ -257,9 +259,7 @@ export default function ComponentsDemo() {
             code={`// The agent loop, in miniature. Press Run.\nlet turns = 0;\nfunction step(state) {\n  turns++;\n  return state === "done" ? "done" : "thinking";\n}\nlet state = "start";\nwhile (state !== "done" && turns < 5) {\n  state = turns >= 3 ? "done" : step(state);\n}\nconsole.log("Loop stopped after", turns, "turns:", state);`}
           />
 
-          <h3 className="text-xl font-bold mb-3 mt-10">
-            RunnableSnippet — Python (engine: wasi)
-          </h3>
+          <h3 className="text-xl font-bold mb-3 mt-10">RunnableSnippet — Python (engine: wasi)</h3>
           <RunnableSnippet
             language="python"
             sandbox="python"

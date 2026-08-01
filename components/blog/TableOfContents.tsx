@@ -47,7 +47,7 @@ export function TableOfContents({ items }: TableOfContentsProps) {
 
   return (
     <nav aria-label="Table of contents">
-      <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted/60 mb-3">
+      <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted mb-3">
         On this page
       </h2>
       <ul className="space-y-0.5">
@@ -64,7 +64,7 @@ export function TableOfContents({ items }: TableOfContentsProps) {
                   ${
                     isActive
                       ? 'text-text font-semibold border-l-2 border-accent pl-3'
-                      : 'text-muted/60 hover:text-text border-l border-text/10 pl-3 hover:border-text/30'
+                      : 'text-muted hover:text-text border-l border-text/10 pl-3 hover:border-text/30'
                   }
                 `}
                 onClick={(e) => {

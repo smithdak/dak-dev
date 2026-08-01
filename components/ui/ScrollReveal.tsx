@@ -23,7 +23,7 @@ export function ScrollReveal({ children, stagger = false, className }: ScrollRev
   return (
     <motion.div
       variants={stagger ? staggerContainerVariants : singleVariants}
-      initial="hidden"
+      initial={false}
       whileInView="visible"
       viewport={{ once: true, margin: '-80px' }}
       className={className}

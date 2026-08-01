@@ -9,10 +9,7 @@ import { SearchIndexItem } from './types';
  * Search through the index for matching posts
  * Performs case-insensitive substring matching across title, excerpt, content, tags, and keywords
  */
-export function searchPosts(
-  index: SearchIndexItem[],
-  query: string
-): SearchIndexItem[] {
+export function searchPosts(index: SearchIndexItem[], query: string): SearchIndexItem[] {
   if (!query || query.trim().length === 0) {
     return [];
   }
@@ -27,6 +24,8 @@ export function searchPosts(
         item.title,
         item.excerpt,
         item.contentPreview,
+        item.label,
+        item.section ?? '',
         ...item.tags,
         ...item.keywords,
       ]
@@ -45,8 +44,13 @@ export function searchPosts(
         return scoreB - scoreA;
       }
 
-      // If scores are equal, sort by date (most recent first)
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
+      // Prefer dated content, then keep undated Learn results deterministic.
+      const dateA = a.date ? new Date(a.date).getTime() : 0;
+      const dateB = b.date ? new Date(b.date).getTime() : 0;
+      if (dateA !== dateB) return dateB - dateA;
+
+      const titleOrder = a.title.localeCompare(b.title);
+      return titleOrder !== 0 ? titleOrder : a.href.localeCompare(b.href);
     });
 }
 

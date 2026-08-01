@@ -7,7 +7,7 @@ interface ProblemEntry {
 
 const PROBLEMS: ProblemEntry[] = [
   {
-    problem: 'The agent keeps making changes I didn\'t ask for',
+    problem: "The agent keeps making changes I didn't ask for",
     patterns: [
       { slug: 'scope-fence', name: 'Scope Fence', number: '2.2' },
       { slug: 'negative-space', name: 'Negative Space', number: '4.3' },
@@ -21,14 +21,14 @@ const PROBLEMS: ProblemEntry[] = [
     ],
   },
   {
-    problem: 'Output is correct but doesn\'t match codebase style',
+    problem: "Output is correct but doesn't match codebase style",
     patterns: [
       { slug: 'convention-file', name: 'Convention File', number: '1.1' },
       { slug: 'agent-friendly-architecture', name: 'Agent-Friendly Architecture', number: '1.4' },
     ],
   },
   {
-    problem: 'Huge diff and I\'m not sure it\'s right',
+    problem: "Huge diff and I'm not sure it's right",
     patterns: [
       { slug: 'checkpoint-loop', name: 'Checkpoint Loop', number: '3.2' },
       { slug: 'incremental-verification', name: 'Incremental Verification', number: '5.1' },
@@ -79,9 +79,7 @@ export function ProblemIndex({ className = '', publishedSlugs }: ProblemIndexPro
       <div className="border-b-2 border-text/30 pb-4 mb-8">
         <div className="flex items-baseline gap-3">
           <span className="text-xs font-mono text-accent uppercase tracking-widest">02</span>
-          <h2 className="text-2xl font-bold tracking-tight">
-            Find by Problem
-          </h2>
+          <h2 className="text-2xl font-bold tracking-tight">Find by Problem</h2>
         </div>
         <p className="text-sm text-muted mt-1 ml-8">
           Start from the symptom you&apos;re experiencing.
@@ -101,8 +99,10 @@ export function ProblemIndex({ className = '', publishedSlugs }: ProblemIndexPro
               key={entry.problem}
               className="group border border-text/20 hover:border-text/50 p-4 bg-surface/30 transition-colors"
             >
-              <p className="text-sm font-medium text-text/80 mb-3 leading-snug">
-                <span className="text-accent/60 mr-1" aria-hidden="true">&gt;</span>
+              <p className="text-sm font-medium text-text mb-3 leading-snug">
+                <span className="text-accent/60 mr-1" aria-hidden="true">
+                  &gt;
+                </span>
                 &ldquo;{entry.problem}&rdquo;
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -112,9 +112,7 @@ export function ProblemIndex({ className = '', publishedSlugs }: ProblemIndexPro
                     href={`/learn/patterns/${pattern.slug}`}
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-text/40 hover:border-text text-xs font-semibold hover:bg-text hover:text-background transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
                   >
-                    <span className="font-mono text-[10px] text-accent">
-                      {pattern.number}
-                    </span>
+                    <span className="font-mono text-[10px] text-accent">{pattern.number}</span>
                     {pattern.name}
                   </Link>
                 ))}

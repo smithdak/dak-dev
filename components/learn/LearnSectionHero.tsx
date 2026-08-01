@@ -2,11 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import {
-  staggerContainerVariants,
-  slideUpVariants,
-  drawLineVariants,
-} from '@/lib/animations';
+import { staggerContainerVariants, slideUpVariants, drawLineVariants } from '@/lib/animations';
 import { SECTION_THEME, type SectionColor } from './sectionTheme';
 
 interface LearnSectionHeroProps {
@@ -44,7 +40,7 @@ export function LearnSectionHero({
   return (
     <header className="border-b-4 border-text mb-12">
       <div className="px-4 sm:px-6 lg:px-0 py-10 md:py-14">
-        <motion.div variants={staggerContainerVariants} initial="hidden" animate="visible">
+        <motion.div variants={staggerContainerVariants} initial={false} animate="visible">
           <motion.nav variants={slideUpVariants} className="mb-6" aria-label="Breadcrumb">
             <ol className="flex items-center gap-2 text-xs text-muted font-mono">
               <li>
@@ -66,9 +62,7 @@ export function LearnSectionHero({
             variants={slideUpVariants}
             className={`mb-6 inline-block border-4 ${t.border} bg-surface px-6 py-2`}
           >
-            <p className={`text-sm font-bold uppercase tracking-wider ${t.text}`}>
-              {eyebrow}
-            </p>
+            <p className={`text-sm font-bold uppercase tracking-wider ${t.text}`}>{eyebrow}</p>
           </motion.div>
 
           <motion.h1

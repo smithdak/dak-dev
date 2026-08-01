@@ -8,9 +8,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export const metadata = {
-  title: 'Dakota Smith | Fullstack Solutions Architect',
+  title: 'Dakota Smith | Principal Architect for Agentic Systems',
   description:
-    'High-performance personal blog featuring tech articles and engineering insights. Building great software with Next.js, TypeScript, and modern web technologies.',
+    'Principal architect writing about agentic systems, harness engineering, governed delivery, and enterprise software architecture.',
   alternates: { canonical: '/' },
 };
 
@@ -51,12 +51,8 @@ export default async function Home() {
           {/* Section Header */}
           <div className="mb-12 flex items-end justify-between border-b-4 border-text pb-6">
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-2">
-                Featured Post
-              </h2>
-              <p className="text-lg text-muted">
-                Latest from the blog
-              </p>
+              <h2 className="text-4xl md:text-5xl font-bold mb-2">Featured Post</h2>
+              <p className="text-lg text-muted">Latest from the blog</p>
             </div>
             <Link
               href="/blog"
@@ -113,19 +109,18 @@ export default async function Home() {
                     </div>
 
                     {/* Tags */}
-                    {featuredPost.frontmatter.tags &&
-                      featuredPost.frontmatter.tags.length > 0 && (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {featuredPost.frontmatter.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="inline-block border-2 border-text bg-background px-3 py-1 text-xs font-bold uppercase tracking-wider"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                    {featuredPost.frontmatter.tags && featuredPost.frontmatter.tags.length > 0 && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {featuredPost.frontmatter.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-block border-2 border-text bg-background px-3 py-1 text-xs font-bold uppercase tracking-wider"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Content */}
@@ -142,10 +137,7 @@ export default async function Home() {
 
                     {/* Metadata */}
                     <div className="flex flex-wrap items-center gap-4 text-sm text-muted mb-8">
-                      <time
-                        dateTime={featuredPost.frontmatter.date}
-                        className="font-semibold"
-                      >
+                      <time dateTime={featuredPost.frontmatter.date} className="font-semibold">
                         {formattedDate}
                       </time>
                       <span aria-hidden="true">•</span>
@@ -183,8 +175,11 @@ export default async function Home() {
 
           {/* Mobile "View All" Button */}
           <div className="mt-12 sm:hidden flex justify-center">
-            <Link href="/blog" className="inline-flex items-center justify-center font-semibold px-6 py-3 text-base gap-2 bg-surface text-text border-4 border-text hover:bg-text hover:text-background shadow-[4px_4px_0_0_var(--color-text)] hover:shadow-[6px_6px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-text focus:ring-offset-4 focus:ring-offset-background">
-                View All Posts
+            <Link
+              href="/blog"
+              className="inline-flex items-center justify-center font-semibold px-6 py-3 text-base gap-2 bg-surface text-text border-4 border-text hover:bg-text hover:text-background shadow-[4px_4px_0_0_var(--color-text)] hover:shadow-[6px_6px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-text focus:ring-offset-4 focus:ring-offset-background"
+            >
+              View All Posts
             </Link>
           </div>
         </div>

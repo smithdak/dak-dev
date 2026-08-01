@@ -49,15 +49,10 @@ export function SectionCard({
           viewBox="0 0 24 24"
           aria-hidden="true"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d={icon}
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
         </svg>
         <span
-          className={`font-mono font-bold text-4xl ${t.text} opacity-20 leading-none tabular-nums`}
+          className={`font-mono font-bold text-4xl ${t.text} opacity-75 leading-none tabular-nums`}
           aria-hidden="true"
         >
           {number}

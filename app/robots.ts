@@ -11,8 +11,9 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/site';
 
-// Private/utility paths no crawler should index.
-const DISALLOW = ['/api/', '/components-demo/'];
+// Private API paths no crawler should index. The component demo remains
+// crawlable so its route-level noindex directive can be observed.
+const DISALLOW = ['/api/'];
 
 // AI training + answer-engine crawlers we explicitly welcome.
 const AI_CRAWLERS = [

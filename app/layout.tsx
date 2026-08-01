@@ -6,8 +6,6 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
-import { ReferralWidget } from '@/components/ui/ReferralWidget';
-import referralLinks from '@/content/referrals.json';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { SITE_URL as siteUrl } from '@/lib/site';
 import './globals.css';
@@ -22,18 +20,18 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Dakota Smith - Fullstack Solutions Architect',
+    default: 'Dakota Smith — Principal Architect for Agentic Systems',
     template: '%s | Dakota Smith',
   },
   description:
-    'High-performance personal blog featuring engineering projects, web development insights, and technical tutorials. Built with Next.js and optimized for accessibility.',
+    'Principal architect writing about agentic systems, harness engineering, governed delivery, and enterprise software architecture.',
   keywords: [
     'Dakota Smith',
-    'software engineering',
-    'web development',
-    'Next.js',
-    'React',
-    'TypeScript',
+    'agentic engineering',
+    'harness engineering',
+    'AI platform architecture',
+    'governed delivery',
+    'enterprise software architecture',
     'tech blog',
     'engineering blog',
   ],
@@ -44,23 +42,23 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: siteUrl,
     siteName: 'Dakota Smith Blog',
-    title: 'Dakota Smith - Fullstack Solutions Architect',
+    title: 'Dakota Smith — Principal Architect for Agentic Systems',
     description:
-      'High-performance personal blog featuring engineering projects, web development insights, and technical tutorials.',
+      'Agentic systems, harness engineering, governed delivery, and enterprise software architecture.',
     images: [
       {
         url: '/og-default.png',
         width: 1200,
         height: 630,
-        alt: 'Dakota Smith Blog',
+        alt: 'Dakota Smith — Principal Architect for Agentic Systems',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Dakota Smith - Fullstack Solutions Architect',
+    title: 'Dakota Smith — Principal Architect for Agentic Systems',
     description:
-      'High-performance personal blog featuring engineering projects and web development insights.',
+      'Agentic systems, harness engineering, governed delivery, and enterprise software architecture.',
     images: ['/og-default.png'],
   },
   robots: {
@@ -83,7 +81,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} dark`} suppressHydrationWarning>
+    <html lang="en" className={spaceGrotesk.variable} suppressHydrationWarning>
       <head>
         {/* FOUC prevention: Apply theme class before CSS loads */}
         <script
@@ -99,8 +97,10 @@ export default function RootLayout({
       resolved = isDark ? 'dark' : 'light';
     }
 
+    document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(resolved);
   } catch (e) {
+    document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add('dark');
   }
 })();
@@ -125,10 +125,11 @@ export default function RootLayout({
         <ThemeProvider>
           <MotionConfig reducedMotion="user">
             <Header />
-            <main id="main-content" className="flex-grow">{children}</main>
+            <main id="main-content" className="flex-grow">
+              {children}
+            </main>
             <Footer />
             <ScrollToTop />
-            <ReferralWidget links={referralLinks} />
           </MotionConfig>
         </ThemeProvider>
         {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}

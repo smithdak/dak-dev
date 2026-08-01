@@ -3,7 +3,8 @@
  * Verifies search index generation, search functionality, and related posts algorithm
  */
 
-import { generateSearchIndex, searchPosts } from '@/lib/search';
+import { searchPosts } from '@/lib/search';
+import { generateSearchIndex } from '@/lib/search/index-generator';
 import { getRelatedPosts, getAllPosts } from '@/lib/posts';
 
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -28,7 +29,7 @@ if (searchIndex.length > 0) {
   // Check size
   const jsonSize = Buffer.from(JSON.stringify(searchIndex)).length;
   const sizeKB = (jsonSize / 1024).toFixed(2);
-  const estimatedGzipKB = (jsonSize * 0.3 / 1024).toFixed(2);
+  const estimatedGzipKB = ((jsonSize * 0.3) / 1024).toFixed(2);
   console.log(`\n✓ Index size: ${sizeKB} KB (estimated gzipped: ${estimatedGzipKB} KB)`);
 
   if (parseFloat(estimatedGzipKB) < 50) {
@@ -84,9 +85,7 @@ if (allPosts.length > 0) {
   console.log('\n✓ Related posts algorithm working correctly');
 
   // Verify current post is not in related posts
-  const hasSelf = relatedPosts.some(
-    (post) => post.frontmatter.slug === testPost.frontmatter.slug
-  );
+  const hasSelf = relatedPosts.some((post) => post.frontmatter.slug === testPost.frontmatter.slug);
   if (!hasSelf) {
     console.log('✓ Current post correctly excluded from related posts');
   } else {

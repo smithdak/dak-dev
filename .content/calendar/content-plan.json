@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updated_at": "2026-07-15",
+  "updated_at": "2026-08-01",
   "workflow_stages": ["idea", "outlined", "drafting", "review", "ready", "published"],
   "topics": [
     {
@@ -304,6 +304,19 @@
       "notes": "Deep dive 3 of 3. The deriveCatalog seam + ports/adapters, byte-matched committed catalog vs SHA-pinned served catalog, Git→Turso flip, OIDC single publish path, 5 eval layers (majority-of-3 judging, haiku judge, fragile-green evidence), meta-plugin self-replication. Grounded in CLAUDE.md + AGENTS.md. Validation 100/100. Placeholder images — replace before publish. Primary keyword: plugin marketplace.",
       "created_at": "2026-07-15",
       "updated_at": "2026-07-15"
+    },
+    {
+      "id": "topic_023",
+      "title": "The Agent Delivery Harness: An Opinionated Multi-Model Layer",
+      "slug": "agent-delivery-harness",
+      "type": "general",
+      "status": "review",
+      "priority": "high",
+      "target_date": "2026-08-01",
+      "tags": ["ai", "agents", "architecture", "developer-tools"],
+      "notes": "Flagship conformance-profile post for the emerging term agent delivery harness. Distinguishes delivery authority from runtime harnesses, orchestration, CI/CD, and agent governance; allows composed stacks to qualify. Uses dated primary sources from OpenAI, Anthropic, Harness.io, and arXiv plus a bounded public delivery-harness self-audit. Links to Harness Chapter 07. Draft remains unpublished and noindexed. Real hero and thumbnail generated through the image pipeline. Primary keyword: agent delivery harness.",
+      "created_at": "2026-08-01",
+      "updated_at": "2026-08-01"
     }
   ],
   "ideas_backlog": [
