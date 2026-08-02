@@ -1,281 +1,41 @@
 ---
-title: "Skills: Compositions"
-topic: "skills"
-subPage: "compositions"
+title: 'Reusable Skills: Compositions'
+topic: 'skills'
+subPage: 'compositions'
 order: 4
-description: "Skills combined with hooks, agents, MCP, CLAUDE.md, and memory for orchestrated agent workflows."
-relatedPatterns: ["progressive-disclosure", "safety-net", "memory-layer"]
-relatedTopics: ["hooks", "agents", "mcp", "claude-md", "memory"]
+description: 'Compose skills with project instructions, commands, subagents, hooks, MCP, and evidence capture.'
+relatedPatterns: ['progressive-disclosure', 'parallel-fan-out', 'safety-net']
+relatedTopics: ['project-instructions', 'commands', 'agents', 'hooks', 'mcp']
 published: true
-keywords: ["skills compositions", "skills and hooks", "skills and agents", "skill chaining"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-skills', 'codex-skills', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords: ['skill composition', 'agent workflow skills', 'skills and subagents', 'skills and MCP']
 ---
 
 # Compositions
 
-Skills reach full power when combined with other Claude Code extension points. Each composition addresses a specific architectural need that neither mechanism handles alone.
+## Skills + Project Instructions
+
+The repository contract routes a task to a skill; the skill carries the conditional procedure. This keeps always-loaded context small without making the workflow optional.
+
+## Skills + Commands
+
+Expose a manually invoked command as a thin entrypoint to the same skill body. Do not maintain separate command and skill procedures that can drift.
+
+## Skills + Subagents
+
+A skill can delegate bounded research, implementation, or review to specialized agents. Define ownership and result schemas before fan-out; aggregate evidence in the parent.
 
 ## Skills + Hooks
 
-Skills are advisory — Claude follows them voluntarily. Hooks are deterministic — they execute shell commands regardless of what Claude decides. The combination gives you guidance with enforcement.
-
-**The pattern:** A skill teaches Claude the standard. A hook validates the result.
-
-`.claude/skills/commit-messages/SKILL.md` teaches Claude the commit format:
-
-```markdown
-# Commit Message Standards
-## Format
-<type>(<scope>): <subject>
-
-## Rules
-- type: feat|fix|docs|style|refactor|perf|test|build|ci|chore
-- scope: component or module name
-- subject: imperative mood, no period, max 72 chars
-```
-
-`.claude/settings.json` hooks enforce it:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "command": "python scripts/validate-commit-msg.py",
-        "description": "Validates commit message format after git commit"
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "command": "python scripts/block-force-push.py",
-        "description": "Blocks git push --force on main/master"
-      }
-    ]
-  }
-}
-```
-
-**Why both?** The skill reduces hook trigger frequency. When Claude follows the skill's instructions correctly, the PostToolUse hook passes silently. The hook only catches the cases where Claude deviates — typos in the type field, missing scope, subject over 72 chars.
-
-PreToolUse hooks can BLOCK actions. This is the only mechanism in Claude Code that can prevent a tool call from executing. PostToolUse hooks validate after execution but cannot undo it.
-
-### When to Use Each
-
-| Requirement | Mechanism |
-|-------------|-----------|
-| Claude should follow a workflow | Skill |
-| A constraint must never be violated | Hook |
-| Format output before it reaches the user | Hook (PostToolUse) |
-| Prevent a dangerous command from running | Hook (PreToolUse) |
-| Guide Claude through a multi-step process | Skill |
-| Auto-format files after edits | Hook (PostToolUse) |
-
-## Skills + Subagents (context: fork)
-
-The `context: fork` frontmatter field runs a skill in an isolated subagent. The subagent gets its own context window, does not see conversation history, and returns a concise summary.
-
-```yaml
----
-name: analyzing-dependencies
-description: |
-  Dependency analysis expert. ALWAYS invoke when asked about
-  dependencies, imports, or module relationships.
-context: fork
-allowed-tools: Read,Grep,Glob,Bash(find:*)
----
-```
-
-### When to Fork
-
-| Scenario | Fork? | Reason |
-|----------|-------|--------|
-| Exploration that reads 20+ files | Yes | Keeps main context clean |
-| Validation producing verbose output | Yes | Summary is more useful than raw output |
-| Task needing a fresh perspective | Yes | No conversation bias |
-| Task needing conversation context | No | Subagent cannot see prior decisions |
-| Interactive workflow with user feedback | No | Subagent cannot interact with user |
-| Quick task (< 3 tool calls) | No | Fork overhead exceeds benefit |
-
-The fork overhead is real: spinning up a subagent, injecting the skill, summarizing results. For tasks under 3 tool calls, the overhead costs more than the context savings.
-
-## Skills + CLAUDE.md
-
-CLAUDE.md loads every turn. Skills load on demand. The composition creates a two-layer system: CLAUDE.md provides always-present directives, skills provide detailed procedures when needed.
-
-**CLAUDE.md references skills by name:**
-
-```markdown
-## Deployment
-Before deploying, always run `/deploy-checklist`. Do not push to
-production without completing the checklist.
-
-## Code Review
-Use `/review` before creating any PR. See .claude/skills/review/
-for the full checklist.
-```
-
-This pattern keeps CLAUDE.md under its recommended 200-line / 2,000-token budget. The directive is short (two lines), but the actual procedure can be 200+ lines in the skill.
-
-**The precedence rule:** When CLAUDE.md and a skill give contradictory instructions, the skill tends to win for the specific task. The skill's content is more recent in the conversation and more contextually relevant. Keep them consistent to avoid ambiguity.
-
-### Token Budget Breakdown
-
-A well-composed setup:
-
-| Component | Tokens | Frequency |
-|-----------|--------|-----------|
-| CLAUDE.md | ~1,500 | Every turn |
-| 15 skill descriptions | ~1,500 | Every turn |
-| 1-2 invoked skill bodies | ~3,000-6,000 | Current task only |
-| **Baseline overhead** | **~3,000** | **Always** |
-
-Compare this to cramming everything into CLAUDE.md: 15 detailed workflows at ~400 tokens each = 6,000 tokens on every turn, most of it irrelevant to the current task.
+Hooks detect a lifecycle condition and point to a remediation skill. Keep automatic invocation bounded so a failed check cannot create an infinite model loop.
 
 ## Skills + MCP
 
-MCP provides tools. Skills provide the procedure for using those tools effectively. MCP gives Claude the ability to query a database. A skill tells Claude the migration workflow, safety checks, and rollback procedure.
+The skill defines when and how to use an external capability; MCP supplies the tool. Credential scope and service authorization remain outside the skill.
 
-```yaml
----
-name: database-migration
-description: |
-  Database migration workflow. ALWAYS invoke when creating, modifying,
-  or rolling back database migrations. Requires PostgreSQL MCP server.
-allowed-tools: Read,Write,Edit,Bash(npm:*),mcp__postgres__query
----
-```
+## Skills + Evidence
 
-```markdown
-# Database Migration Workflow
+Require the workflow to emit a machine-readable summary: inputs, decisions, checks run, failures, and artifact paths. Validate that summary before a downstream gate accepts it.
 
-## Prerequisites
-- PostgreSQL MCP server must be connected
-- Run `mcp__postgres__query` to verify connection
-
-## Process
-1. Check current migration state: query the migrations table
-2. Generate migration file with timestamp naming
-3. Write UP and DOWN migrations
-4. Test DOWN migration rolls back cleanly
-5. Apply migration to development database
-6. Verify schema matches expectations
-```
-
-**The `allowed-tools` field is critical here.** It restricts the skill to only the MCP tools it needs. Without it, Claude could use any connected MCP tool during the skill execution — including destructive ones from other servers.
-
-**Hidden cost warning:** Each MCP server loads its full tool schema into context on every request, even when unused. A server with 20 tools can consume 5,000-10,000 tokens just by existing. If you have multiple MCP servers, the schema overhead alone can eat 20-30% of your context budget. Use Tool Search / lazy loading to mitigate.
-
-## Skill Chaining
-
-Skills do not call each other directly. Claude is the coordinator. Two approaches work in production.
-
-### Approach 1: Orchestrator Skill
-
-A parent skill that instructs Claude to invoke other skills in sequence. The full SKILL.md:
-
-```markdown
----
-name: releasing
-description: |
-  Release orchestrator. ALWAYS invoke when the user says "release",
-  "ship it", "deploy to production", or "cut a release". Do not
-  deploy directly — use this skill to coordinate the pipeline.
----
-
-# Release Workflow
-
-## Steps
-1. Invoke `/review` to review all changes
-2. If review passes, invoke `/test-suite` to run full tests
-3. If tests pass, invoke `/deploy staging` to deploy to staging
-4. After staging verification, invoke `/deploy production`
-
-## State
-After each step, record the result in `.claude/release-state.json`
-so the workflow can resume if interrupted.
-
-## Failure Handling
-- If any step returns FAIL, STOP the pipeline
-- Record the failure in the state file with the error message
-- Report which step failed and what needs to be fixed
-- Do NOT skip failed steps or continue to the next stage
-```
-
-The orchestrator skill stays in context while the child skills are invoked. Each child skill adds its body to the conversation. For long chains, this accumulates context rapidly — consider using `context: fork` on child skills to keep the main context clean.
-
-### Approach 2: Shared State Files
-
-Each skill reads and writes to a shared state file. The orchestrator (or CLAUDE.md directive) determines which skill runs next based on the state:
-
-```json
-{
-  "workflow": "release",
-  "current_step": "review",
-  "results": {
-    "review": { "status": "pass", "timestamp": "2026-04-16T10:00:00Z" },
-    "tests": null,
-    "staging": null,
-    "production": null
-  }
-}
-```
-
-This pattern survives session boundaries. If the session ends mid-workflow, the next session can read the state file and resume from the correct step.
-
-## Skills + Memory
-
-Skills can interact with Claude's memory system for cross-session learning.
-
-**Auto Memory** (`~/.claude/projects/<project>/memory/`): Claude saves notes for itself across sessions. A skill can instruct Claude to persist learnings.
-
-**CLAUDE.md updates**: A skill can instruct Claude to append discovered conventions to CLAUDE.md, evolving the project's baseline instructions over time.
-
-**Custom state files**: Skills can read/write JSON files in the project for workflow state persistence.
-
-A complete skill with memory integration:
-
-```markdown
----
-name: onboarding-codebase
-description: |
-  Codebase onboarding assistant. ALWAYS invoke when a user asks
-  "how does X work" or needs to understand a module. Persists
-  learnings across sessions.
-context: fork
-allowed-tools: Read,Grep,Glob,Bash(find:*),Bash(wc:*)
----
-
-# Codebase Onboarding
-
-## Step 1: Check Memory
-Read `~/.claude/projects/<project>/memory/` for prior exploration notes.
-Skip any areas already documented.
-
-## Step 2: Explore
-Investigate $ARGUMENTS — trace entry points, data flow, and dependencies.
-
-## Step 3: Synthesize
-Return a structured summary: entry points, key files, data flow, gotchas.
-
-## Step 4: Persist
-After completing this workflow:
-1. If you discovered a new project convention, append it to CLAUDE.md
-2. If this is a recurring pattern, save a note to memory about it
-3. Update .claude/workflow-state.json with the completion status
-```
-
-This creates a feedback loop: skills execute workflows, discover patterns, persist knowledge, and future sessions benefit from that accumulated context. The skill itself does not change — the memory layer accumulates around it.
-
-## Composition Decision Matrix
-
-| I need... | Composition |
-|-----------|-------------|
-| Guidance + enforcement | Skill + Hook |
-| Detailed procedure without context bloat | Skill + CLAUDE.md reference |
-| Tool access with safety procedures | Skill + MCP + `allowed-tools` |
-| Multi-skill workflows | Orchestrator Skill + child skills |
-| Workflows that survive session boundaries | Skill + shared state files |
-| Cross-session learning | Skill + Memory |
-| Heavy exploration without polluting context | Skill + `context: fork` |
-| Dangerous operations with guardrails | Skill + Hook (PreToolUse) + `disable-model-invocation` |
+The strongest composition keeps knowledge in skills, deterministic work in scripts, authority in policy, and final judgment with an accountable human.

@@ -11,7 +11,8 @@ TypeScript runs in **strict** mode. ESLint + Prettier are configured and CI-enfo
 
 A high-performance Next.js 16 / React 19 blog plus a four-pillar "Learn"
 platform on agentic engineering (Patterns, Toolkit, Harness, Security).
-Neo-brutalist dark design, file-based MDX content, deployed on Vercel.
+It is the executive-editorial publication of Dakota Smith, Principal Architect,
+at `daksmith.dev`: light-first, file-based MDX content deployed on Vercel.
 
 **`DESIGN.md` is the canonical architecture reference** — the "why," the
 decision ledger, and the risk register. Read it for any structural change.
@@ -27,8 +28,9 @@ what prevents a wrong assumption:
 - **SSG end to end.** Content is `.mdx` under `content/`, read at build time by
   `lib/*.ts`. No CMS, no database.
 - **Metadata is the native Next.js Metadata API** (`export const metadata` /
-  `generateMetadata`); OG images use `next/og` `ImageResponse` in
-  `app/api/og/route.tsx`. Not `next-seo`, not `@vercel/og`.
+  `generateMetadata`); the default OG image is the static
+  `public/og-default.png`, regenerated with `pnpm generate:og`. Not `next-seo`,
+  not a dynamic image route.
 
 ## Hard constraints (non-negotiable; CI-enforced)
 

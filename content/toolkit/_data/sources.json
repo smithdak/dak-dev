@@ -1,0 +1,194 @@
+[
+  {
+    "id": "claude-overview",
+    "title": "Claude Code overview",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://code.claude.com/docs/en/overview",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "claude-memory",
+    "title": "How Claude remembers your project",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://code.claude.com/docs/en/memory",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "claude-hooks",
+    "title": "Hooks reference",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://code.claude.com/docs/en/hooks",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "claude-skills",
+    "title": "Extend Claude with skills",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://code.claude.com/docs/en/slash-commands",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "claude-subagents",
+    "title": "Create custom subagents",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://code.claude.com/docs/en/sub-agents",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "claude-agent-teams",
+    "title": "Orchestrate teams of Claude Code sessions",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://code.claude.com/docs/en/agent-teams",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "claude-mcp",
+    "title": "Connect Claude Code to tools via MCP",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://code.claude.com/docs/en/mcp",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "claude-commands",
+    "title": "Claude Code commands",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://code.claude.com/docs/en/commands",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "claude-settings",
+    "title": "Claude Code settings",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://code.claude.com/docs/en/configuration",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "codex-agents-md",
+    "title": "Custom instructions with AGENTS.md",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://learn.chatgpt.com/docs/agent-configuration/agents-md",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "codex-hooks",
+    "title": "Hooks",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://learn.chatgpt.com/docs/hooks",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "codex-skills",
+    "title": "Build skills",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://learn.chatgpt.com/docs/build-skills",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "codex-subagents",
+    "title": "Subagents",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://learn.chatgpt.com/docs/agent-configuration/subagents",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "codex-mcp",
+    "title": "Model Context Protocol",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://learn.chatgpt.com/docs/extend/mcp",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "codex-commands",
+    "title": "Codex slash commands",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://learn.chatgpt.com/docs/reference/slash-commands",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "codex-config",
+    "title": "Codex config basics",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://learn.chatgpt.com/docs/config-file/config-basic",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "codex-memory",
+    "title": "Memories",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://learn.chatgpt.com/docs/customization/memories",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "copilot-customize-cli",
+    "title": "Overview of customizing GitHub Copilot CLI",
+    "publisher": "GitHub",
+    "kind": "official-docs",
+    "url": "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/overview",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "copilot-instructions-cli",
+    "title": "Adding custom instructions for GitHub Copilot CLI",
+    "publisher": "GitHub",
+    "kind": "official-docs",
+    "url": "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "copilot-instructions-support",
+    "title": "Custom instructions support for GitHub Copilot",
+    "publisher": "GitHub",
+    "kind": "official-docs",
+    "url": "https://docs.github.com/en/copilot/reference/custom-instructions-support",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "copilot-cli-reference",
+    "title": "GitHub Copilot CLI command reference",
+    "publisher": "GitHub",
+    "kind": "official-docs",
+    "url": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "copilot-fleet",
+    "title": "Running tasks in parallel with Copilot CLI",
+    "publisher": "GitHub",
+    "kind": "official-docs",
+    "url": "https://docs.github.com/en/copilot/concepts/agents/copilot-cli/fleet",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "copilot-hooks",
+    "title": "GitHub Copilot hooks reference",
+    "publisher": "GitHub",
+    "kind": "official-docs",
+    "url": "https://docs.github.com/en/copilot/reference/hooks-reference",
+    "accessedAt": "2026-08-01"
+  },
+  {
+    "id": "copilot-cloud-mcp",
+    "title": "MCP and Copilot cloud agent",
+    "publisher": "GitHub",
+    "kind": "official-docs",
+    "url": "https://docs.github.com/en/copilot/concepts/agents/cloud-agent/mcp-and-cloud-agent",
+    "accessedAt": "2026-08-01"
+  }
+]

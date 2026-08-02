@@ -18,7 +18,7 @@ You can expect an initial acknowledgement within **5 business days**.
 This is a static, statically-generated personal blog deployed on Vercel.
 The most relevant areas for reports:
 
-- The `/api/og` and `/api/search` route handlers.
+- The statically prerendered `/api/search` route handler and other generated public artifacts.
 - Dependency or build-toolchain supply-chain issues.
 - HTTP response header / Content-Security-Policy weaknesses.
 - Leaked secrets or credentials in the repository or its history.

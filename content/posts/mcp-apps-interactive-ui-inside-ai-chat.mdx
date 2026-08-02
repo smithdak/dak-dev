@@ -1,16 +1,23 @@
 ---
-title: "MCP Apps: Interactive UI Has Entered the Chat"
-date: "2026-02-10"
-excerpt: "Explore how MCP Apps turn AI chat into an interactive canvas with embedded dashboards, forms, and 3D visualizations—no client-specific code required."
-slug: "mcp-apps-interactive-ui-inside-ai-chat"
-tags: ["mcp", "ai-tools", "developer-tools"]
-thumbnail: "/images/posts/mcp-apps-interactive-ui-inside-ai-chat/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIEBv/EABsQAAIDAAMAAAAAAAAAAAAAAAABAhIhEVFS/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDE4k80No+SeTdnovL7CP/Z"
-hero: "/images/posts/mcp-apps-interactive-ui-inside-ai-chat/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIDBv/EABsQAAIDAAMAAAAAAAAAAAAAAAABAhIhESJS/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDEdUnmhvHyQk3Z6LyEf//Z"
+title: 'MCP Apps: Interactive UI Has Entered the Chat'
+date: '2026-02-10'
+excerpt: 'Explore how MCP Apps turn AI chat into an interactive canvas with embedded dashboards, forms, and 3D visualizations—no client-specific code required.'
+slug: 'mcp-apps-interactive-ui-inside-ai-chat'
+tags: ['mcp', 'ai-tools', 'developer-tools']
+thumbnail: '/images/posts/mcp-apps-interactive-ui-inside-ai-chat/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAIDBv/EABoQAAIDAQEAAAAAAAAAAAAAAAECAAMRElH/xAAVAQEBAAAAAAAAAAAAAAAAAAABAv/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/ANm1rC0IFOEbvkfp5TISS//Z'
+hero: '/images/posts/mcp-apps-interactive-ui-inside-ai-chat/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAIDBv/EABsQAAMAAgMAAAAAAAAAAAAAAAABAgMREjFR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDZXmqcsQpbVdvwbnRXSAkv/9k='
 published: true
-author: "Dakota Smith"
-keywords: ["MCP Apps", "Model Context Protocol", "MCP interactive UI", "MCP Apps extension", "AI chat UI components"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'MCP Apps',
+    'Model Context Protocol',
+    'MCP interactive UI',
+    'MCP Apps extension',
+    'AI chat UI components',
+  ]
 ---
 
 Two weeks ago, MCP tools returned text. Today, with MCP Apps, they return entire applications.
@@ -50,40 +57,43 @@ The app stays isolated from the host. It cannot access the parent DOM, read cook
 
 ```typescript
 // Server: register a tool with UI metadata
-const resourceUri = "ui://dashboard/app.html";
+const resourceUri = 'ui://dashboard/app.html';
 
 registerAppTool(
   server,
-  "show-dashboard",
+  'show-dashboard',
   {
-    title: "Dashboard",
-    description: "Displays an interactive analytics dashboard.",
-    inputSchema: { type: "object", properties: { region: { type: "string" } } },
+    title: 'Dashboard',
+    description: 'Displays an interactive analytics dashboard.',
+    inputSchema: { type: 'object', properties: { region: { type: 'string' } } },
     _meta: { ui: { resourceUri } },
   },
   async ({ region }) => ({
-    content: [{ type: "text", text: JSON.stringify(await getAnalytics(region)) }],
-  }),
+    content: [{ type: 'text', text: JSON.stringify(await getAnalytics(region)) }],
+  })
 );
 ```
 
 ```typescript
 // Client: the App class handles host communication
-import { App } from "@modelcontextprotocol/ext-apps";
+import { App } from '@modelcontextprotocol/ext-apps';
 
-const app = new App({ name: "Dashboard", version: "1.0.0" });
+const app = new App({ name: 'Dashboard', version: '1.0.0' });
 app.connect();
 
 // Receive the initial tool result
 app.ontoolresult = (result) => {
-  const data = JSON.parse(result.content?.find(c => c.type === "text")?.text);
+  const data = JSON.parse(result.content?.find((c) => c.type === 'text')?.text);
   renderChart(data);
 };
 
 // Call server tools from the UI when users interact
-document.getElementById("refresh").addEventListener("click", async () => {
-  const result = await app.callServerTool({ name: "show-dashboard", arguments: { region: "us-west" } });
-  renderChart(JSON.parse(result.content?.find(c => c.type === "text")?.text));
+document.getElementById('refresh').addEventListener('click', async () => {
+  const result = await app.callServerTool({
+    name: 'show-dashboard',
+    arguments: { region: 'us-west' },
+  });
+  renderChart(JSON.parse(result.content?.find((c) => c.type === 'text')?.text));
 });
 ```
 

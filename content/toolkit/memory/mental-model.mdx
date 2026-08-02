@@ -1,194 +1,34 @@
 ---
-title: "Memory: Mental Model"
-topic: "memory"
-subPage: "mental-model"
+title: 'Persistent Memory: Mental Model'
+topic: 'memory'
+subPage: 'mental-model'
 order: 2
-description: "How memory works internally — file-based persistence, the four memory types, MEMORY.md index mechanics, and lazy-loading behavior."
-relatedPatterns: ["memory-layer", "context-priming"]
-relatedTopics: ["claude-md", "settings", "agents"]
+description: 'Model agent memory as scoped, revisable recall with provenance, freshness, and explicit separation from authoritative instructions.'
+relatedPatterns: ['memory-layer', 'context-priming']
+relatedTopics: ['project-instructions', 'agents', 'settings']
 published: true
-keywords: ["memory mental model", "file-based persistence", "memory types", "MEMORY.md index", "lazy loading"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-memory', 'codex-memory', 'codex-agents-md', 'copilot-cli-reference']
+keywords:
+  ['agent memory mental model', 'cross-session memory', 'memory provenance', 'stale agent context']
 ---
 
 # Mental Model
 
-Claude Code stores memory as plain Markdown files at `~/.claude/projects/<encoded-path>/memory/`. The project path derives from the git repository root, so all worktrees and subdirectories within the same repo share one memory directory. These files are human-readable and editable with any text editor — no proprietary format, no database, no API.
+Persistent memory is a recall layer that influences future model context. It is neither the current conversation nor the authoritative repository contract.
 
-## Two Complementary Systems
+## Five Dimensions
 
-The persistence layer has two halves that serve different purposes:
+1. **Author** — human, agent, or derived system process.
+2. **Scope** — user, repository, role, workspace, or hosted account.
+3. **Store** — local machine, checked-in file, or managed service.
+4. **Retrieval** — always loaded, indexed, or recalled on demand.
+5. **Lifecycle** — reviewed, corrected, expired, exported, or deleted.
 
-1. **CLAUDE.md files** — Instructions *you* write to guide Claude's behavior. Static, human-authored, version-controlled.
-2. **Auto memory** — Notes *Claude* writes for itself during sessions. Dynamic, machine-authored, local-only (never touches git).
+Claude Code documents local repository-scoped auto memory alongside CLAUDE.md. Local Codex clients use their own local memory store, distinct from hosted ChatGPT memory behavior. Copilot CLI documents memory controls, while one cross-surface Copilot memory contract is not established by the reviewed CLI source.
 
-These are not interchangeable. CLAUDE.md says "do it this way." Auto memory says "I noticed this about your project." Confusing the two is the root cause of most memory-related frustration.
+## Recall Versus Authority
 
-## The Four Memory Types
+Memory may say, “This repository usually uses command X.” The repository and current build configuration decide whether X is still correct. Keep non-negotiable team rules in version-controlled instructions and verify volatile facts against their source before action.
 
-Each memory file carries a `type` field in its YAML frontmatter. The four types serve distinct retrieval purposes:
-
-| Type | Purpose | Example | Lifespan |
-|------|---------|---------|----------|
-| **user** | Who you are: role, technical level, preferences | "Senior backend eng, prefers explicit error handling over try/catch" | Long — rarely changes |
-| **feedback** | How to approach work: corrections, validated patterns | "Always use real DB in tests, no mocks" | Medium — evolves with workflow |
-| **project** | Current project state: active decisions, initiatives | "Migrating auth from JWT to session cookies, ETA 2026-04-20" | Short — ages fast |
-| **reference** | Where to find things in external systems | "Pipeline bugs tracked in Linear project INGEST" | Medium — stable until infra changes |
-
-**When to use which:**
-
-- **user** — Anything that calibrates explanation depth or coding style across all projects. Lets Claude skip re-introductions every session.
-- **feedback** — Corrections you make repeatedly. If you've told Claude the same thing three times, it belongs here.
-- **project** — Temporal context: what's in flight, what shipped, what's blocked. Review these weekly.
-- **reference** — Pointers Claude can't derive from code. URLs, ticket systems, deploy runbooks, team contacts.
-
-## Memory File Anatomy
-
-A memory file is Markdown with optional YAML frontmatter:
-
-```markdown
----
-name: site-notes
-description: Per-site stack, blog path, deploy method, affiliate setup
-type: project
----
-
-## Stack
-- Next.js 16 with App Router
-- Deployed on Vercel, auto-deploy from main branch
-- MDX content pipeline with Shiki highlighting
-
-## Deploy Method
-Push to main triggers Vercel build. No manual steps.
-
-## Recent Changes (2026-04-10)
-Migrated from gray-matter to next-mdx-remote for frontmatter parsing.
-```
-
-The **description** field is the single most important piece of metadata. Claude scans descriptions to decide whether to load a file. Write it as a concise summary of what the file *contains*, not what it *does*.
-
-## The MEMORY.md Index
-
-`MEMORY.md` sits at the root of the memory directory and acts as the table of contents. It is the **only** memory file loaded automatically at session start.
-
-**Hard limits:**
-- First **200 lines** OR first **25KB**, whichever comes first
-- Content beyond the threshold is silently truncated — no warning, no error
-
-**Format:**
-
-```markdown
-# Memory Index
-
-## Feedback
-- [feedback_test_patterns.md] -- Write test describe blocks in Japanese
-- [feedback_code_style.md] -- Prefer named exports, avoid default exports
-
-## Project
-- [project_auth_migration.md] -- JWT to session cookie migration, status and blockers
-- [project_api_v2.md] -- API v2 design decisions, breaking changes log
-
-## Reference
-- [reference_infrastructure.md] -- Deploy URLs, monitoring dashboards, runbook links
-
-## User
-- [user_preferences.md] -- Coding style, explanation depth, tool preferences
-```
-
-Each line is a short label (under 150 characters) pointing to a topic file. The index is a routing table, not a knowledge base.
-
-## Lazy-Loading Behavior
-
-Understanding the loading sequence eliminates most "why doesn't Claude know about X" confusion:
-
-1. **Session starts** — Claude reads the first 200 lines / 25KB of MEMORY.md
-2. **Index awareness** — MEMORY.md entries tell Claude what topic files exist and what they contain
-3. **On-demand loading** — When a task matches a topic file's description, Claude reads it using standard file tools
-4. **Topic files are never loaded at startup** — A project with 100 memory files runs on a 200-line MEMORY.md if the index entries are descriptive enough
-
-This is lazy-loading by design. The MEMORY.md index is the retrieval mechanism. Bad descriptions mean topic files sit unread even when they're relevant.
-
-## Memory Lifecycle
-
-**Creation:** Claude decides what's worth remembering based on a heuristic: would this information be useful in a future conversation? Not every session produces a memory write. When it does, the interface shows "Writing memory."
-
-**Retrieval:** MEMORY.md is injected into the system prompt at session start. During the session, Claude reads topic files on demand when the current task matches an index entry's description.
-
-**Update:** Claude modifies existing memory files during a session. New information merges into existing topic files rather than creating duplicates.
-
-**Deletion:** Manual only — edit or delete the file yourself. Auto Dream consolidation removes stale entries during its prune phase.
-
-## Memory vs. CLAUDE.md: The Full Comparison
-
-| Aspect | CLAUDE.md | Auto Memory | Conversation Context |
-|--------|-----------|-------------|---------------------|
-| Who writes it | You | Claude | Generated per-turn |
-| Persistence | Permanent (in git) | Cross-session (local) | Single session only |
-| Loaded when | Every session start | MEMORY.md at start; topics on demand | Always present |
-| Content type | Instructions, rules | Observations, decisions, patterns | Current task state |
-| Shared with team | Yes (committed) | No (local to machine) | No |
-| Best for | "Always do X" | "I noticed X about this project" | "Right now we're doing X" |
-
-A piece of information belongs in CLAUDE.md if a new teammate needs the same context. It belongs in auto memory if Claude learned it through work and it's not derivable from the code or CLAUDE.md.
-
-## Cross-Session and Cross-Project Behavior
-
-Memory behavior changes depending on the session and project boundary:
-
-| Scenario | Behavior |
-|----------|----------|
-| **Same project, new session** | MEMORY.md reloads. Topic files available on demand. No conversation history carries over. |
-| **Same repo, different worktree** | Shares the same memory directory (path derives from git root). |
-| **Different project** | Completely separate memory directory. No cross-pollination. |
-| **Same project, different machine** | Memory is local. Not synced. Only committed CLAUDE.md transfers. |
-
-The git-root-based path derivation is the key architectural decision. All branches, worktrees, and subdirectories within one repo share memory. Separate repos get separate memory — always.
-
-## Full Memory Directory Structure
-
-A real project's memory directory after a few weeks of active development:
-
-```bash
-~/.claude/projects/-Users-alice-repos-my-app/memory/
-  MEMORY.md                          # Index — the only file loaded at startup
-  user_preferences.md                # Coding style, explanation depth
-  feedback_code_style.md             # Named exports, explicit returns
-  feedback_testing.md                # Vitest patterns, mock boundaries
-  feedback_git_workflow.md           # Commit style corrections
-  project_auth_migration.md          # JWT -> session cookies, status
-  project_api_v2.md                  # Breaking changes, migration guide
-  project_performance_budget.md      # Core Web Vitals targets, regressions
-  reference_infrastructure.md        # Deploy URLs, monitoring dashboards
-  reference_external_apis.md         # Stripe rate limits, Twilio quirks
-```
-
-The directory path is derived from the git root. `/Users/alice/repos/my-app` becomes `-Users-alice-repos-my-app`. All branches and worktrees within the same repo share this directory.
-
-## Quick Reference: Where Everything Lives
-
-| What | Path | Loaded | Shared |
-|------|------|--------|--------|
-| User-level instructions | `~/.claude/CLAUDE.md` | Every session, all projects | No |
-| Project instructions | `./CLAUDE.md` | Every session, this project | Yes |
-| Local overrides | `./CLAUDE.local.md` | Every session, this project | No |
-| Path-scoped rules | `.claude/rules/*.md` | When editing matching files | Yes |
-| Auto memory index | `~/.claude/projects/<p>/memory/MEMORY.md` | First 200 lines at start | No |
-| Auto memory topics | `~/.claude/projects/<p>/memory/*.md` | On demand | No |
-| Subagent memory (user) | `~/.claude/agent-memory/<name>/` | At subagent start | No |
-| Subagent memory (project) | `.claude/agent-memory/<name>/` | At subagent start | Yes |
-| Subagent memory (local) | `.claude/agent-memory-local/<name>/` | At subagent start | No |
-
-## Key Commands
-
-```bash
-# Browse and manage memory files
-/memory
-
-# See what's loaded in current session
-ctrl+o
-
-# Trigger manual consolidation
-# Tell Claude: "dream", "auto dream", or "consolidate my memory files"
-
-# Check index size
-wc -l ~/.claude/projects/*/memory/MEMORY.md
-```
+The crux is provenance: a memory without origin, scope, and review date is an unpriced source of future error.

@@ -1,16 +1,23 @@
 ---
-title: "How APL Built a 99-Lighthouse Blog in 6 Sessions"
-date: "2026-01-23"
-excerpt: "An autonomous coding agent executed 47 stories across 6 epics, producing 4,200 lines of code and Lighthouse 99 performance with two hours of human input."
-slug: "how-apl-built-this-blog"
-tags: ["ai", "automation", "nextjs", "project-showcase"]
-thumbnail: "/images/posts/how-apl-built-this-blog/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIDBv/EAB0QAAICAQUAAAAAAAAAAAAAAAECABEhEiJRYZH/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMUy0MKe7i4gZm0ncfZGzzCP/9k="
-hero: "/images/posts/how-apl-built-this-blog/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAQMG/8QAHBAAAgICAwAAAAAAAAAAAAAAAAIBESEiMWGR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDEstcLPdhgJZqnafSFhH//2Q=="
+title: 'How APL Built a 99-Lighthouse Blog in 6 Sessions'
+date: '2026-01-23'
+excerpt: 'An autonomous coding agent executed 47 stories across 6 epics, producing 4,200 lines of code and Lighthouse 99 performance with two hours of human input.'
+slug: 'how-apl-built-this-blog'
+tags: ['ai', 'automation', 'nextjs', 'project-showcase']
+thumbnail: '/images/posts/how-apl-built-this-blog/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAEDBv/EABsQAAMAAgMAAAAAAAAAAAAAAAABAhEhAxJR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDaLlqrlROYaz2Kb9GklpICS//Z'
+hero: '/images/posts/how-apl-built-this-blog/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAIDBv/EABwQAAIBBQEAAAAAAAAAAAAAAAECAAMREjFRIv/EABUBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A2ZquXQImSttuSnrsawGoSS//2Q=='
 published: true
-author: "Dakota Smith"
-keywords: ["automated blog development", "AI-built website", "nextjs automation", "claude code project", "autonomous development"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'automated blog development',
+    'AI-built website',
+    'nextjs automation',
+    'claude code project',
+    'autonomous development',
+  ]
 ---
 
 47 stories. 6 epics. 4,200 lines of code. Lighthouse 99 performance. Two hours of human input.
@@ -99,7 +106,7 @@ const config: Config = {
         sans: ['Space Grotesk', 'sans-serif'],
       },
       boxShadow: {
-        'brutal': '4px 4px 0px 0px #333333',
+        brutal: '4px 4px 0px 0px #333333',
         'brutal-hover': '6px 6px 0px 0px #333333',
       },
     },
@@ -181,6 +188,7 @@ After execution, the reviewer agent examined all changes holistically:
 ## Review Summary
 
 ### Cross-Task Issues Found: 2
+
 1. Inconsistent import paths (some relative, some alias)
    - Fixed: Standardized to @/ alias throughout
 
@@ -188,6 +196,7 @@ After execution, the reviewer agent examined all changes holistically:
    - Fixed: Added ErrorBoundary wrapper
 
 ### Patterns Learned
+
 - Neo-brutalist focus rings: ring-2 ring-text ring-offset-2 ring-offset-background
 - Lazy loading threshold: rootMargin 100px works well for comments
 - Image priority: Always set priority={true} on above-fold hero images
@@ -213,16 +222,16 @@ Total human time: approximately two hours across the entire build. Most of that 
 
 ## The Numbers
 
-| Metric | Value |
-|--------|-------|
-| Total stories executed | 47 |
-| Lines of code generated | ~4,200 |
-| Components created | 18 |
-| APL sessions | 6 (one per epic) |
-| Errors requiring retry | 8 |
-| Human interventions | 12 |
-| Final Lighthouse Performance | 99 |
-| Human time | ~2 hours |
+| Metric                       | Value            |
+| ---------------------------- | ---------------- |
+| Total stories executed       | 47               |
+| Lines of code generated      | ~4,200           |
+| Components created           | 18               |
+| APL sessions                 | 6 (one per epic) |
+| Errors requiring retry       | 8                |
+| Human interventions          | 12               |
+| Final Lighthouse Performance | 99               |
+| Human time                   | ~2 hours         |
 
 Eight errors across 47 stories is a 17% retry rate. All eight were resolved within APL's retry budget (3 attempts per task). No story required human debugging.
 

@@ -1,191 +1,42 @@
 ---
-title: "Agents: Mental Model"
-topic: "agents"
-subPage: "mental-model"
+title: 'Agents and Subagents: Mental Model'
+topic: 'agents'
+subPage: 'mental-model'
 order: 2
-description: "How subagents work internally — context isolation, inheritance rules, the 5 built-in agent types, and what crosses the agent boundary."
-relatedPatterns: ["scope-fence", "parallel-fan-out"]
-relatedTopics: ["agent-teams", "settings", "claude-md"]
+description: 'Model subagents as bounded delegation with isolated context, explicit authority, and evidence-bearing handoff.'
+relatedPatterns: ['scope-fence', 'context-priming', 'parallel-fan-out']
+relatedTopics: ['agent-teams', 'skills', 'settings']
 published: true
-keywords: ["agents mental model", "context isolation", "subagent types", "agent boundary"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-subagents', 'codex-subagents', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords: ['subagent mental model', 'agent delegation', 'isolated agent context', 'custom agents']
 ---
 
-# Agents: Mental Model
+# Mental Model
 
-A subagent is a separate Claude instance with its own context window, spawned by the parent conversation via the Agent tool. The parent pauses (foreground) or continues (background) while the subagent runs autonomously. When finished, only the subagent's final message returns to the parent. Everything else — intermediate tool calls, file reads, reasoning — is discarded.
+A subagent is a delegated execution context with its own instructions, tools, model work, and result handoff. Isolation is its primary architectural value; parallelism is optional.
 
-## The Lifecycle
+## The Delegation Contract
 
-Three phases define every subagent invocation:
+Every child should receive:
 
-1. **Spawn** — Claude calls the Agent tool with a prompt string and optional configuration (agent type, model, background flag). The subagent receives *only* this prompt plus its own system prompt and basic environment info (working directory, OS). Parent conversation history does not transfer.
-2. **Execute** — The subagent runs autonomously: reading files, searching code, running commands, making edits. All intermediate work stays inside the subagent's context window. Auto-compaction triggers at ~95% capacity by default.
-3. **Return** — The subagent's final message returns verbatim to the parent as the Agent tool result. The parent may summarize this in its response. All intermediate context is gone.
+- A bounded objective.
+- The minimum required context.
+- Explicit file or system scope.
+- Allowed and prohibited actions.
+- A required result shape.
+- Verification and a stop condition.
 
-What the Agent tool call looks like internally:
+The parent remains responsible for integrating the result and checking that the child's evidence supports its conclusion.
 
-```typescript
-// Foreground — parent blocks until the subagent returns
-Agent({
-  prompt: "Analyze src/auth/ for JWT expiration vulnerabilities...",
-  agent: "Explore"      // Optional. Uses built-in Explore agent.
-})
+## Product Realizations
 
-// Background — parent continues working
-Agent({
-  prompt: "Run the full test suite and report failures...",
-  background: true
-})
+Claude Code, Codex, and Copilot all document specialized subagents, but their definitions, model controls, tool policies, nesting, memory, and user interfaces differ. A portable role such as “security reviewer” should therefore be one behavioral contract plus product adapters, not one assumed configuration file.
 
-// Custom agent — references a YAML definition from .claude/agents/
-Agent({
-  prompt: "Implement the new /api/users endpoint...",
-  agent: "api-developer" // Matches .claude/agents/api-developer.md
-})
-```
+## Isolation Is Not Containment
 
-The prompt string is the **only channel** from parent to subagent. File paths, error messages, architectural decisions, constraints — everything the subagent needs must be in that string.
+An isolated context window prevents conversational noise from returning automatically. It does not necessarily isolate filesystem writes, credentials, network access, or process state. Those require sandboxing, tool policy, worktrees, or separate environments.
 
-## Context Isolation: What Crosses the Boundary
+## Handoff Compression
 
-| Subagent Sees | Subagent Does NOT See |
-|---------------|----------------------|
-| Its own system prompt (agent definition markdown) | Parent conversation history |
-| The prompt string passed via Agent tool | Previous subagent invocations or results |
-| Basic environment (cwd, OS, platform) | Other subagents running in parallel |
-| CLAUDE.md files (loaded through normal flow) | The full Claude Code system prompt (replaced) |
-| Tools allowed by its configuration | Tools excluded by `tools` or `disallowedTools` |
-| MCP servers in its definition | MCP servers not explicitly referenced |
-| Memory directory contents (if `memory` enabled) | Parent's memory or other agents' memory |
-| Skills listed in its `skills` field | Skills loaded in the parent conversation |
-
-CLAUDE.md is the notable exception — it loads additively through the normal message flow even when the agent's system prompt replaces the default. This means project conventions reach subagents automatically.
-
-## The 5 Built-in Agent Types
-
-| Agent | Model | Tools | Purpose |
-|-------|-------|-------|---------|
-| **Explore** | Haiku | Read-only (no Write/Edit) | File discovery, code search. Supports `quick`, `medium`, `very thorough` levels |
-| **Plan** | Inherits parent | Read-only (no Write/Edit) | Research for plan mode. Gathers context before presenting a plan |
-| **General-purpose** | Inherits parent | All tools | Complex multi-step tasks requiring exploration and modification |
-| **statusline-setup** | Sonnet | Specialized | Configures status line for `/statusline` |
-| **Claude Code Guide** | Haiku | Specialized | Answers questions about Claude Code features |
-
-The Explore agent is the workhorse for context gathering. Haiku keeps costs low — a full codebase scan on Explore costs a fraction of the same work on Opus. Use it aggressively for file discovery before committing to an implementation agent.
-
-## Permission Inheritance
-
-Subagents inherit the parent conversation's permission context, with layered overrides:
-
-- **`bypassPermissions` in parent** — Takes precedence unconditionally. Cannot be overridden by subagent frontmatter.
-- **`auto` mode in parent** — Subagent inherits auto mode. Its own `permissionMode` frontmatter is ignored.
-- **Background subagents** — Permissions are pre-approved before launch. Anything not pre-approved is auto-denied at runtime. No interactive prompts.
-
-Known issue: user-level permissions from `~/.claude/settings.json` under `permissions.allow` may not be inherited by subagents ([GitHub #18950](https://github.com/anthropics/claude-code/issues/18950)). If a subagent fails on a permission you've already granted globally, this is likely the cause.
-
-## Tool Inheritance
-
-By default, subagents inherit **all** tools from the main conversation, including MCP tools. Two frontmatter fields control this:
-
-```yaml
-# Allowlist: only these tools are available
-tools: Read, Grep, Glob, Bash
-
-# Denylist: remove these from the inherited set
-disallowedTools: Write, Edit
-```
-
-When both are set, `disallowedTools` applies first, then `tools` resolves against the remaining pool.
-
-The `Agent(worker, researcher)` syntax in `tools` controls which subagents a `--agent` session can spawn — it has no effect on subagents spawned by the parent conversation.
-
-## Worktree Isolation
-
-Setting `isolation: worktree` creates a temporary git worktree at `.claude/worktrees/[name]/` with its own branch. The subagent gets a completely isolated copy of the repository.
-
-```yaml
----
-name: experimental-refactor
-description: Attempts risky refactoring in an isolated worktree
-isolation: worktree
-tools: Read, Edit, Write, Bash, Grep, Glob
----
-```
-
-Cleanup rules:
-
-- **No changes made** — Worktree and branch auto-removed when session ends
-- **Changes exist** — Claude prompts you to keep or remove
-- **Orphaned worktrees** (from crashes) — Cleaned at startup if older than `cleanupPeriodDays` (default: 30), with no uncommitted changes, no untracked files, and no unpushed commits
-- **Non-git VCS** — Configure `WorktreeCreate` and `WorktreeRemove` hooks for SVN, Perforce, or Mercurial
-
-The CLI also supports `claude --worktree <name>` (or `-w <name>`) to start an entire session in an isolated worktree — useful for parallel feature development without subagents.
-
-```bash
-# Start a full Claude Code session in a worktree
-claude --worktree feature-auth-refactor
-
-# Short form
-claude -w feature-auth-refactor
-
-# The worktree is created at .claude/worktrees/feature-auth-refactor/
-# with its own branch: claude/worktree/feature-auth-refactor
-
-# List active worktrees
-git worktree list
-
-# Clean up after merging
-git worktree remove .claude/worktrees/feature-auth-refactor
-git branch -d claude/worktree/feature-auth-refactor
-```
-
-## Resource Model
-
-Each subagent consumes tokens independently. The cost equation is straightforward:
-
-| Factor | Control |
-|--------|---------|
-| Model | `model: haiku` for exploration, `model: sonnet` for moderate work, Opus (inherited) for complex reasoning |
-| Thinking tokens | `effort: low/medium/high/max` or `MAX_THINKING_TOKENS=8000` |
-| Turn count | `maxTurns: 20` prevents runaway sessions |
-| Compaction | `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=50` triggers compaction earlier |
-
-There is no per-agent cost breakdown or trace view. This is a known observability gap — you cannot currently see how many tokens each subagent consumed.
-
-## Subagent Scopes: Where Definitions Live
-
-| Priority | Location | Scope |
-|----------|----------|-------|
-| 1 (highest) | Managed settings | Organization-wide |
-| 2 | `--agents` CLI flag | Current session only |
-| 3 | `.claude/agents/` | Current project |
-| 4 | `~/.claude/agents/` | All your projects |
-| 5 (lowest) | Plugin `agents/` directory | Where plugin is enabled |
-
-Higher-priority scopes override lower ones when names collide. Project-level (`.claude/agents/`) is the most common placement for team-shared agent definitions.
-
-A typical project agent directory:
-
-```
-.claude/agents/
-├── code-reviewer.md          # Read-only review with checklist output
-├── api-developer.md          # Implements endpoints following team conventions
-├── test-writer.md            # Generates tests for modified code
-└── explorer.md               # Deep codebase analysis (Haiku, read-only)
-```
-
-Load agents from a custom path for a single session:
-
-```bash
-claude --agents ./my-agents/
-```
-
-## The No-Nesting Rule
-
-Subagents cannot spawn other subagents. This is an architectural constraint preventing infinite recursion and runaway costs. The workarounds:
-
-- **Chain subagents** from the main conversation — pass results from subagent A to subagent B
-- **Use skills** for multi-step orchestration within the main conversation
-- **Use agent teams** when you need true peer-to-peer coordination with file locking
-
-This constraint shapes how you design delegation. Deep task hierarchies must flatten into sequential or parallel dispatch from a single parent.
+Subagents protect the parent context only when they return a concise, structured result. Dumping full logs back into the parent recreates the context pollution the delegation was meant to prevent.

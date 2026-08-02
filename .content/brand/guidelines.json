@@ -7,7 +7,15 @@
       "min_length": 30,
       "max_length": 70,
       "must_start_with_capital": true,
-      "forbidden_words": ["simple", "easy", "just", "amazing", "incredible", "seamless", "effortless"]
+      "forbidden_words": [
+        "simple",
+        "easy",
+        "just",
+        "amazing",
+        "incredible",
+        "seamless",
+        "effortless"
+      ]
     },
     "excerpt": {
       "min_length": 140,
@@ -85,8 +93,8 @@
     "images": {
       "thumbnail": {
         "required": true,
-        "width": 800,
-        "height": 450
+        "width": 960,
+        "height": 640
       },
       "hero": {
         "required": true,

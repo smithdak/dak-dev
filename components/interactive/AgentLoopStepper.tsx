@@ -84,7 +84,7 @@ const TRACE: Turn[] = [
   },
   {
     phase: 'observe',
-    label: 'All tests green ✓',
+    label: 'All tests pass',
     detail:
       'The suite passes. The goal condition is met, so the loop terminates instead of taking another turn.',
     tokens: 300,
@@ -93,14 +93,11 @@ const TRACE: Turn[] = [
 
 const CONTEXT_BUDGET = 4000; // illustrative token budget for the meter
 
-const PHASE_META: Record<
-  Phase,
-  { token: string; label: string; glyph: string }
-> = {
+const PHASE_META: Record<Phase, { token: string; label: string }> = {
   // Each phase maps to one of the site's chapter accent tokens.
-  think: { token: 'var(--color-chapter-2)', label: 'Think', glyph: '◆' },
-  act: { token: 'var(--color-chapter-3)', label: 'Act', glyph: '▶' },
-  observe: { token: 'var(--color-chapter-1)', label: 'Observe', glyph: '◉' },
+  think: { token: 'var(--color-chapter-2)', label: 'Think' },
+  act: { token: 'var(--color-chapter-3)', label: 'Act' },
+  observe: { token: 'var(--color-chapter-1)', label: 'Observe' },
 };
 
 export function AgentLoopStepper() {
@@ -119,12 +116,12 @@ export function AgentLoopStepper() {
 
   return (
     <div
-      className="my-10 border-4 border-text bg-surface/40"
+      className="my-10 border-y border-text/20"
       role="group"
       aria-label="Interactive agent loop walkthrough"
     >
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 border-b-2 border-text px-4 py-3">
+      <div className="flex items-center justify-between gap-4 border-b border-text/20 px-4 py-3">
         <p className="text-xs font-bold uppercase tracking-widest text-muted">
           The agent loop · <span className="text-text">Fix the failing test</span>
         </p>
@@ -153,13 +150,6 @@ export function AgentLoopStepper() {
                       : 'transparent',
                   }}
                 >
-                  <span
-                    aria-hidden="true"
-                    className="mt-0.5 select-none font-mono text-sm font-bold"
-                    style={{ color: meta.token }}
-                  >
-                    {meta.glyph}
-                  </span>
                   <div className="min-w-0">
                     <p className="flex items-center gap-2">
                       <span
@@ -168,14 +158,10 @@ export function AgentLoopStepper() {
                       >
                         {meta.label}
                       </span>
-                      <span className="truncate font-mono text-sm text-text">
-                        {turn.label}
-                      </span>
+                      <span className="truncate font-mono text-sm text-text">{turn.label}</span>
                     </p>
                     {isCurrent && (
-                      <p className="mt-1 text-sm leading-relaxed text-muted">
-                        {turn.detail}
-                      </p>
+                      <p className="mt-1 text-sm leading-relaxed text-muted">{turn.detail}</p>
                     )}
                   </div>
                 </motion.li>
@@ -185,8 +171,8 @@ export function AgentLoopStepper() {
 
           {step === 0 && (
             <li className="px-4 py-8 text-center text-sm text-muted">
-              Press <span className="font-bold text-text">Step</span> to run the
-              loop one turn at a time.
+              Press <span className="font-bold text-text">Step</span> to run the loop one turn at a
+              time.
             </li>
           )}
 
@@ -198,19 +184,19 @@ export function AgentLoopStepper() {
               style={{ color: 'var(--color-chapter-1)' }}
             >
               <p className="text-xs font-bold uppercase tracking-widest">
-                ■ Loop terminated — goal condition met
+                Loop terminated — goal condition met
               </p>
             </motion.li>
           )}
         </ol>
 
         {/* Side panel: context meter + phase legend */}
-        <div className="border-t-2 border-text px-4 py-4 md:border-l-2 md:border-t-0">
+        <div className="border-t border-text/20 px-4 py-4 md:border-l md:border-t-0">
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted">
             Context window
           </p>
           <div
-            className="mt-2 h-3 w-full border-2 border-text bg-background"
+            className="mt-2 h-2 w-full bg-surface"
             role="progressbar"
             aria-valuenow={pct}
             aria-valuemin={0}
@@ -225,29 +211,17 @@ export function AgentLoopStepper() {
             />
           </div>
           <p className="mt-1 font-mono text-xs text-muted tabular-nums">
-            {usedTokens.toLocaleString()} / {CONTEXT_BUDGET.toLocaleString()} tok
-            {' '}({pct}%)
+            {usedTokens.toLocaleString()} / {CONTEXT_BUDGET.toLocaleString()} tok ({pct}%)
           </p>
 
-          <p className="mt-5 text-[10px] font-bold uppercase tracking-widest text-muted">
-            Phases
-          </p>
+          <p className="mt-5 text-[10px] font-bold uppercase tracking-widest text-muted">Phases</p>
           <ul className="mt-2 space-y-1.5">
             {(Object.keys(PHASE_META) as Phase[]).map((p) => {
               const meta = PHASE_META[p];
               const active = current?.phase === p;
               return (
                 <li key={p} className="flex items-center gap-2 text-sm">
-                  <span
-                    aria-hidden="true"
-                    className="font-mono font-bold"
-                    style={{ color: meta.token }}
-                  >
-                    {meta.glyph}
-                  </span>
-                  <span
-                    className={active ? 'font-bold text-text' : 'text-muted'}
-                  >
+                  <span className={active ? 'font-bold text-text' : 'text-muted'}>
                     {meta.label}
                   </span>
                 </li>
@@ -266,12 +240,12 @@ export function AgentLoopStepper() {
       </p>
 
       {/* Controls */}
-      <div className="flex flex-wrap gap-3 border-t-2 border-text px-4 py-3">
+      <div className="flex flex-wrap gap-3 border-t border-text/20 px-4 py-3">
         <button
           type="button"
           onClick={advance}
           disabled={done}
-          className="border-2 border-accent bg-accent px-5 py-2 text-sm font-bold uppercase tracking-wider text-background transition-all duration-150 hover:-translate-y-px hover:shadow-[3px_3px_0_0_var(--color-text)] focus:outline-none focus:ring-2 focus:ring-text focus:ring-offset-2 focus:ring-offset-background active:translate-y-px active:shadow-none disabled:cursor-not-allowed disabled:opacity-40"
+          className="border border-accent bg-accent px-5 py-2 text-sm font-semibold uppercase tracking-wider text-background transition-colors hover:bg-text focus:outline-none focus:ring-2 focus:ring-text focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
         >
           {done ? 'Done' : current ? 'Step' : 'Run loop'}
         </button>
@@ -279,7 +253,7 @@ export function AgentLoopStepper() {
           type="button"
           onClick={reset}
           disabled={step === 0}
-          className="border-2 border-text px-5 py-2 text-sm font-bold uppercase tracking-wider text-text transition-all duration-150 hover:bg-text hover:text-background focus:outline-none focus:ring-2 focus:ring-text focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
+          className="border border-text px-5 py-2 text-sm font-semibold uppercase tracking-wider text-text transition-colors hover:bg-text hover:text-background focus:outline-none focus:ring-2 focus:ring-text focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
         >
           Reset
         </button>

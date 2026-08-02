@@ -18,8 +18,11 @@ import { TableOfContents } from '@/components/blog/TableOfContents';
 import { extractTableOfContents } from '@/lib/toc';
 import { SectionKicker } from '@/components/learn/SectionKicker';
 import { SectionPager } from '@/components/learn/SectionPager';
+import { MobileTableOfContents } from '@/components/learn/MobileTableOfContents';
 
 import { SITE_URL as siteUrl } from '@/lib/site';
+
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return getAllHarnessChapterSlugs().map((chapter) => ({ chapter }));
@@ -59,7 +62,7 @@ export default async function HarnessChapterPage({
   if (!meta || !page) notFound();
 
   const toc = extractTableOfContents(page.content);
-  const mdxOptions: any = await getMdxOptions();
+  const mdxOptions = await getMdxOptions();
 
   const idx = HARNESS_CHAPTERS.findIndex((c) => c.slug === meta.slug);
   const prev = idx > 0 ? HARNESS_CHAPTERS[idx - 1] : null;
@@ -76,7 +79,7 @@ export default async function HarnessChapterPage({
       <JsonLd data={breadcrumbSchema} />
 
       <nav className="mb-5 pt-4 px-4 sm:px-6 lg:px-0" aria-label="Breadcrumb">
-        <ol className="flex flex-wrap items-center gap-2 text-xs text-muted font-mono">
+        <ol className="flex flex-wrap items-center gap-2 text-sm text-muted">
           <li>
             <Link href="/learn" className="hover:text-text hover:underline underline-offset-2">
               Learn
@@ -99,15 +102,18 @@ export default async function HarnessChapterPage({
       </nav>
 
       <div className="lg:grid lg:grid-cols-[1fr_220px] lg:gap-10 px-4 sm:px-6 lg:px-0">
-        <article className="min-w-0 prose prose-invert prose-lg mdx-content">
-          <SectionKicker
-            section="Harness"
-            kicker={`Chapter ${meta.number}`}
-            color="purple"
-          />
-          <CodeBlockWrapper>
-            <MDXRemote source={page.content} components={mdxComponents} options={mdxOptions} />
-          </CodeBlockWrapper>
+        <article className="mdx-content min-w-0 text-lg">
+          <SectionKicker section="Harness" kicker={`Chapter ${meta.number}`} color="purple" />
+          <MobileTableOfContents items={toc} />
+          <div className="max-w-[68ch]">
+            <CodeBlockWrapper>
+              <MDXRemote
+                source={page.content}
+                components={mdxComponents}
+                options={mdxOptions as Parameters<typeof MDXRemote>[0]['options']}
+              />
+            </CodeBlockWrapper>
+          </div>
 
           <SectionPager
             color="purple"

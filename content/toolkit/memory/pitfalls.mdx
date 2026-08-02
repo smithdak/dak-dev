@@ -1,287 +1,47 @@
 ---
-title: "Memory: Pitfalls"
-topic: "memory"
-subPage: "pitfalls"
+title: 'Persistent Memory: Pitfalls'
+topic: 'memory'
+subPage: 'pitfalls'
 order: 5
-description: "Memory bloat, silent truncation, stale memories, the 200-line ceiling, privacy risks, and debugging memory influence."
-relatedPatterns: ["memory-layer", "scope-fence"]
-relatedTopics: ["claude-md", "settings"]
+description: 'Failure modes in stale recall, contradiction, cross-scope leakage, hidden storage, unverified inference, and policy substitution.'
+relatedPatterns: ['memory-layer', 'scope-fence', 'safety-net']
+relatedTopics: ['project-instructions', 'settings', 'hooks']
 published: true
-keywords: ["memory pitfalls", "memory bloat", "silent truncation", "stale memories", "200-line limit"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-memory', 'codex-memory', 'codex-agents-md', 'copilot-cli-reference']
+keywords: ['agent memory pitfalls', 'stale memory', 'memory contradiction', 'memory privacy']
 ---
 
 # Pitfalls
 
-Memory systems fail silently. Claude doesn't tell you when MEMORY.md truncates, when a stale memory causes wrong behavior, or when contradictory files produce inconsistent results. Every pitfall here has burned production users. Knowing the failure modes is what separates memory users from memory experts.
+## Stale State with No Expiry
 
-## Memory Bloat
+Branches, incidents, deadlines, and product behavior age quickly. Store a review date and expire aggressively.
 
-**Problem:** After months of active development, MEMORY.md grows beyond 200 lines. Topic files accumulate redundant entries. The system that was supposed to help Claude remember instead consumes context window with noise.
+## Contradictory Memories
 
-**Symptoms:**
-- Claude takes longer to start (more context to process)
-- Responses reference outdated patterns
-- Context window fills up faster, limiting task complexity
+Appending corrections leaves multiple plausible truths. Supersede or delete the old claim and preserve correction history separately.
 
-**Fix:**
-- Run Auto Dream regularly — it triggers automatically after 24h + sufficient activity
-- Manually prune quarterly: delete topic files for completed initiatives
-- Keep MEMORY.md as an index, not a dump — one line per topic file, under 150 chars each
-- Set a calendar reminder for monthly memory review
+## Memory as Policy
 
-**Prevention:** Treat memory like code. Dead code gets deleted. Dead memories should too.
+Machine-authored recall is not a reliable home for required team rules. Keep authoritative guidance checked in or managed.
 
-## The Silent Truncation Bug
+## Cross-Scope Leakage
 
-**Problem:** MEMORY.md is loaded top-to-bottom and truncated at line 200 (or 25KB). New entries are appended at the bottom. The newest entries — typically the most relevant — are the first to be lost. No warning is displayed during read or write.
+User, repository, role, and hosted account scopes can expose context to the wrong task. Verify isolation and access controls.
 
-**Symptoms:**
-- Claude repeats mistakes that a memory entry was written to prevent
-- You find entries at the bottom of MEMORY.md that Claude clearly doesn't know about
-- Recently saved memories have no effect on behavior
+## Inference Stored as Fact
 
-**Fix:**
+Label observed fact, inference, assumption, and preference distinctly. Link evidence for load-bearing claims.
 
-```bash
-# Monitor MEMORY.md line count
-wc -l ~/.claude/projects/*/memory/MEMORY.md
-```
+## Hidden Storage and Retention
 
-- If approaching 200 lines, manually reorganize — consolidate entries, move detail to topic files
-- Put the most important entries at the top of MEMORY.md
-- Auto Dream's Phase 4 rebuilds the index, but between consolidation cycles you're vulnerable
+Operators need to know where memory lives, who can read it, how long it remains, and how to delete it.
 
-**The math:** With ~150 chars per line, 200 lines gives you roughly 150-180 topic file pointers after headers. If you need more than 150 topic files, consolidate topic files — don't try to expand the index.
+## Falsification Checklist
 
-Add a pre-commit check to catch bloat before it ships:
-
-```bash
-#!/bin/bash
-# .claude/hooks/check-memory-size.sh — use as a Stop hook or manual check
-MEMORY_DIR="$HOME/.claude/projects"
-
-for index in "$MEMORY_DIR"/*/memory/MEMORY.md; do
-  [ -f "$index" ] || continue
-  LINES=$(wc -l < "$index")
-  SIZE=$(wc -c < "$index")
-  PROJECT=$(basename "$(dirname "$(dirname "$index")")")
-
-  if [ "$LINES" -gt 200 ]; then
-    echo "CRITICAL: $PROJECT MEMORY.md has $LINES lines (max 200) — truncation active" >&2
-  elif [ "$LINES" -gt 150 ]; then
-    echo "WARNING: $PROJECT MEMORY.md has $LINES lines — consolidate soon" >&2
-  fi
-
-  if [ "$SIZE" -gt 25000 ]; then
-    echo "CRITICAL: $PROJECT MEMORY.md is $(($SIZE / 1024))KB (max 25KB)" >&2
-  fi
-done
-```
-
-## Stale Memories Causing Incorrect Behavior
-
-**Problem:** A memory file written two weeks ago references a function that has since been deleted. Claude reads the memory and treats it as current truth, recommending calls to nonexistent code.
-
-**Symptoms:**
-- Claude suggests APIs or patterns from old code
-- "Context rot" — accumulated knowledge becomes a liability instead of an asset
-- Responses include references to files, functions, or modules that no longer exist
-
-**Fix:**
-- Auto Dream helps — it removes references to nonexistent files
-- When making breaking changes, tell Claude: "update memory to reflect that we removed the old auth module"
-- Use absolute dates in memory files ("2026-04-15"), never relative ("yesterday")
-- Project-type memories need the most frequent review — they describe temporal state
-
-**Guiding principle:** Memory should store things that aren't in the code — decisions, rationale, external system knowledge, workflow preferences. If it's derivable from reading the codebase, it probably doesn't belong in memory.
-
-## Memory Conflicts
-
-**Problem:** Contradictory instructions across different memory sources. CLAUDE.md says "use PostgreSQL," a memory file says "migrated to MySQL." Claude picks one arbitrarily.
-
-**Symptoms:**
-- Inconsistent behavior across sessions
-- Claude occasionally reverts to old patterns
-- Same question gets different answers depending on which memory file loads first
-
-**Fix:**
-
-| Source of Truth | Content Type |
-|----------------|-------------|
-| CLAUDE.md | Stable facts that rarely change |
-| Auto memory | Evolving context that accumulates through work |
-
-- When making migration-type changes, update **both** CLAUDE.md and relevant memory files
-- Auto Dream resolves some contradictions automatically, but only within memory files — not between memory and CLAUDE.md
-- Single source of truth: if CLAUDE.md and memory disagree, CLAUDE.md should win for stable conventions
-
-## Over-Reliance on Memory vs. Current Code
-
-**Problem:** Memory captures a snapshot of understanding at write time. Code evolves independently. Trusting memory over reading current code leads to wrong answers.
-
-**What belongs in memory vs. what doesn't:**
-
-| In Memory | Not in Memory |
-|-----------|--------------|
-| Decisions made and their rationale | Current function signatures |
-| Bugs encountered and their fixes | File structure (derivable from code) |
-| External system quirks | Internal API surface (read the code) |
-| Workflow preferences | Build output formats (run the build) |
-
-If Claude can derive the information by reading files or running commands, it doesn't belong in memory. Memory is for knowledge that lives outside the codebase.
-
-## The 200-Line Ceiling
-
-**Problem:** The 200-line / 25KB limit on MEMORY.md is a hard constraint baked into the system. There is no configuration to change it. No flag, no setting, no override.
-
-**Strategies:**
-
-- Treat MEMORY.md purely as an index — one line per topic file
-- A project with 100+ memory files can still work if the MEMORY.md index is well-curated
-- Consolidate related topic files rather than adding more index entries
-- Use descriptive entries that give Claude enough context to decide whether to load the topic file
-
-**What happens when you exceed 200 lines:** Everything past line 200 is silently dropped. Claude has no awareness that truncation occurred. The entries that got cut might be the ones that matter most for the current session.
-
-## Memory That Should Be CLAUDE.md (and Vice Versa)
-
-**Belongs in CLAUDE.md (not memory):**
-- Build commands (`npm run dev`, `pnpm test`)
-- Coding conventions (naming, formatting, patterns)
-- Architecture overview
-- "Always do X" / "Never do Y" rules
-
-**Belongs in memory (not CLAUDE.md):**
-- Decisions made during development and their rationale
-- Bugs encountered and their fixes
-- Evolving project state (what's in flight)
-- External system quirks discovered through usage
-
-**The test:** Would you write it in a project README or CONTRIBUTING.md? CLAUDE.md. Would you write it in a personal lab notebook? Memory.
-
-Misplacing information in the wrong system has two costs. Putting stable conventions in memory means they might not load when relevant (lazy-loading depends on description matching). Putting temporal project state in CLAUDE.md clutters every session with context that's only relevant for a week.
-
-## Privacy Concerns
-
-**Problem:** Claude Code can read `.env`, `.env.local`, and similar files. Memory files are stored in plaintext at `~/.claude/projects/`. Auto memory may capture sensitive context from conversations.
-
-**Risks:**
-- API keys or tokens mentioned in conversation could end up in memory files
-- Memory files are not encrypted — any user on the machine can read them
-- Shared machines expose memory to other users
-- Memory content is sent to Anthropic's API on subsequent sessions
-
-**Mitigations:**
-- Review memory files periodically for inadvertently captured secrets
-- Never include credentials in CLAUDE.md
-- `CLAUDE.local.md` is gitignored by default — use it for sensitive local config
-- Auto memory is local-only and never pushed to any remote
-- For sensitive codebases, disable auto memory: set `autoMemoryEnabled: false` in project settings
-
-```json
-// .claude/settings.json — disable auto memory for sensitive projects
-{
-  "autoMemoryEnabled": false
-}
-```
-
-A script to audit memory files for leaked secrets:
-
-```bash
-#!/bin/bash
-# scripts/audit-memory-secrets.sh
-set -euo pipefail
-
-MEMORY_DIR="$HOME/.claude/projects"
-PATTERNS='(api[_-]?key|secret|token|password|credential|private[_-]?key)[\s]*[:=]\s*["\x27]?[A-Za-z0-9+/=_-]{20,}'
-FOUND=0
-
-for file in "$MEMORY_DIR"/*/memory/*.md; do
-  [ -f "$file" ] || continue
-  MATCHES=$(grep -iEn "$PATTERNS" "$file" 2>/dev/null || true)
-  if [ -n "$MATCHES" ]; then
-    echo "POTENTIAL SECRET in $file:"
-    echo "$MATCHES" | head -5
-    echo ""
-    FOUND=$((FOUND + 1))
-  fi
-done
-
-if [ "$FOUND" -gt 0 ]; then
-  echo "Found potential secrets in $FOUND memory files. Review and remove them."
-  exit 1
-fi
-echo "No secrets detected in memory files."
-```
-
-## Memory Not Loading When Expected
-
-**Problem:** You wrote a memory file, but Claude doesn't seem to know about it.
-
-**Debugging checklist:**
-
-1. Run `/memory` — verify the file appears in the list
-2. Check that MEMORY.md contains a pointer to your file
-3. Verify the pointer is within the first 200 lines of MEMORY.md
-4. Check the `description` field — does it contain terms relevant to the task?
-5. Remember: topic files load on demand, not at startup. Claude reads them when the current task matches the description
-6. Check file permissions — Claude needs read access
-7. If using subagents, they have separate memory directories and don't share the parent's memory unless configured with `memory:` frontmatter
-
-**The `/memory` command** is your primary debugging tool:
-
-```bash
-/memory    # Browse auto memory contents
-           # See which CLAUDE.md files are loaded
-           # Toggle auto memory on/off
-           # Verify memory directory contents
-```
-
-## Debugging Which Memories Influence Behavior
-
-**Problem:** Claude did something unexpected. Was it a memory file? Which one?
-
-**Investigation steps:**
-
-1. Ask Claude directly: "What memory files did you load for this task?"
-2. Check `~/.claude/projects/<project>/memory/` — read each file to find the likely culprit
-3. Temporarily rename suspicious memory files and test again
-4. Use `ctrl+o` during a session to see what was loaded
-5. For persistent issues, disable auto memory temporarily to isolate whether the problem is in CLAUDE.md or memory
-
-**The nuclear option:** Rename the entire memory directory and start a fresh session. If the problem disappears, the cause is in memory. Rename it back, then binary-search by disabling half the files at a time.
-
-```bash
-# Binary search for the problematic memory file
-MEMORY_DIR="$HOME/.claude/projects/-Users-alice-repos-my-app/memory"
-BACKUP="$MEMORY_DIR.bak"
-
-# Step 1: Full disable — confirm memory is the cause
-mv "$MEMORY_DIR" "$BACKUP"
-# Start a session, test behavior. If fixed, memory is the cause.
-
-# Step 2: Restore and bisect
-mv "$BACKUP" "$MEMORY_DIR"
-mkdir -p "$MEMORY_DIR.disabled"
-
-# Move half the topic files out
-ls "$MEMORY_DIR"/*.md | grep -v MEMORY.md | tail -n +$(($(ls "$MEMORY_DIR"/*.md | wc -l) / 2)) | \
-  xargs -I{} mv {} "$MEMORY_DIR.disabled/"
-
-# Test again. If fixed, culprit is in the moved files. If not, it's in the remaining files.
-# Continue halving until you find the specific file.
-```
-
-## Pitfall Summary
-
-| Pitfall | Severity | Detection | Fix |
-|---------|----------|-----------|-----|
-| Memory bloat | Medium | `wc -l` on MEMORY.md | Auto Dream + quarterly prune |
-| Silent truncation | High | Check line count regularly | Keep MEMORY.md as lean index |
-| Stale memories | High | Claude suggests deleted APIs | Absolute dates + regular review |
-| Memory conflicts | Medium | Inconsistent behavior | Single source of truth per fact |
-| Over-reliance on memory | Medium | Wrong answers about current code | Store only non-derivable knowledge |
-| 200-line ceiling | High | Silent — no warning | Index-only MEMORY.md pattern |
-| Wrong system | Low | Loaded but irrelevant / not loaded when needed | Apply the README vs. lab notebook test |
-| Privacy leaks | High | Manual review | Periodic audit + `autoMemoryEnabled: false` |
-| Memory not loading | Medium | `/memory` command | Check index, descriptions, line count |
+- What is the source and review date?
+- Does the claim still match current code or documentation?
+- Could another scope or agent see it unexpectedly?
+- Can a user inspect and correct it?
+- Would the system remain safe if the memory were wrong?

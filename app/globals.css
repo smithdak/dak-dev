@@ -5,34 +5,60 @@
  * These are the source of truth for colors that can be overridden by theme classes
  */
 :root {
-  /* Dark mode colors (default) */
-  --color-background-dark: #0a0a0a;
-  --color-surface-dark: #333333;
-  --color-text-dark: #f5f5f5;
-  --color-muted-dark: #a9a9a9;
-  --color-accent-dark: #00ff88;
+  --layout-header-height: 4.75rem;
+  --layout-page-inset: clamp(2rem, 8vw, 8rem);
+  --layout-stage-inset: clamp(2rem, 6vw, 8rem);
 
-  /* Light mode colors */
-  --color-background-light: #f5f5f5;
-  --color-surface-light: #e0e0e0;
-  --color-text-light: #0a0a0a;
-  --color-muted-light: #626262;
-  --color-accent-light: #00723f;
+  /* Executive editorial palette. Warm paper is the default reading surface. */
+  --color-background-light: #f7f4ee;
+  --color-surface-light: #ebe6dc;
+  --color-text-light: #14211c;
+  --color-muted-light: #5d665f;
+  --color-accent-light: #006b4d;
+  --color-rule-light: #d4cec2;
 
-  /* Active theme colors - default to dark */
-  --color-background: var(--color-background-dark);
-  --color-surface: var(--color-surface-dark);
-  --color-text: var(--color-text-dark);
-  --color-muted: var(--color-muted-dark);
-  --color-accent: var(--color-accent-dark);
+  /* Dark mode retains the paper-and-ink hierarchy without becoming terminal-like. */
+  --color-background-dark: #111713;
+  --color-surface-dark: #1b231e;
+  --color-text-dark: #f2efe7;
+  --color-muted-dark: #aab2ac;
+  --color-accent-dark: #72d3ad;
+  --color-rule-dark: #38423c;
+
+  /* Editorial code plate. One low-chroma dark canvas serves both site themes. */
+  --color-code-canvas: #101713;
+  --color-code-foreground: #e7e4dc;
+  --color-code-muted: #95a098;
+  --color-code-keyword: #d8d2c5;
+  --color-code-string: #a7bcae;
+  --color-code-number: #c6aa7b;
+  --color-code-function: #b9c5bd;
+  --color-code-type: #d0bc91;
+  --color-code-special: #aeb8b0;
+  --color-code-punctuation: #b9beb9;
+  --color-code-invalid: #d09a91;
+  --color-code-selection: #2d3831;
+  --color-code-line-highlight: #1b241e;
+  --color-code-rule: #34423a;
+  --color-code-highlight: #c6aa7b;
+  --color-code-add: #8faf9d;
+  --color-code-remove: #c28e86;
+
+  /* Active theme colors - default to light. */
+  --color-background: var(--color-background-light);
+  --color-surface: var(--color-surface-light);
+  --color-text: var(--color-text-light);
+  --color-muted: var(--color-muted-light);
+  --color-accent: var(--color-accent-light);
+  --color-rule: var(--color-rule-light);
 
   /* Chapter accent colors — patterns section */
-  --color-chapter-1: #00ff88;
-  --color-chapter-2: #00d4ff;
-  --color-chapter-3: #ff6b35;
-  --color-chapter-4: #c084fc;
-  --color-chapter-5: #facc15;
-  --color-chapter-6: #ff3366;
+  --color-chapter-1: #72d3ad;
+  --color-chapter-2: #82b8c4;
+  --color-chapter-3: #d6a078;
+  --color-chapter-4: #b7a0ce;
+  --color-chapter-5: #d2bc7a;
+  --color-chapter-6: #cf899d;
 
   /* Light-mode variants retain the chapter hues at AA text contrast. */
   --color-chapter-1-light: #006b3b;
@@ -50,21 +76,25 @@ html.light {
   --color-text: var(--color-text-light);
   --color-muted: var(--color-muted-light);
   --color-accent: var(--color-accent-light);
+  --color-rule: var(--color-rule-light);
   --color-chapter-1: var(--color-chapter-1-light);
   --color-chapter-2: var(--color-chapter-2-light);
   --color-chapter-3: var(--color-chapter-3-light);
   --color-chapter-4: var(--color-chapter-4-light);
   --color-chapter-5: var(--color-chapter-5-light);
   --color-chapter-6: var(--color-chapter-6-light);
+  color-scheme: light;
 }
 
-/* Dark mode explicit (default, but explicit for clarity) */
+/* Dark mode explicit. */
 html.dark {
   --color-background: var(--color-background-dark);
   --color-surface: var(--color-surface-dark);
   --color-text: var(--color-text-dark);
   --color-muted: var(--color-muted-dark);
   --color-accent: var(--color-accent-dark);
+  --color-rule: var(--color-rule-dark);
+  color-scheme: dark;
 }
 
 /* Tailwind theme mapping - maps Tailwind utilities to CSS variables */
@@ -74,18 +104,40 @@ html.dark {
   --color-text: var(--color-text);
   --color-muted: var(--color-muted);
   --color-accent: var(--color-accent);
+  --color-rule: var(--color-rule);
+  --color-code-canvas: var(--color-code-canvas);
+  --color-code-foreground: var(--color-code-foreground);
+  --color-code-muted: var(--color-code-muted);
+  --color-code-rule: var(--color-code-rule);
+  --color-code-highlight: var(--color-code-highlight);
+  --color-code-add: var(--color-code-add);
+  --color-code-remove: var(--color-code-remove);
   --color-chapter-1: var(--color-chapter-1);
   --color-chapter-2: var(--color-chapter-2);
   --color-chapter-3: var(--color-chapter-3);
   --color-chapter-4: var(--color-chapter-4);
   --color-chapter-5: var(--color-chapter-5);
   --color-chapter-6: var(--color-chapter-6);
-  --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-editorial-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Bodoni 72', 'Bodoni MT', Didot, Baskerville, 'Iowan Old Style', Georgia, serif;
+  --font-display: 'Bodoni 72', 'Bodoni MT', Didot, Baskerville, 'Iowan Old Style', Georgia, serif;
+}
+
+.editorial-kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--color-accent);
 }
 
 @layer base {
   html {
     font-family: var(--font-sans);
+    /* Next.js owns route scroll restoration. A global smooth behavior turns
+       its top reset into a visible glide from the previous page position. */
+    scroll-behavior: auto;
   }
 }
 
@@ -102,6 +154,63 @@ html.dark {
 body {
   background-color: var(--color-background);
   color: var(--color-text);
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-background);
+}
+
+/* Shared editorial primitives used by the modernized public shell. */
+.editorial-shell {
+  width: min(calc(100% - var(--layout-page-inset)), 90rem);
+  margin-inline: auto;
+}
+
+/* Wide index surfaces use the viewport as a compositional stage. Reading pages
+ * retain the narrower editorial shell above so line length never follows screen width. */
+.site-stage {
+  width: min(calc(100% - var(--layout-stage-inset)), 120rem);
+  margin-inline: auto;
+}
+
+.learn-section-stage {
+  width: 100%;
+  margin-inline: auto;
+}
+
+.learn-standalone-shell {
+  width: 100%;
+  margin-inline: auto;
+}
+
+@media (min-width: 64rem) {
+  .learn-section-stage {
+    width: min(calc(100% - var(--layout-stage-inset)), 120rem);
+  }
+
+  .learn-standalone-shell {
+    width: min(calc(100% - var(--layout-page-inset)), 80rem);
+  }
+}
+
+.editorial-link {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.28em;
+  transition:
+    color 160ms ease,
+    text-decoration-color 160ms ease;
+}
+
+.editorial-link:hover {
+  color: var(--color-accent);
+  text-decoration-line: underline;
+}
+
+.editorial-search-trigger kbd {
+  display: none;
 }
 
 /* Reset prose defaults for inline code — let MdxComponents handle styling */
@@ -159,7 +268,7 @@ body {
 /* Code block styling (rehype-pretty-code output) */
 .mdx-content .code-block-container {
   margin: 1.5rem 0;
-  border: 2px solid var(--color-text);
+  border-block: 1px solid var(--color-rule);
 }
 
 .mdx-content .code-block-container > pre {
@@ -169,23 +278,25 @@ body {
 
 .mdx-content pre {
   padding: 0;
-  /* Shiki emits a dark-only palette, so its canvas remains dark in both site themes. */
-  background-color: var(--color-background-dark) !important;
+  background-color: var(--color-code-canvas) !important;
+  color: var(--color-code-foreground);
   overflow-x: auto;
 }
 
 /* Standalone pre (not wrapped by CodeBlockWrapper) */
 .mdx-content > pre {
   margin: 1.5rem 0;
-  border: 2px solid var(--color-text);
+  border-block: 1px solid var(--color-rule);
 }
 
 .mdx-content pre > code {
   display: grid;
   min-width: max-content;
-  /* The inline-code component also renders fenced code. Keep Shiki's
-     contrast-calibrated pre background instead of layering surface/50. */
+  /* The inline-code component also renders fenced code and carries the active
+     reading-theme foreground. Reassert the fixed code-plate foreground so
+     unscoped Shiki tokens never become dark text on the dark canvas. */
   background-color: transparent !important;
+  color: var(--color-code-foreground);
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
@@ -208,46 +319,46 @@ body {
   width: 1.5rem;
   margin-right: 1.5rem;
   text-align: right;
-  color: var(--color-muted-dark);
+  color: var(--color-code-muted);
   user-select: none;
 }
 
 /* Highlighted lines */
 .mdx-content pre > code > [data-highlighted-line] {
-  background-color: rgba(255, 184, 108, 0.1);
-  border-left-color: #ffb86c;
+  background-color: color-mix(in srgb, var(--color-code-highlight) 10%, transparent);
+  border-left-color: var(--color-code-highlight);
 }
 
 /* Line numbers for highlighted lines */
 .mdx-content pre > code[data-line-numbers] > [data-highlighted-line]::before {
-  color: #ffb86c;
+  color: var(--color-code-highlight);
   font-weight: bold;
 }
 
 /* Diff support - added lines */
 .mdx-content pre > code > [data-line].diff.add {
-  background-color: rgba(168, 230, 163, 0.1);
-  border-left-color: #a8e6a3;
+  background-color: color-mix(in srgb, var(--color-code-add) 10%, transparent);
+  border-left-color: var(--color-code-add);
 }
 
 .mdx-content pre > code > [data-line].diff.add::after {
   content: '+';
   position: absolute;
   left: 0.5rem;
-  color: #a8e6a3;
+  color: var(--color-code-add);
 }
 
 /* Diff support - removed lines */
 .mdx-content pre > code > [data-line].diff.remove {
-  background-color: rgba(255, 85, 85, 0.1);
-  border-left-color: #ff5555;
+  background-color: color-mix(in srgb, var(--color-code-remove) 10%, transparent);
+  border-left-color: var(--color-code-remove);
 }
 
 .mdx-content pre > code > [data-line].diff.remove::after {
   content: '-';
   position: absolute;
   left: 0.5rem;
-  color: #ff5555;
+  color: var(--color-code-remove);
 }
 
 /* Table scroll hint — right-edge fade when content overflows */
@@ -272,17 +383,17 @@ body {
 }
 
 .mdx-content pre::-webkit-scrollbar-track {
-  background: var(--color-surface);
-  border: 2px solid var(--color-background);
+  background: var(--color-code-canvas);
+  border: 2px solid var(--color-code-canvas);
 }
 
 .mdx-content pre::-webkit-scrollbar-thumb {
-  background: var(--color-muted);
-  border: 2px solid var(--color-background);
+  background: var(--color-code-muted);
+  border: 2px solid var(--color-code-canvas);
 }
 
 .mdx-content pre::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
+  background: var(--color-code-foreground);
 }
 
 /* Patterns sidebar scrollbar */
@@ -340,72 +451,6 @@ body {
 .share-button:focus {
   outline: none;
   box-shadow: 0 0 0 4px var(--color-accent);
-}
-
-/* Subtle grid-line background */
-.patterns-grid-bg {
-  background-image:
-    linear-gradient(var(--color-surface) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-surface) 1px, transparent 1px);
-  background-size: 48px 48px;
-  background-position: -1px -1px;
-}
-
-/* Layered grid with radial depth — structural grid + vignette */
-.patterns-grid-bg-depth {
-  position: relative;
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--color-surface) 50%, transparent) 1px, transparent 1px),
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-surface) 50%, transparent) 1px,
-      transparent 1px
-    );
-  background-size: 48px 48px;
-  background-position: -1px -1px;
-}
-
-/* Layer 1: accent-colored large grid, masked to focal area */
-.patterns-grid-bg-depth::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--color-accent) 14%, transparent) 1px, transparent 1px),
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-accent) 14%, transparent) 1px,
-      transparent 1px
-    );
-  background-size: 192px 192px;
-  background-position: -1px -1px;
-  mask-image: radial-gradient(ellipse 80% 70% at 30% 50%, black 0%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 30% 50%, black 0%, transparent 100%);
-  pointer-events: none;
-}
-
-/* Layer 2: radial glow + edge vignette for depth */
-.patterns-grid-bg-depth::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse 65% 55% at 25% 50%,
-      color-mix(in srgb, var(--color-accent) 6%, transparent) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 40% 40% at 75% 30%,
-      color-mix(in srgb, var(--color-accent) 3%, transparent) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 100% 100% at 50% 50%,
-      transparent 40%,
-      color-mix(in srgb, var(--color-background) 40%, transparent) 100%
-    );
-  pointer-events: none;
 }
 
 /* ── Hero scanline — slow horizontal sweep ── */
@@ -508,6 +553,15 @@ body {
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .theme-transitioning,
+  .theme-transitioning * {
+    transition: none !important;
+  }
+
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none !important;

@@ -15,7 +15,7 @@ import { SITE_URL as siteUrl } from '@/lib/site';
 export function generateMetadata(): Metadata {
   const allPatterns = getAllPatterns();
   const description = `A searchable reference of ${allPatterns.length} named patterns across ${CHAPTERS.length} chapters for working effectively with AI coding agents.`;
-  const ogImage = `${siteUrl}/api/og?type=pattern&title=${encodeURIComponent('Agent Patterns')}`;
+  const ogImage = `${siteUrl}/og-default.png`;
 
   return {
     title: 'Agent Patterns',
@@ -45,10 +45,7 @@ export function generateMetadata(): Metadata {
 
 export default function PatternsPage() {
   const allPatterns = getAllPatterns();
-  const collectionSchema = generatePatternCollectionSchema(
-    allPatterns.length,
-    CHAPTERS.length
-  );
+  const collectionSchema = generatePatternCollectionSchema(allPatterns.length, CHAPTERS.length);
 
   return (
     <PageTransition className="min-h-screen pb-16">
@@ -64,10 +61,13 @@ export default function PatternsPage() {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0">
         {/* Quick-jump links — relocated from the hero so the section banner stays consistent across Learn sections */}
-        <nav aria-label="Jump to section" className="flex flex-wrap gap-4 mb-12">
+        <nav
+          aria-label="Jump to section"
+          className="mb-14 flex flex-wrap gap-x-6 gap-y-2 border-y border-text/20 py-4"
+        >
           <Link
             href="#chapters"
-            className="inline-flex items-center gap-3 px-6 py-3 border-2 border-text/30 bg-transparent text-muted font-bold text-sm uppercase tracking-wider hover:border-text hover:text-text hover:bg-surface hover:shadow-[4px_4px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+            className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted underline-offset-4 hover:text-text hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <span className="text-accent/60 font-mono" aria-hidden="true">
               01
@@ -76,7 +76,7 @@ export default function PatternsPage() {
           </Link>
           <Link
             href="#problems"
-            className="inline-flex items-center gap-3 px-6 py-3 border-2 border-text/30 bg-transparent text-muted font-bold text-sm uppercase tracking-wider hover:border-text hover:text-text hover:bg-surface hover:shadow-[4px_4px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+            className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted underline-offset-4 hover:text-text hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <span className="text-accent/60 font-mono" aria-hidden="true">
               02
@@ -85,7 +85,7 @@ export default function PatternsPage() {
           </Link>
           <Link
             href="/learn/patterns/graph"
-            className="inline-flex items-center gap-3 px-6 py-3 border-2 border-text/30 bg-transparent text-muted font-bold text-sm uppercase tracking-wider hover:border-text hover:text-text hover:bg-surface hover:shadow-[4px_4px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+            className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted underline-offset-4 hover:text-text hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <span className="text-accent/60 font-mono" aria-hidden="true">
               03
@@ -94,7 +94,7 @@ export default function PatternsPage() {
           </Link>
           <Link
             href="/learn/patterns/cards"
-            className="inline-flex items-center gap-3 px-6 py-3 border-2 border-text/30 bg-transparent text-muted font-bold text-sm uppercase tracking-wider hover:border-text hover:text-text hover:bg-surface hover:shadow-[4px_4px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+            className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted underline-offset-4 hover:text-text hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <span className="text-accent/60 font-mono" aria-hidden="true">
               04
@@ -115,10 +115,7 @@ export default function PatternsPage() {
 
             return (
               <section key={chapter.number}>
-                <Link
-                  href={`/learn/patterns/chapter/${chapter.slug}`}
-                  className="group block mb-5"
-                >
+                <Link href={`/learn/patterns/chapter/${chapter.slug}`} className="group block mb-5">
                   <ChapterHeader
                     chapter={chapter}
                     patternCount={chapterPatterns.length}
@@ -129,15 +126,14 @@ export default function PatternsPage() {
                 {chapterPatterns.length > 0 ? (
                   <div className="grid grid-cols-1 gap-3">
                     {chapterPatterns.map((pattern) => (
-                      <PatternCard
-                        key={pattern.frontmatter.slug}
-                        pattern={pattern}
-                      />
+                      <PatternCard key={pattern.frontmatter.slug} pattern={pattern} />
                     ))}
                   </div>
                 ) : (
                   <div className="border border-dashed border-muted/30 p-6 text-center">
-                    <p className="text-xs font-mono text-muted uppercase tracking-wider">Patterns coming soon</p>
+                    <p className="text-xs font-mono text-muted uppercase tracking-wider">
+                      Patterns coming soon
+                    </p>
                   </div>
                 )}
               </section>

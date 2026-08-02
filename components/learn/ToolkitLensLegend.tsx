@@ -35,51 +35,33 @@ export function ToolkitLensLegend({ className = '' }: ToolkitLensLegendProps) {
       aria-labelledby="how-to-read-heading"
       className={`scroll-mt-20 ${className}`}
     >
-      <div className="border-l-8 border-l-chapter-2 border-b-2 border-text/30 pl-5 pb-4 mb-6">
-        <h2
-          id="how-to-read-heading"
-          className="text-2xl md:text-3xl font-bold tracking-tight"
-        >
+      <div className="mb-7 grid gap-4 border-b border-text/20 pb-6 md:grid-cols-[minmax(0,1fr)_minmax(18rem,1fr)] md:items-end">
+        <h2 id="how-to-read-heading" className="font-display text-4xl tracking-tight md:text-5xl">
           How to Read a Topic
         </h2>
         <p className="text-sm text-muted mt-2 max-w-3xl leading-relaxed">
-          Every topic is worked through the same four lenses. Start with the
-          mental model; reach for the others when the work demands it.
+          Every topic is worked through the same four lenses. Start with the mental model; reach for
+          the others when the work demands it.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {LENSES.map(({ sub, blurb }) => {
+      <ol className="border-y border-text/20">
+        {LENSES.map(({ sub, blurb }, index) => {
           const meta = SUB_PAGE_META[sub];
           return (
-            <div
+            <li
               key={sub}
-              className="border-2 border-text/20 bg-surface/30 p-5 border-t-4 border-t-chapter-2"
+              className="grid gap-3 border-b border-text/20 py-5 last:border-b-0 sm:grid-cols-[3rem_minmax(10rem,0.7fr)_minmax(0,1fr)] sm:items-start"
             >
-              <div className="flex items-center gap-2 mb-2">
-                <svg
-                  className="w-5 h-5 text-chapter-2 shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d={meta.icon}
-                  />
-                </svg>
-                <h3 className="text-sm font-bold uppercase tracking-wider">
-                  {meta.label}
-                </h3>
-              </div>
-              <p className="text-sm text-muted leading-snug">{blurb}</p>
-            </div>
+              <span className="font-display text-2xl text-chapter-2" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <h3 className="font-display text-2xl leading-tight">{meta.label}</h3>
+              <p className="text-sm leading-relaxed text-muted">{blurb}</p>
+            </li>
           );
         })}
-      </div>
+      </ol>
     </section>
   );
 }

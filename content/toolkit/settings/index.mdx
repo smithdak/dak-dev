@@ -1,63 +1,43 @@
 ---
-title: "Settings & Config: Expert's Guide"
-topic: "settings"
+title: 'Settings and Policy Across Claude Code, Codex, and Copilot'
+topic: 'settings'
 order: 1
-description: "Master Claude Code's configuration system — permission architectures, model selection strategy, and profile management for production workflows."
-relatedPatterns: ["scope-fence", "constraint-over-instruction"]
-relatedTopics: ["hooks", "claude-md", "agents", "mcp"]
+description: 'Compare configuration scope, permissions, models, managed controls, and policy boundaries across coding-agent products.'
+relatedPatterns: ['scope-fence', 'safety-net', 'convention-file']
+relatedTopics: ['hooks', 'mcp', 'agents', 'project-instructions']
 published: true
-keywords: ["claude code settings", "configuration", "permissions", "model selection", "profiles"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-settings', 'codex-config', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords:
+  [
+    'agent settings',
+    'Claude Code settings',
+    'Codex config',
+    'Copilot CLI settings',
+    'agent permissions',
+  ]
 ---
 
-# Settings & Config
+# Settings & Policy
 
-Settings are the control plane of Claude Code. Every tool call, every model selection, every file access passes through a configuration hierarchy that determines what the agent can and cannot do. Getting this right is the difference between a productive AI assistant and a liability.
+Settings determine the operating envelope around an agent: model selection, sandboxing, approvals, permissions, extension discovery, environment, and managed policy. Product schemas differ, but the architecture problem is stable.
 
-## Why Settings Matter
+## Separate Five Concerns
 
-Prompts are suggestions. Settings are enforcement. You can tell Claude "never force-push" in CLAUDE.md, but a prompt injection in a file it reads can override that instruction. A `deny` rule in settings.json cannot be overridden by anything — not by the agent, not by prompt injection, not by a user-level allow rule. Settings are your hard boundary.
+1. **Behavioral guidance** — what the agent should do; belongs in project instructions.
+2. **Capability configuration** — which tools, servers, skills, and agents are available.
+3. **Authorization** — which actions are allowed, denied, or require approval.
+4. **Execution isolation** — what the process can actually read, write, execute, and reach.
+5. **Organization policy** — centrally controlled constraints users cannot weaken locally.
 
-## The Configuration Hierarchy
+Collapsing these into one settings file creates false assurance. A denied tool pattern may not constrain a different execution path. A sandbox may limit the process but not an MCP server using separate credentials. A managed product setting does not replace repository CI.
 
-Claude Code evaluates five configuration scopes, from highest to lowest priority:
+## Precedence Is Part of Correctness
 
-| Priority | Scope | Location | Shared? |
-|----------|-------|----------|---------|
-| 1 | Managed | Server-managed, MDM, or `managed-settings.json` | Deployed by IT |
-| 2 | CLI args | `--model`, `--permission-mode`, `--allowedTools` | Session only |
-| 3 | Local | `.claude/settings.local.json` | No (gitignored) |
-| 4 | Project | `.claude/settings.json` | Yes (committed) |
-| 5 | User | `~/.claude/settings.json` | No |
+User, repository, local, command-line, environment, and managed scopes can merge or override in different orders. Record the resolved configuration used for consequential runs. Test that a lower-trust repository cannot override a higher-trust policy source.
 
-The critical rule: **deny at any level blocks the tool at every level.** A project deny overrides a user allow. A managed deny overrides everything.
+## Portability Strategy
 
-The core configuration file:
+Maintain a vendor-neutral policy statement and translate it into product-specific settings adapters. Verify each adapter with negative tests: denied reads, denied writes, external network access, destructive commands, nested agents, MCP actions, and cloud execution.
 
-```json
-{
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "permissions": {
-    "defaultMode": "default",
-    "allow": ["Bash(npm run *)", "Bash(git diff *)"],
-    "deny": ["Bash(git push --force *)", "Read(./.env)"]
-  },
-  "model": "sonnet",
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [{ "type": "command", "command": "npx prettier --write \"$CLAUDE_TOOL_ARG_file_path\"" }]
-      }
-    ]
-  }
-}
-```
-
-## What's Inside
-
-Explore the sub-pages for deep expertise:
-
-- **Mental Model** — The 5-scope hierarchy, permission evaluation order, model selection priority, and the profile system
-- **Playbook** — Permission architectures by team size, model routing strategies, CI/CD configs, and security-focused setups
-- **Compositions** — Settings combined with hooks, CLAUDE.md, MCP servers, subagents, and skills
-- **Pitfalls** — The Read/Edit bypass, inheritance bugs, silent ignore rules, configuration drift, and Bash pattern fragility
+The deeper lenses retain Claude Code settings examples. Use them to reason about layering and permission architecture, not as Codex or Copilot syntax.

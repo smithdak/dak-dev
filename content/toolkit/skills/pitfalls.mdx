@@ -1,264 +1,47 @@
 ---
-title: "Skills: Pitfalls"
-topic: "skills"
-subPage: "pitfalls"
+title: 'Reusable Skills: Pitfalls'
+topic: 'skills'
+subPage: 'pitfalls'
 order: 5
-description: "Activation failures, context bloat, conflicting skills, and the anti-patterns that make skills unreliable."
-relatedPatterns: ["progressive-disclosure", "scope-fence"]
-relatedTopics: ["commands", "claude-md", "settings"]
+description: 'Failure modes in skill discovery, instruction drift, context cost, script safety, portability, and false completion.'
+relatedPatterns: ['progressive-disclosure', 'scope-fence', 'safety-net']
+relatedTopics: ['project-instructions', 'commands', 'hooks']
 published: true
-keywords: ["skills pitfalls", "activation failures", "context bloat", "skill anti-patterns"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-skills', 'codex-skills', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords: ['Agent Skills pitfalls', 'skill activation failure', 'skill drift', 'skill security']
 ---
 
 # Pitfalls
 
-Skills fail in predictable ways. Every failure falls into one of two categories: activation failure (Claude never invokes the skill) or execution failure (Claude loads the skill but skips steps). These require different fixes. Conflating them is the most common debugging mistake.
+## Generic Descriptions
 
-## The Two Failure Modes
+If several skills “help with development,” routing becomes arbitrary. Describe the unique trigger, excluded cases, and expected artifact.
 
-### Activation Failure
+## Hiding Mandatory Rules in Optional Skills
 
-Claude does not invoke the skill at all. The skill exists, the description is loaded into the system prompt, but Claude decides the task does not warrant it.
+If the agent may choose not to load a skill, the skill cannot be the only home for a non-negotiable repository rule.
 
-**Symptoms:**
-- Claude handles the task directly without mentioning the skill
-- The session debug log shows no `Skill` tool call
-- Manual `/skill-name` invocation works perfectly
+## Duplicated Vendor Forks
 
-**Root cause:** The description does not trigger Claude's invocation logic. Fix the description, not the instructions.
+Three independent copies diverge quickly. Share the procedure and isolate only product-specific metadata and commands.
 
-### Execution Failure
+## Unsafe Helper Scripts
 
-Claude loads the skill but skips steps, takes shortcuts, or deviates from the instructions.
+Skill scripts run with the process's real access. Validate paths, quote arguments, constrain destinations, and never treat model-generated input as trusted shell syntax.
 
-**Symptoms:**
-- The skill was invoked (visible in conversation)
-- Claude completes 3 of 7 steps
-- Output format does not match the skill's specification
+## Oversized Entrypoints
 
-**Root cause:** The instructions are ambiguous, too long, or lack explicit completion criteria. Fix the body of `SKILL.md`, not the description.
+Large bodies defeat progressive disclosure and become fragile under compaction. Route to references at the step where they are needed.
 
-## Activation Failure: Diagnosis Checklist
+## Claiming Completion from Procedure Text
 
-Work through these in order. Stop at the first match.
+The model saying it followed the skill is not evidence. Require test output, diffs, source links, or other independently inspectable artifacts.
 
-### 1. Is the description vague?
+## Falsification Checklist
 
-"Helps with deployment" activates ~30% of the time. "ALWAYS invoke this skill when the user asks about deploying" activates ~100%.
-
-**Fix:** Use the directive template:
-
-```
-<Domain> expert. ALWAYS invoke this skill when the user asks about
-<trigger topics>. Do not <alternative action> directly -- use this
-skill first.
-```
-
-### 2. Is the task too simple?
-
-Claude skips skills for one-liner requests. It only consults the skill registry for tasks it cannot easily handle directly. If you ask "create a git commit" and your commit-messages skill has a generic description, Claude will just commit.
-
-**Fix:** Make the description more assertive. "Do not create git commits directly. ALWAYS use this skill first." Test with the exact phrasing real users would use, not idealized prompts.
-
-### 3. Is `disable-model-invocation` set?
-
-```yaml
----
-disable-model-invocation: true
----
-```
-
-This hides the skill from auto-invocation entirely. Only manual `/slash-command` works. Check your frontmatter.
-
-### 4. Is the description truncated?
-
-The `description` field supports up to 1,024 characters, but Claude may not weight all of it equally. Content past ~200 characters has diminishing influence on invocation decisions.
-
-**Fix:** Front-load trigger conditions. Put the ALWAYS/NEVER directives in the first 200 characters. Explanatory context goes at the end.
-
-### 5. Is there a naming conflict?
-
-Check the resolution order:
-
-1. Enterprise skills (`managed-settings.json`)
-2. Personal skills (`~/.claude/skills/`)
-3. Project skills (`.claude/skills/`)
-4. Plugin skills
-
-A personal skill with the same name shadows your project skill silently.
-
-### 6. Are project skills blocking global skills?
-
-**Known issue (April 2026):** When a project has a `.claude/skills/` directory, skills from `~/.claude/skills/` may not load. If your global skill stopped working after adding project skills, this is likely the cause.
-
-## Context Window Bloat
-
-The silent killer of skill reliability. Your skills work in isolation but fail in combination because the context window is overloaded.
-
-### Token Budget Reality
-
-| Content | Tokens | Notes |
-|---------|--------|-------|
-| CLAUDE.md | ~2,000 | Recommended max. Loaded every turn. |
-| 20 skill descriptions | ~2,000 | Always present. |
-| 3 invoked skill bodies | ~9,000 | Stay until compaction. |
-| 2 MCP servers (20 tools each) | ~15,000 | Always present. Schema overhead. |
-| Conversation history | Variable | Grows with each turn. |
-| **Total baseline** | **~28,000** | **Before any actual work happens.** |
-
-When baseline overhead hits 30,000+ tokens, Claude has less room for reasoning, file contents, and tool results. Quality degrades across the board — not just for skills.
-
-### Anti-Patterns That Cause Bloat
-
-**SKILL.md files over 500 lines.** After compaction, only the first 5,000 tokens survive re-attachment. Everything past that is lost. Split long skills into a lean `SKILL.md` + reference files that Claude reads on demand.
-
-**Loading 20+ MCP servers.** Each server injects its full tool schema on every request, even when unused. A server with 20 tools costs 5,000-10,000 tokens. Use Tool Search / lazy loading for servers you use occasionally.
-
-**CLAUDE.md over 200 lines.** Move task-specific guidance into skills. CLAUDE.md should contain only always-relevant project rules.
-
-**Skills that dump verbose output into main context.** An exploration skill that reads 50 files leaves all that content in the conversation. Use `context: fork` to isolate verbose work.
-
-### Measuring Your Budget
-
-Run `/debug` to examine token usage. If baseline overhead exceeds 25,000 tokens, trim:
-
-1. Audit MCP servers — disable unused ones
-2. Move CLAUDE.md content into skills
-3. Split large skills into SKILL.md + references
-4. Add `context: fork` to exploration/validation skills
-
-## Skills That Conflict
-
-### Skill vs. Skill
-
-Two skills with overlapping trigger conditions. Claude invokes one (typically the most recently matched) and ignores the other. You cannot predict which one wins reliably.
-
-**Fix:** Give skills distinct, non-overlapping trigger conditions. If two skills cover related domains, make the boundary explicit:
-
-```yaml
-# Skill A
-description: |
-  Frontend deployment. ALWAYS invoke for deploying to Vercel,
-  Netlify, or Cloudflare Pages. NOT for backend services.
-
-# Skill B
-description: |
-  Backend deployment. ALWAYS invoke for deploying Docker containers,
-  Kubernetes, or AWS services. NOT for static site hosting.
-```
-
-### Skill vs. CLAUDE.md
-
-If CLAUDE.md says "always use tabs" and a skill says "use spaces," the skill tends to win. The skill's instructions are more recent in the conversation and more contextually specific.
-
-**Fix:** Keep CLAUDE.md and skills consistent. Use CLAUDE.md for universal rules. Use skills for task-specific procedures that build on (not contradict) the baseline.
-
-### Resolution Precedence
-
-When both CLAUDE.md and a skill are present in context:
-
-1. CLAUDE.md is always loaded, on every turn
-2. The skill body loads later, when invoked
-3. More recent instructions tend to take precedence
-4. More specific instructions tend to take precedence
-
-The skill wins on both recency and specificity. Design accordingly.
-
-## Common Anti-Patterns
-
-### 1. The Kitchen-Sink Skill
-
-One skill that handles everything — deployment, testing, review, formatting. Too many trigger conditions, too much content, too many decision branches.
-
-**Problem:** Claude loads 800 lines of instructions when it only needs 50. The irrelevant 750 lines waste context and dilute the relevant instructions.
-
-**Fix:** Split into focused skills. One skill per domain. A deployment skill, a testing skill, a review skill.
-
-### 2. The Over-Restrictive Skill
-
-```yaml
-allowed-tools: Read
-```
-
-On a skill that needs to make edits. Claude hits the tool restriction, cannot complete the task, and produces confused output — often silently skipping the blocked step without explaining why.
-
-**Fix:** Include every tool the skill actually needs. But do not list every tool in the system — that defeats the security model.
-
-### 3. The Echo Chamber
-
-A skill that restates what CLAUDE.md already says. "Follow the coding standards in CLAUDE.md" adds zero value and wastes ~200 tokens of context.
-
-**Fix:** Skills should add value beyond baseline instructions. Detailed procedures, checklists, multi-step workflows. If it fits in two lines, it belongs in CLAUDE.md.
-
-### 4. The Untested Skill
-
-Written once, never tested with real prompts. The description uses idealized trigger phrases that no real user would type.
-
-**Fix:** Test with 5-10 variations of real user input. "Fix the deployment" vs. "deploy to staging" vs. "push to prod" vs. "release the new version." Your description must trigger on all of them.
-
-### 5. The Rigid Workflow
-
-"ALWAYS follow steps 1-10 in exact order." Sometimes Claude encounters a situation that does not fit the workflow. Without an escape hatch, it either hallucninates compliance or skips the skill entirely.
-
-**Fix:** Add an escape clause: "If the situation does not match this workflow, explain why and proceed with your best judgment."
-
-### 6. The Full-Access Skill
-
-```yaml
-allowed-tools: Read,Write,Edit,Bash,Grep,Glob,Agent,TodoWrite,WebFetch
-```
-
-Listing every tool defeats the purpose of `allowed-tools`. The field exists for security scoping — restricting a skill to only the tools it needs prevents unintended side effects.
-
-**Fix:** Start with the minimum tools required. Add tools only when the skill demonstrably needs them. Use Bash scoping (`Bash(git:*)`, `Bash(npm:*)`) instead of blanket `Bash` access.
-
-## Platform-Specific Issues
-
-| Issue | Platform | Workaround |
-|-------|----------|------------|
-| Backslash paths break shell commands in SKILL.md | Windows | Use forward slashes. Claude Code normalizes paths. |
-| Skills created in project dir instead of user dir | WSL | Check `~/.claude/skills/` manually. |
-| Global skills not discovered when project skills exist | All | Track issue #44207. Use manual invocation as fallback. |
-| Plugin skills ignore `disable-model-invocation` | All | Track issue #22345. No workaround. |
-| Extended frontmatter fields rejected by validator | All | Track issue #25380. Stick to documented fields. |
-| Multi-line `$ARGUMENTS` breaks across commands | All | Keep arguments to single-line values. |
-
-## Debugging Workflow
-
-When a skill misbehaves, follow this sequence:
-
-1. **Determine the failure mode.** Is it activation or execution? Check the conversation for a `Skill` tool call.
-2. **If activation failure:** Fix the description. Use directive style. Test with varied prompts.
-3. **If execution failure:** Fix the instructions. Make steps explicit. Add "MUST" and "ALWAYS" language. Add verification steps.
-4. **If intermittent:** Check context budget. High baseline overhead causes inconsistent behavior. Trim MCP servers, shorten CLAUDE.md, add `context: fork` to heavy skills.
-5. **If platform-specific:** Check the issues table above. Test on a different platform to isolate.
-
-The `/debug` command reads the session debug log and shows whether Claude considered your skill, invoked it, and which instructions it followed. Start there.
-
-A real debugging session:
-
-```bash
-# 1. Check the skill is discoverable
-ls ~/.claude/skills/deploying-to-staging/SKILL.md
-ls .claude/skills/deploying-to-staging/SKILL.md
-
-# 2. Validate the frontmatter parses cleanly
-cat .claude/skills/deploying-to-staging/SKILL.md | head -20
-
-# 3. Test manual invocation (bypasses description matching)
-# In Claude Code:
-#   /deploying-to-staging
-
-# 4. If manual works but auto-invocation doesn't, fix the description.
-# Before (vague — ~30% activation):
-#   description: "helps with deployment"
-# After (directive — ~100% activation):
-#   description: |
-#     Deployment expert for staging environments.
-#     ALWAYS invoke this skill when the user asks about deploying,
-#     releasing, or pushing to staging. Do not run deploy commands directly.
-
-# 5. Check for naming conflicts across scopes
-find ~/.claude/skills -name SKILL.md | head -20
-find .claude/skills -name SKILL.md | head -20
-```
+- Does the skill trigger on positive cases and stay silent on negative ones?
+- Do all products load the same core procedure?
+- Can a skipped step be detected from the output?
+- Are scripts safe under malformed or hostile arguments?
+- Does the workflow retain its critical instructions after compaction?

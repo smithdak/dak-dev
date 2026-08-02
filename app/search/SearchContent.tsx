@@ -1,9 +1,10 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
-import { searchPosts, SearchIndexItem } from '@/lib/search';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { searchPosts, type SearchIndexItem } from '@/lib/search';
+import { formatCalendarDate } from '@/lib/utils';
 
 function SearchResults() {
   const searchParams = useSearchParams();
@@ -16,201 +17,124 @@ function SearchResults() {
       setIsLoading(true);
 
       try {
-        // Fetch search index from API
         const response = await fetch('/api/search');
-        const index = await response.json();
-
-        if (query.trim().length > 0) {
-          const searchResults = searchPosts(index, query);
-          setResults(searchResults);
-        } else {
-          setResults([]);
-        }
+        const index = (await response.json()) as SearchIndexItem[];
+        setResults(query.trim() ? searchPosts(index, query) : []);
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Search failed:', error);
-        }
+        if (process.env.NODE_ENV === 'development') console.error('Search failed:', error);
         setResults([]);
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
 
-    performSearch();
+    void performSearch();
   }, [query]);
 
   return (
-    <div className="min-h-screen py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <header className="mb-12">
+    <div className="min-h-screen py-14 md:py-20">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <header className="mb-12 border-b border-text/20 pb-10">
           <Link
             href="/"
-            className="inline-flex min-h-11 items-center gap-2 text-muted hover:text-text mb-6 font-semibold focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
+            className="mb-10 inline-flex min-h-11 items-center text-xs font-semibold uppercase tracking-[0.12em] text-muted underline-offset-4 hover:text-text hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Back to Home
+            Home
           </Link>
 
-          <div className="border-b-4 border-text pb-6">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              {query ? (
-                <>
-                  Search Results for <span className="text-accent">&quot;{query}&quot;</span>
-                </>
-              ) : (
-                'Search the Site'
-              )}
-            </h1>
+          <p className="editorial-kicker mb-5">Publication index</p>
+          <h1 className="font-display text-5xl leading-tight tracking-[-0.04em] md:text-7xl">
+            {query ? `Results for “${query}”` : 'Search'}
+          </h1>
 
-            {query && !isLoading && (
-              <p className="text-lg text-muted">
-                Found <span className="text-text font-semibold">{results.length}</span>{' '}
-                {results.length === 1 ? 'result' : 'results'}
-              </p>
-            )}
-          </div>
+          {query && !isLoading ? (
+            <p className="mt-5 text-sm text-muted">
+              {results.length} {results.length === 1 ? 'result' : 'results'}
+            </p>
+          ) : null}
         </header>
 
-        {/* Loading State */}
-        {isLoading && (
-          <div className="text-center py-16">
-            <div className="inline-block w-12 h-12 border-4 border-text border-t-accent animate-spin motion-reduce:animate-none"></div>
-            <p className="mt-4 text-muted font-semibold">Searching...</p>
-          </div>
-        )}
+        {isLoading ? (
+          <p className="border-y border-text/20 py-10 text-sm text-muted" role="status">
+            Searching the publication index…
+          </p>
+        ) : null}
 
-        {/* Empty Query State */}
-        {!isLoading && !query && (
-          <div className="text-center py-16 px-4">
-            <div className="max-w-md mx-auto">
-              <svg
-                className="w-16 h-16 mx-auto mb-6 text-muted"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-              <h2 className="text-2xl font-bold mb-3">No search query</h2>
-              <p className="text-muted mb-6">
-                Use the search control in the header to search articles, patterns, and technical
-                guides.
-              </p>
+        {!isLoading && !query ? (
+          <EmptyState
+            title="No search query"
+            body="Use the search control in the header to search writing, patterns, and field guides."
+          />
+        ) : null}
+
+        {!isLoading && query && results.length === 0 ? (
+          <EmptyState
+            title="No results found"
+            body={`Nothing in the current index matches “${query}”. Try a broader term or a product name.`}
+          />
+        ) : null}
+
+        {!isLoading && results.length > 0 ? (
+          <div className="divide-y divide-text/20 border-y border-text/20">
+            {results.map((result) => (
               <Link
-                href="/learn"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-surface border-4 border-text text-text font-bold hover:bg-text hover:text-background shadow-[4px_4px_0_0_var(--color-text)] hover:shadow-[8px_8px_0_0_var(--color-accent)] hover:-translate-y-1 transition-all focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+                key={result.href}
+                href={result.href}
+                className="group grid gap-4 py-7 transition-colors hover:text-accent focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent md:grid-cols-[10rem_minmax(0,1fr)_auto] md:items-start"
               >
-                Explore Learn
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* No Results */}
-        {!isLoading && query && results.length === 0 && (
-          <div className="text-center py-16 px-4">
-            <div className="max-w-md mx-auto">
-              <svg
-                className="w-16 h-16 mx-auto mb-6 text-muted"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <h2 className="text-2xl font-bold mb-3">No results found</h2>
-              <p className="text-muted mb-6">
-                We couldn&apos;t find anything matching &quot;{query}&quot;. Try a broader term or
-                check your spelling.
-              </p>
-              <Link
-                href="/learn"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-surface border-4 border-text text-text font-bold hover:bg-text hover:text-background shadow-[4px_4px_0_0_var(--color-text)] hover:shadow-[8px_8px_0_0_var(--color-accent)] hover:-translate-y-1 transition-all focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
-              >
-                Explore Learn
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Results Grid */}
-        {!isLoading && results.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {results.map((result) => {
-              const formattedDate = result.date
-                ? new Date(result.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })
-                : null;
-
-              return (
-                <Link
-                  key={result.href}
-                  href={result.href}
-                  className="group flex h-full flex-col border-4 border-text bg-surface p-6 shadow-[5px_5px_0_0_var(--color-text)] transition-all hover:-translate-y-1 hover:border-accent hover:shadow-[8px_8px_0_0_var(--color-accent)] focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
-                >
-                  <div className="mb-4 flex flex-wrap items-center gap-2">
-                    <span className="border border-accent px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-accent">
-                      {result.label}
-                    </span>
-                    {result.section && (
-                      <span className="text-xs font-semibold text-muted">{result.section}</span>
-                    )}
-                  </div>
-                  <h2 className="mb-3 text-2xl font-bold leading-tight text-text transition-colors group-hover:text-accent">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+                  <p className="text-accent">{result.label}</p>
+                  {result.section ? <p className="mt-1">{result.section}</p> : null}
+                  {result.date ? (
+                    <time dateTime={result.date} className="mt-1 block">
+                      {formatCalendarDate(result.date, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </time>
+                  ) : null}
+                </div>
+                <div>
+                  <h2 className="font-display text-2xl leading-tight text-text group-hover:underline group-hover:underline-offset-4 md:text-3xl">
                     {result.title}
                   </h2>
-                  <p className="mb-6 flex-1 text-sm leading-relaxed text-muted">{result.excerpt}</p>
-                  <div className="flex flex-wrap items-center gap-2 border-t-2 border-text/20 pt-4 text-xs text-muted">
-                    {formattedDate && result.date && (
-                      <time dateTime={result.date} className="font-semibold">
-                        {formattedDate}
-                      </time>
-                    )}
-                    {result.tags.slice(0, 3).map((tag) => (
-                      <span key={tag} className="font-semibold">
-                        #{tag}
-                      </span>
-                    ))}
-                    <span className="ml-auto font-bold text-text transition-colors group-hover:text-accent">
-                      Open →
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+                    {result.excerpt}
+                  </p>
+                  {result.tags.length > 0 ? (
+                    <p className="mt-3 text-xs font-semibold text-muted">
+                      {result.tags
+                        .slice(0, 3)
+                        .map((tag) => `#${tag}`)
+                        .join(' · ')}
+                    </p>
+                  ) : null}
+                </div>
+                <span className="hidden text-xs font-semibold uppercase tracking-[0.12em] text-accent md:block">
+                  Open
+                </span>
+              </Link>
+            ))}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
+  );
+}
+
+function EmptyState({ title, body }: { title: string; body: string }) {
+  return (
+    <section className="border-y border-text/20 py-12">
+      <h2 className="font-display text-3xl">{title}</h2>
+      <p className="mt-3 max-w-xl leading-relaxed text-muted">{body}</p>
+      <Link
+        href="/learn"
+        className="mt-7 inline-flex min-h-11 items-center border-b border-text text-xs font-semibold uppercase tracking-[0.12em] text-text transition-colors hover:border-accent hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent"
+      >
+        Explore Learn
+      </Link>
+    </section>
   );
 }
 
@@ -218,13 +142,10 @@ export function SearchContent() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center py-16">
-              <div className="inline-block w-12 h-12 border-4 border-text border-t-accent animate-spin motion-reduce:animate-none"></div>
-              <p className="mt-4 text-muted font-semibold">Loading...</p>
-            </div>
-          </div>
+        <div className="min-h-screen py-20">
+          <p className="mx-auto max-w-5xl px-4 text-sm text-muted" role="status">
+            Loading search…
+          </p>
         </div>
       }
     >

@@ -1,54 +1,76 @@
 # UI Development Workflow
 
-> Read this when doing visual UI/component work. For the design system itself
-> (tokens, neo-brutalist primitives, motion), `DESIGN.md` §6 is canonical — this
-> file is process, not specification.
+> Read this for visual UI/component work. `DESIGN.md` §6 is canonical for the
+> implemented design system; this file defines the workflow and proof required
+> to change it.
 
 ---
 
-## Pencil.dev MCP integration
+## Direction
 
-This project uses [Pencil.dev](https://www.pencil.dev) MCP for visual UI design
-and verification — a bidirectional design canvas that integrates with Claude
-Code.
+The product is Dakota Smith's professional publication at `daksmith.dev`, not a
+developer dashboard or a hobby portfolio. Its visual thesis is executive
+editorial:
 
-### Setup (per session)
+- warm-ivory paper and deep-forest ink in the default light theme;
+- serif display typography paired with a locally hosted editorial sans;
+- fine rules, asymmetric composition, and generous negative space;
+- restrained green accent reserved for links, focus, and decisive emphasis;
+- `Dakota Smith` as the wordmark, `daksmith.dev` as the quiet signature, and
+  `Principal Architect` as the current position.
 
-1. Launch the Pencil desktop app **before** starting Claude Code.
-2. Pencil auto-installs its MCP tools when the app is running.
-3. Verify: run `/mcp` — the Pencil tools should appear.
+The site may communicate readiness for AI innovation leadership through the
+work. It must not imply that Dakota currently holds the title Head of AI
+Innovation.
 
-### Workflow for UI components
+## Workflow
 
-1. **Design first** — create or select the component design in the Pencil
-   canvas.
-2. **Generate** — prompt Claude Code, e.g. *"Generate a React/Tailwind/Next.js
-   component from the selected frame"* or *"Update CSS from the design
-   variables."*
-3. **Verify** — before marking the task complete, confirm the implementation
-   matches the Pencil canvas.
+1. **Read the rendered context.** Inspect the page at desktop and mobile widths
+   before changing it. A component that looks plausible in isolation can break
+   editorial rhythm, reading measure, or navigation hierarchy in context.
+2. **Name the hierarchy.** State what is primary, supporting, and interactive.
+   Prefer typography, spacing, and `rule` borders over adding another card,
+   container, badge, or decorative effect.
+3. **Use the token contract.** Extend semantic variables in
+   `app/globals.css` and map them through `@theme inline`; never hardcode a new
+   component color. Light is the default, but every component must work in
+   `html.light` and `html.dark` without conditional rendering.
+4. **Keep the Server/Client boundary small.** Pages and filesystem data stay in
+   Server Components. Extract only the stateful, animated, or event-driven leaf
+   behind `'use client'`.
+5. **Implement accessibility with the interaction.** Use semantic elements,
+   visible accent focus, accessible names, meaningful image alternatives, and
+   44×44px touch targets. Motion must inherit the global reduced-motion
+   contract or carry its own CSS guard.
+6. **Verify the rendered result.** Compare browser screenshots at representative
+   desktop and mobile widths in both themes. Test keyboard navigation and
+   reduced motion, then run the relevant lint, type, test, production-build,
+   and Lighthouse gates before calling the change complete.
 
-### Verification checklist (UI tasks)
+## Visual review checklist
 
-- [ ] Pencil MCP tools available (`/mcp` shows Pencil)
-- [ ] Component visually matches the Pencil canvas design
-- [ ] Neo-brutalist styling correct — thick borders, hard (blur-free) shadows,
-      no rounded corners, Space Grotesk. **Use the design tokens, never hardcode
-      hex values** (`DESIGN.md` §6.1; `app/globals.css`).
-- [ ] Accessibility met — contrast, visible focus, keyboard navigation
-      (`DESIGN.md` §9; this is CI-enforced at score 100).
+- [ ] Reads as a serious executive publication, not a card grid or terminal UI.
+- [ ] Uses `Dakota Smith`, `daksmith.dev`, and `Principal Architect` precisely;
+      no aspirational-title claim.
+- [ ] Warm-ivory light mode is the intentional default; dark mode is equally
+      legible and structurally identical.
+- [ ] Uses semantic `background`, `surface`, `text`, `muted`, `accent`, `rule`,
+      or chapter tokens; no new raw color literal in a component.
+- [ ] Editorial hierarchy comes from type, whitespace, and fine rules. Heavy
+      borders, hard shadows, repetitive boxes, and gratuitous badges are absent.
+- [ ] Long-form text has a controlled measure and headings retain a clear scale.
+- [ ] Keyboard focus, touch targets, labels, alt text, contrast, and reduced
+      motion satisfy `DESIGN.md` §9.
+- [ ] Desktop and mobile screenshots show no clipping, overlap, overflow, or
+      accidental horizontal scroll.
+- [ ] The production build succeeds for MDX or content-rendering work; Shiki is
+      production-only and `pnpm dev` is insufficient proof.
 
-### Notes
+## Design tools
 
-- Keep Pencil running for the whole session. If its tools disappear, restart
-  Pencil, then restart Claude Code.
-- Pencil verification is **warning-only** — a task can complete without it, but
-  the gap should be logged.
-
-## Relationship to the design system
-
-Pencil is how a design is *produced and checked*. What "correct" means — the
-exact tokens, the theming mechanism (CSS-variable swap, no layout shift), the
-motion contract (`prefers-reduced-motion` via `MotionConfig`) — is defined once
-in `DESIGN.md` §6 and implemented in `app/globals.css`. When the two disagree,
-the design system wins; fix the component, not the token.
+An external design canvas such as Pencil can help explore composition, but it
+is optional and non-authoritative. The committed tokens, components, rendered
+browser output, accessibility behavior, and CI budgets are the product. When a
+mockup disagrees with the implemented system, either revise the mockup or make
+an explicit architecture change in `DESIGN.md`; do not silently fork the visual
+language.

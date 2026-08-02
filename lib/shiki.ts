@@ -1,5 +1,5 @@
 import { codeToHtml, BundledLanguage } from 'shiki';
-import { neoBrutalistTheme } from './shiki-theme';
+import { editorialCodeTheme } from './shiki-theme';
 
 // Cache for Shiki highlighter to avoid re-initialization
 let highlighterPromise: Promise<void> | null = null;
@@ -38,7 +38,7 @@ export function parseCodeMetadata(metastring: string = ''): CodeMetadata {
 
   if (rangeMatch) {
     const ranges = rangeMatch[1].split(',');
-    ranges.forEach(range => {
+    ranges.forEach((range) => {
       if (range.includes('-')) {
         const [start, end] = range.split('-').map(Number);
         for (let i = start; i <= end; i++) {
@@ -72,7 +72,7 @@ export async function highlightCode(
 
     const html = await codeToHtml(code, {
       lang: validLanguage,
-      theme: neoBrutalistTheme,
+      theme: editorialCodeTheme,
       defaultColor: false,
     });
 
@@ -84,7 +84,7 @@ export async function highlightCode(
     // Fallback to plain text if language is not supported
     return await codeToHtml(code, {
       lang: 'text',
-      theme: neoBrutalistTheme,
+      theme: editorialCodeTheme,
       defaultColor: false,
     });
   }

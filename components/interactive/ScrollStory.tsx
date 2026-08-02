@@ -87,7 +87,7 @@ export function ScrollStory({ steps, eyebrow }: ScrollStoryProps) {
           instead of relying on a stretched wrapper. This is robust inside
           nested grids — e.g. the harness page's outer lg:grid. */}
       <div
-        className="hidden border-4 border-text bg-surface/40 p-6 md:block md:self-start md:sticky md:top-28"
+        className="hidden border-y border-text/20 py-6 md:block md:self-start md:sticky md:top-28"
         aria-hidden="true"
       >
         {eyebrow && (
@@ -96,7 +96,7 @@ export function ScrollStory({ steps, eyebrow }: ScrollStoryProps) {
           </p>
         )}
         <div
-          className="font-mono text-7xl font-bold leading-none tabular-nums"
+          className="font-display text-7xl leading-none tabular-nums"
           style={{ color: 'var(--color-accent)' }}
         >
           {String(active + 1).padStart(2, '0')}
@@ -119,7 +119,7 @@ export function ScrollStory({ steps, eyebrow }: ScrollStoryProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
-              className="text-lg font-bold text-text"
+              className="font-display text-2xl text-text"
             >
               {parsed[active]?.title}
             </motion.p>
@@ -139,7 +139,7 @@ export function ScrollStory({ steps, eyebrow }: ScrollStoryProps) {
             ref={(el) => {
               itemRefs.current[i] = el;
             }}
-            className="border-l-4 pl-5 transition-colors duration-300"
+            className="border-l-2 pl-5 transition-colors duration-300"
             style={{
               borderColor:
                 i === active && !prefersReducedMotion
@@ -153,7 +153,7 @@ export function ScrollStory({ steps, eyebrow }: ScrollStoryProps) {
             >
               {String(i + 1).padStart(2, '0')}
             </p>
-            <h3 className="mb-3 text-2xl font-bold tracking-tight text-text">{step.title}</h3>
+            <h3 className="mb-3 font-display text-3xl tracking-tight text-text">{step.title}</h3>
             <p className="leading-relaxed text-muted">{step.body}</p>
           </li>
         ))}

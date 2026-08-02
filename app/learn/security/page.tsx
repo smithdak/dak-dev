@@ -63,7 +63,7 @@ export default function SecurityIndexPage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0">
         <nav
           aria-label="Jump to section"
-          className="flex flex-wrap gap-4 mb-12"
+          className="mb-14 flex flex-wrap gap-x-6 gap-y-2 border-y border-text/20 py-4"
         >
           {[
             { num: '01', label: 'Chapters', href: '#chapters' },
@@ -72,7 +72,7 @@ export default function SecurityIndexPage() {
             <Link
               key={j.href}
               href={j.href}
-              className="inline-flex items-center gap-3 px-6 py-3 border-2 border-text/30 bg-transparent text-muted font-bold text-sm uppercase tracking-wider hover:border-text hover:text-text hover:bg-surface hover:shadow-[4px_4px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+              className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted underline-offset-4 hover:text-text hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <span className="text-accent/60 font-mono" aria-hidden="true">
                 {j.num}
@@ -82,28 +82,20 @@ export default function SecurityIndexPage() {
           ))}
         </nav>
 
-        <section
-          id="chapters"
-          aria-labelledby="chapters-heading"
-          className="scroll-mt-20"
-        >
-          <div className="border-l-8 border-l-chapter-6 border-b-2 border-text/30 pl-5 pb-4 mb-8">
-            <h2
-              id="chapters-heading"
-              className="text-2xl md:text-3xl font-bold tracking-tight"
-            >
+        <section id="chapters" aria-labelledby="chapters-heading" className="scroll-mt-20">
+          <div className="mb-8 grid gap-4 border-b border-text/20 pb-6 md:grid-cols-[minmax(0,1fr)_minmax(18rem,1fr)] md:items-end">
+            <h2 id="chapters-heading" className="font-display text-4xl tracking-tight md:text-5xl">
               The Eight Chapters
             </h2>
             <p className="text-sm text-muted mt-2 max-w-3xl leading-relaxed">
-              Front to back: the risks first, then the threat model, then the
-              defenses. It cuts across the other three pillars, not beside them.
+              Front to back: the risks first, then the threat model, then the defenses. It cuts
+              across the other three pillars, not beside them.
             </p>
           </div>
 
-          {/* Sequenced spine — the numbers ride the rail, conveying order */}
-          <div className="relative border-l-2 border-chapter-6/25 pl-4 sm:pl-6">
+          <div>
             <ScrollReveal stagger>
-              <div className="space-y-3">
+              <div>
                 {chapters.map((chapter) => (
                   <ScrollRevealItem key={chapter.slug}>
                     <SectionCard

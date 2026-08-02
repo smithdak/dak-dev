@@ -1,74 +1,84 @@
-import { getAllPosts } from '@/lib/posts';
-import { getPaginatedPosts } from '@/lib/pagination';
-import { getTagCounts } from '@/lib/tags';
-import { Card } from '@/components/ui/Card';
-import { BlogFilters } from '@/components/blog/BlogFilters';
+import { ArticleLead } from '@/components/blog/ArticleLead';
+import { ArticleLedger } from '@/components/blog/ArticleLedger';
 import { Pagination } from '@/components/blog/Pagination';
-import { PageTransition } from '@/components/ui/PageTransition';
+import { ResearchLanes } from '@/components/blog/ResearchLanes';
+import { TopicIndex } from '@/components/blog/TopicIndex';
+import { getPaginatedPosts } from '@/lib/pagination';
+import { getAllPosts } from '@/lib/posts';
+import { getTagCounts } from '@/lib/tags';
+import { splitWritingPosts } from '@/lib/writing';
 
 export const metadata = {
-  title: 'Blog',
-  description: 'Tech articles and engineering insights from Dakota Smith.',
+  title: 'Writing',
+  description:
+    'Analysis of accountable AI systems, agentic engineering, architecture, and durable delivery.',
   alternates: { canonical: '/blog' },
 };
 
-export default async function BlogPage() {
-  const allPosts = await getAllPosts();
-  const paginationData = getPaginatedPosts(allPosts, 1); // Page 1
+export default function BlogPage() {
+  const allPosts = getAllPosts();
+  const { lead, archive } = splitWritingPosts(allPosts);
+  const paginationData = getPaginatedPosts(archive, 1);
   const tagCounts = Object.fromEntries(getTagCounts(allPosts));
 
   return (
-    <PageTransition className="min-h-screen py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <header className="mb-12 border-b-4 border-text pb-8">
-          <h1 className="text-5xl font-bold mb-4">Blog</h1>
-          <p className="text-xl text-muted max-w-2xl">
-            15 years of shipping production systems and leading engineering teams. Real code, real metrics, and the tradeoffs behind every decision.
-          </p>
-          {paginationData.totalPosts > 0 && (
-            <p className="text-sm text-muted mt-4">
-              {paginationData.totalPosts} total post
-              {paginationData.totalPosts !== 1 ? 's' : ''}
+    <div className="min-h-screen py-12 md:py-16 lg:py-20">
+      <div className="site-stage">
+        <header className="grid gap-7 pb-10 md:grid-cols-[minmax(0,1fr)_minmax(20rem,0.65fr)] md:items-end md:pb-14">
+          <h1 className="font-display text-6xl leading-none tracking-[-0.04em] sm:text-7xl lg:text-[5.5rem]">
+            Writing
+          </h1>
+          <div>
+            <p className="max-w-xl text-lg leading-relaxed text-muted">
+              Analysis of agentic systems, accountable delivery, and the architecture required to
+              move AI work beyond the prototype.
             </p>
-          )}
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.11em] text-muted">
+              {allPosts.length} published {allPosts.length === 1 ? 'analysis' : 'analyses'}
+            </p>
+          </div>
         </header>
 
-        {/* Tag Filter Bar */}
-        <BlogFilters tagCounts={tagCounts} className="mb-12" />
+        <div className="grid items-start xl:grid-cols-[minmax(0,5fr)_minmax(18rem,1fr)]">
+          {lead ? <ArticleLead post={lead} /> : null}
+          <ResearchLanes tagCounts={tagCounts} />
+        </div>
 
-        {/* Posts Grid */}
-        {paginationData.posts.length > 0 ? (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {paginationData.posts.map((post) => (
-                <Card
-                  key={post.frontmatter.slug}
-                  title={post.frontmatter.title}
-                  excerpt={post.frontmatter.excerpt}
-                  slug={post.frontmatter.slug}
-                  thumbnail={post.frontmatter.thumbnail}
-                  date={post.frontmatter.date}
-                  readingTime={post.readingTime}
-                  tags={post.frontmatter.tags}
-                />
-              ))}
-            </div>
-
-            {/* Pagination */}
-            <Pagination
-              currentPage={paginationData.currentPage}
-              totalPages={paginationData.totalPages}
-              basePath="/blog"
-            />
-          </>
-        ) : (
-          <div className="border-4 border-text p-12 text-center">
-            <p className="text-2xl font-semibold mb-2">No posts yet</p>
-            <p className="text-muted">Check back soon for new content.</p>
+        <section
+          id="latest-analysis"
+          aria-labelledby="latest-analysis-heading"
+          className="pt-12 md:pt-16"
+        >
+          <div className="mb-8 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(16rem,0.6fr)] md:items-end">
+            <h2
+              id="latest-analysis-heading"
+              className="font-display text-4xl leading-none tracking-[-0.03em] md:text-5xl"
+            >
+              Latest analysis
+            </h2>
+            <p className="text-sm leading-relaxed text-muted md:text-right">
+              A chronological record. The lead essay is held above and does not repeat here.
+            </p>
           </div>
-        )}
+
+          {paginationData.posts.length > 0 ? (
+            <>
+              <ArticleLedger posts={paginationData.posts} />
+              <Pagination
+                currentPage={paginationData.currentPage}
+                totalPages={paginationData.totalPages}
+                basePath="/blog"
+              />
+            </>
+          ) : (
+            <div className="border-y border-rule py-14">
+              <p className="font-display text-3xl">The archive is being prepared.</p>
+            </div>
+          )}
+        </section>
+
+        <TopicIndex tagCounts={tagCounts} className="mt-16 md:mt-20" />
       </div>
-    </PageTransition>
+    </div>
   );
 }

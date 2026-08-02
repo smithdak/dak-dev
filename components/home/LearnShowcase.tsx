@@ -142,7 +142,7 @@ export function LearnShowcase() {
         <ScrollReveal>
           <Link
             href="/learn/start"
-            className="group mb-8 inline-flex flex-col items-start gap-1 border-2 border-text border-l-4 border-l-chapter-5 bg-surface/40 px-4 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_var(--color-chapter-5)] focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+            className="group mb-8 inline-flex flex-col items-start gap-1 border-2 border-text border-l border-l-chapter-5 bg-surface/40 px-4 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_var(--color-chapter-5)] focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
           >
             <span className="text-xs font-bold uppercase tracking-widest text-chapter-5">
               New here?

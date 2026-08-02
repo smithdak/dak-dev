@@ -26,7 +26,37 @@ export function formatDate(
     day: 'numeric',
   }
 ): string {
-  return new Date(dateString).toLocaleDateString('en-US', options);
+  return formatCalendarDate(dateString, options);
+}
+
+/**
+ * Format an editorial calendar date without letting the viewer's timezone
+ * shift it to the previous day. `YYYY-MM-DD` frontmatter is a date, not a
+ * midnight UTC instant.
+ */
+export function formatCalendarDate(
+  dateString: string,
+  options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }
+): string {
+  const calendarDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+  const date = calendarDate
+    ? new Date(
+        Date.UTC(Number(calendarDate[1]), Number(calendarDate[2]) - 1, Number(calendarDate[3]))
+      )
+    : new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) {
+    throw new RangeError(`Invalid date: ${dateString}`);
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    ...options,
+    ...(calendarDate ? { timeZone: 'UTC' } : {}),
+  }).format(date);
 }
 
 /**

@@ -1,0 +1,49 @@
+---
+title: 'Project Instructions: Playbook'
+topic: 'project-instructions'
+subPage: 'playbook'
+order: 3
+description: 'A production playbook for one canonical repository contract with thin Claude Code, Codex, and Copilot adapters.'
+relatedPatterns: ['convention-file', 'context-priming']
+relatedTopics: ['skills', 'hooks', 'settings']
+published: true
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-memory', 'codex-agents-md', 'copilot-instructions-cli', 'copilot-instructions-support']
+keywords:
+  ['project instructions playbook', 'multi-agent repository instructions', 'AGENTS.md', 'CLAUDE.md']
+---
+
+# Playbook
+
+## 1. Write the Canonical Contract
+
+Keep one reviewed source for facts that every coding agent needs:
+
+- Architecture and trust boundaries.
+- Toolchain versions and exact verification commands.
+- Server/client or module ownership rules.
+- Completion evidence and prohibited shortcuts.
+- Actions that require human confirmation.
+
+Write rules as testable outcomes. “Follow best practices” is not a contract. “Run `pnpm build` before claiming MDX work is complete” is.
+
+## 2. Separate Stable from Procedural Context
+
+Stable repository facts belong in the always-loaded layer. Multi-step procedures belong in skills. Recent project state belongs in a tracked work system or memory with a freshness marker. Long reference material belongs behind an explicit link.
+
+## 3. Add Product Adapters
+
+- Map the canonical repository contract into `CLAUDE.md` for Claude Code.
+- Map it into `AGENTS.md` scope for Codex.
+- Map it into the Copilot instruction formats consumed by each supported surface.
+
+Adapters may add product-specific controls, but they must not redefine the underlying policy. Generate them when practical; otherwise review them together.
+
+## 4. Test Discovery
+
+For every supported surface, ask the agent to report which instruction sources loaded and how it resolved a nested rule. Test from the repository root and a scoped subdirectory. Repeat after compaction or session resume.
+
+## 5. Verify the Boundary
+
+Deliberately request a prohibited action in an isolated test repository. Confirm that independent permissions or gates—not instruction compliance alone—prevent the outcome.

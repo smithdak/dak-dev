@@ -1,5 +1,5 @@
 import { createHighlighter, type Highlighter } from 'shiki';
-import { neoBrutalistTheme } from './shiki-theme';
+import { editorialCodeTheme } from './shiki-theme';
 
 const globalForShiki = globalThis as unknown as {
   __shikiHighlighter?: Promise<Highlighter>;
@@ -8,7 +8,7 @@ const globalForShiki = globalThis as unknown as {
 export function getHighlighterInstance(): Promise<Highlighter> {
   if (!globalForShiki.__shikiHighlighter) {
     globalForShiki.__shikiHighlighter = createHighlighter({
-      themes: [neoBrutalistTheme],
+      themes: [editorialCodeTheme],
       langs: [
         'typescript',
         'javascript',

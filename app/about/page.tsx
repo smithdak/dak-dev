@@ -1,143 +1,270 @@
-import { PageTransition } from '@/components/ui/PageTransition';
+import Link from 'next/link';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { generateResumeSchema, generateBreadcrumbSchema } from '@/lib/schema';
-import { ScrollReveal } from '@/components/ui/ScrollReveal';
-import { getAllProducts } from '@/lib/products';
-import { ProjectTable } from '@/components/about/ProjectTable';
+import { generateBreadcrumbSchema, generatePersonSchema } from '@/lib/schema';
 
 export const metadata = {
-  title: 'About | Dakota Smith',
+  title: 'About',
   description:
-    'Principal architect building agentic systems, delivery harnesses, developer tools, and enterprise platforms.',
+    'About Dakota Smith, a Principal Architect working across agentic systems, innovation strategy, and accountable delivery.',
+  alternates: { canonical: '/about' },
 };
 
-export default async function AboutPage() {
-  const products = await getAllProducts();
-  const resumeSchema = generateResumeSchema();
+const focusAreas = [
+  {
+    title: 'Agentic systems architecture',
+    description:
+      'Designing the boundaries, tools, context, and control structures that make an agent useful beyond a single impressive run.',
+  },
+  {
+    title: 'Accountable delivery',
+    description:
+      'Connecting implementation to evidence, review, policy, and release decisions so change can be understood and governed.',
+  },
+  {
+    title: 'AI innovation strategy',
+    description:
+      'Translating emerging capability into durable operating models rather than treating adoption as a sequence of tool purchases.',
+  },
+] as const;
+
+const operatingPrinciples = [
+  {
+    title: 'Start with the system',
+    description:
+      'A model sits inside architecture, permissions, evidence, security, and change control. The surrounding system determines whether capability becomes dependable work.',
+  },
+  {
+    title: 'Keep proof attached',
+    description:
+      'Documented capability, observed behavior, and production evidence are different claims. The distinction should remain visible when decisions are made.',
+  },
+  {
+    title: 'Design for replacement',
+    description:
+      'Models and tools will change. Durable boundaries, explicit contracts, and portable operating rules keep the work from depending on one vendor moment.',
+  },
+] as const;
+
+export default function AboutPage() {
+  const personSchema = generatePersonSchema();
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: '/' },
     { name: 'About' },
   ]);
 
   return (
-    <PageTransition className="min-h-screen py-16">
-      <JsonLd data={resumeSchema} />
+    <div className="min-h-screen">
+      <JsonLd data={personSchema} />
       <JsonLd data={breadcrumbSchema} />
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* ── HERO: INFO + CONTACT ── */}
-        <ScrollReveal>
-          <section className="mb-16 md:mb-20" aria-label="About Dakota Smith">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-12 md:gap-16 items-start">
-              {/* Left — Identity */}
-              <div>
-                <h1 className="text-5xl md:text-6xl font-bold mb-2">Dakota Smith</h1>
-                <p className="text-lg text-accent font-semibold mb-8">
-                  Principal Architect for Agentic Systems
-                </p>
-                <div className="h-[3px] w-16 bg-accent mb-8" aria-hidden="true" />
-                <p className="text-lg text-muted leading-relaxed max-w-2xl">
-                  I build agentic systems, delivery harnesses, enterprise web platforms, and
-                  developer tools with a focus on accountable change. My foundation is fifteen years
-                  in .NET and CMS ecosystems; today, much of that work also runs through TypeScript,
-                  React, and multi-model delivery systems. I care about clean architecture,
-                  accessible interfaces, and evidence that lets people decide whether a change is
-                  ready—not just whether an agent says it is done.
-                </p>
-              </div>
 
-              {/* Right — Contact */}
-              <div id="contact" className="md:pt-2">
-                <div className="border-2 border-text/20 bg-surface p-6 shadow-[4px_4px_0_0_var(--color-accent)]">
-                  <p className="text-sm font-bold uppercase tracking-widest text-muted mb-5">
-                    Get in touch
-                  </p>
-                  <div className="flex flex-col gap-4">
-                    <a
-                      href="mailto:dakota@twofold.tech"
-                      className="inline-flex items-center gap-3 px-6 py-3.5 text-lg bg-accent text-background font-bold border-2 border-text shadow-[3px_3px_0_0_var(--color-text)] hover:shadow-[5px_5px_0_0_var(--color-text)] hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
-                      aria-label="Send email to dakota@twofold.tech"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                        />
-                      </svg>
-                      dakota@twofold.tech
-                    </a>
-                    <div className="flex gap-3">
-                      <a
-                        href="https://github.com/smithdak"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center w-12 h-12 border-2 border-text/30 text-muted hover:text-accent hover:border-accent transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
-                        aria-label="GitHub profile"
-                      >
-                        <svg
-                          className="w-6 h-6"
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </a>
-                      <a
-                        href="https://linkedin.com/in/dakota-smith-a855b230"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center w-12 h-12 border-2 border-text/30 text-muted hover:text-accent hover:border-accent transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
-                        aria-label="LinkedIn profile"
-                      >
-                        <svg
-                          className="w-6 h-6"
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                          aria-hidden="true"
-                        >
-                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </ScrollReveal>
+      <header className="border-b border-rule">
+        <div className="site-stage grid gap-8 py-16 md:py-20 lg:grid-cols-12 lg:gap-8 lg:py-24 xl:gap-10">
+          <div className="lg:col-span-7">
+            <h1 className="text-balance max-w-[13ch] font-serif text-[clamp(3.25rem,6vw,5.75rem)] font-medium leading-[0.96] tracking-[-0.04em] text-text">
+              Architecture is how AI change becomes accountable.
+            </h1>
+            <p className="mt-8 text-xl font-semibold text-accent">Dakota Smith</p>
+            <p className="mt-1 text-base text-muted">Principal Architect</p>
+          </div>
 
-        {/* ── BUILDS ── */}
-        <ScrollReveal>
-          <section id="tools" className="mb-12" aria-label="Builds">
-            <div className="flex items-center gap-4 mb-6">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-muted flex-shrink-0">
-                Builds
-              </h2>
-              <div className="h-px flex-1 bg-text/20" aria-hidden="true" />
+          <div className="flex flex-col justify-end border-t border-rule pt-6 lg:col-span-5 lg:border-t-0 lg:pt-0 lg:pl-12 xl:pl-20">
+            <p className="max-w-[42ch] text-xl leading-[1.55] text-text">
+              I build agentic systems, delivery harnesses, enterprise web platforms, and developer
+              tools. The aim is not to make a model look capable. It is to make the surrounding
+              system observable, governable, and safe to change.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+              <Link
+                href="/work"
+                className="inline-flex min-h-12 items-center justify-center bg-accent px-6 py-3 font-semibold text-background transition-colors hover:bg-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+              >
+                View the work
+              </Link>
+              <a
+                href="mailto:dakota@twofold.tech"
+                className="editorial-link inline-flex min-h-12 items-center font-semibold text-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+              >
+                Start a conversation
+              </a>
             </div>
-            {products.length > 0 ? (
-              <ProjectTable products={products} />
-            ) : (
-              <div className="border-2 border-text/20 p-12 text-center">
-                <p className="text-2xl font-semibold mb-2">Nothing here yet</p>
-                <p className="text-muted">Check back soon.</p>
+          </div>
+        </div>
+      </header>
+
+      <section className="border-b border-rule py-14 md:py-18" aria-labelledby="practice-heading">
+        <div className="site-stage grid gap-12 lg:grid-cols-[0.68fr_1.32fr] lg:gap-24">
+          <div>
+            <h2
+              id="practice-heading"
+              className="text-balance font-serif text-[clamp(2.7rem,4vw,4.25rem)] font-medium leading-[1.02] tracking-[-0.035em] text-text"
+            >
+              The practice
+            </h2>
+            <p className="mt-6 max-w-[34ch] text-lg leading-relaxed text-muted">
+              The work joins technical architecture with the operating decisions that determine
+              whether AI-enabled change can be trusted.
+            </p>
+          </div>
+
+          <div className="border-t border-rule">
+            {focusAreas.map((area) => (
+              <article
+                key={area.title}
+                className="grid gap-3 border-b border-rule py-7 sm:grid-cols-[minmax(11rem,0.72fr)_minmax(0,1.28fr)] sm:gap-10"
+              >
+                <h3 className="text-lg font-semibold leading-snug text-text">{area.title}</h3>
+                <p className="max-w-[56ch] leading-7 text-muted">{area.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-surface py-16 md:py-24" aria-labelledby="principles-heading">
+        <div className="site-stage">
+          <div className="grid gap-10 border-b border-rule pb-12 lg:grid-cols-[1.2fr_0.8fr] lg:gap-24 lg:pb-16">
+            <h2
+              id="principles-heading"
+              className="text-balance max-w-[17ch] font-serif text-[clamp(2.75rem,4.8vw,5rem)] font-medium leading-[0.98] tracking-[-0.04em] text-text"
+            >
+              The system around the model is the real work.
+            </h2>
+            <p className="self-end max-w-[42ch] text-lg leading-relaxed text-muted">
+              Capability matters. So do authority, provenance, isolation, verification, and the
+              human decision that releases a change. These principles keep those concerns in the
+              architecture rather than in the afterthoughts.
+            </p>
+          </div>
+
+          <dl className="grid gap-x-14 border-b border-rule lg:grid-cols-3">
+            {operatingPrinciples.map((principle) => (
+              <div
+                key={principle.title}
+                className="border-b border-rule py-8 last:border-b-0 lg:border-b-0"
+              >
+                <dt className="text-lg font-semibold text-text">{principle.title}</dt>
+                <dd className="mt-4 max-w-[42ch] leading-7 text-muted">{principle.description}</dd>
               </div>
-            )}
-          </section>
-        </ScrollReveal>
-      </div>
-    </PageTransition>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      <section className="border-y border-rule py-12 md:py-16" aria-labelledby="context-heading">
+        <div className="site-stage grid gap-12 lg:grid-cols-[0.68fr_1.32fr] lg:gap-24">
+          <h2
+            id="context-heading"
+            className="font-serif text-[clamp(2.6rem,3.8vw,4rem)] font-medium leading-none tracking-[-0.035em] text-text"
+          >
+            Professional trajectory
+          </h2>
+          <dl className="border-t border-rule">
+            <div className="grid gap-3 border-b border-rule py-7 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-10">
+              <dt className="text-sm font-semibold text-text">Foundation</dt>
+              <dd>
+                <p className="max-w-[66ch] text-lg leading-8 text-text/85">
+                  Enterprise platform architecture across .NET, CMS, TypeScript, and React.
+                </p>
+                <Link
+                  href="/work"
+                  className="editorial-link mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-accent"
+                >
+                  Inspect the systems record
+                </Link>
+              </dd>
+            </div>
+            <div className="grid gap-3 border-b border-rule py-7 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-10">
+              <dt className="text-sm font-semibold text-text">Current practice</dt>
+              <dd>
+                <p className="max-w-[66ch] text-lg leading-8 text-text/85">
+                  Agentic systems and delivery harnesses that keep state, evidence, policy, and
+                  consequential authority outside the model session.
+                </p>
+                <Link
+                  href="/blog/agent-delivery-harness"
+                  className="editorial-link mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-accent"
+                >
+                  Read the current position
+                </Link>
+              </dd>
+            </div>
+            <div className="grid gap-3 border-b border-rule py-7 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-10">
+              <dt className="text-sm font-semibold text-text">Direction</dt>
+              <dd>
+                <p className="max-w-[66ch] text-lg leading-8 text-text/85">
+                  Building toward AI innovation leadership by turning emerging capability into
+                  durable operating models.
+                </p>
+                <p className="mt-3 text-sm font-semibold text-muted">
+                  Current position <span aria-hidden="true">·</span> Principal Architect
+                </p>
+                <Link
+                  href="/learn"
+                  className="editorial-link mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-accent"
+                >
+                  Explore the field guide
+                </Link>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section
+        id="contact"
+        className="scroll-mt-24 py-14 md:py-18"
+        aria-labelledby="contact-heading"
+      >
+        <div className="site-stage grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-24">
+          <div>
+            <h2
+              id="contact-heading"
+              className="text-balance max-w-[13ch] font-serif text-[clamp(3rem,5vw,5.25rem)] font-medium leading-[0.98] tracking-[-0.04em] text-text"
+            >
+              Continue with the work—or the conversation.
+            </h2>
+          </div>
+          <div className="self-end border-t border-rule pt-7">
+            <p className="max-w-[42ch] leading-7 text-muted">
+              The Work index is the concrete record. Email is the direct route for professional
+              conversations; GitHub and LinkedIn provide the broader public context.
+            </p>
+            <nav
+              aria-label="About page contact links"
+              className="mt-8 flex flex-wrap gap-x-8 gap-y-4"
+            >
+              <Link
+                href="/work"
+                className="editorial-link inline-flex min-h-11 items-center font-semibold text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+              >
+                Work
+              </Link>
+              <a
+                href="mailto:dakota@twofold.tech"
+                className="editorial-link inline-flex min-h-11 items-center font-semibold text-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+              >
+                Email
+              </a>
+              <a
+                href="https://github.com/smithdak"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="editorial-link inline-flex min-h-11 items-center font-semibold text-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+              >
+                GitHub (external)
+              </a>
+              <a
+                href="https://linkedin.com/in/dakota-smith-a855b230"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="editorial-link inline-flex min-h-11 items-center font-semibold text-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+              >
+                LinkedIn (external)
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }

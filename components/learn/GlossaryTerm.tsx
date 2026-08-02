@@ -11,6 +11,8 @@ interface GlossaryTermProps {
   children?: ReactNode;
 }
 
+type PanelPlacement = 'left-below' | 'right-below' | 'left-above' | 'right-above' | 'viewport';
+
 function childText(node: ReactNode): string {
   if (typeof node === 'string') return node;
   if (typeof node === 'number') return String(node);
@@ -35,6 +37,7 @@ export function GlossaryTerm({ term, children }: GlossaryTermProps) {
   const entry = GLOSSARY_TERMS.find((t) => t.term.toLowerCase() === key);
 
   const [open, setOpen] = useState(false);
+  const [panelPlacement, setPanelPlacement] = useState<PanelPlacement>('left-below');
   const wrapRef = useRef<HTMLSpanElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
@@ -52,11 +55,16 @@ export function GlossaryTerm({ term, children }: GlossaryTermProps) {
         setOpen(false);
       }
     }
+    function onResize() {
+      setOpen(false);
+    }
     document.addEventListener('keydown', onKey);
     document.addEventListener('mousedown', onPointer);
+    window.addEventListener('resize', onResize);
     return () => {
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('mousedown', onPointer);
+      window.removeEventListener('resize', onResize);
     };
   }, [open]);
 
@@ -65,6 +73,38 @@ export function GlossaryTerm({ term, children }: GlossaryTermProps) {
 
   const anchor = `/learn/start/decoder#term-${slugify(entry.term)}`;
 
+  function handleToggle() {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+
+    const button = btnRef.current;
+    if (!button) return;
+
+    const rect = button.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const panelWidth = Math.min(288, Math.max(0, viewportWidth - 32));
+    const panelHeight = Math.min(280, Math.max(0, viewportHeight - 32));
+    const canAlignLeft = viewportWidth - rect.left >= panelWidth + 16;
+    const canAlignRight = rect.right >= panelWidth + 16;
+    const canOpenBelow = viewportHeight - rect.bottom >= panelHeight + 8;
+    const canOpenAbove = rect.top >= panelHeight + 8;
+
+    if (viewportWidth < 640 || viewportHeight < 480 || (!canAlignLeft && !canAlignRight)) {
+      setPanelPlacement('viewport');
+    } else if (canOpenBelow) {
+      setPanelPlacement(canAlignLeft ? 'left-below' : 'right-below');
+    } else if (canOpenAbove) {
+      setPanelPlacement(canAlignLeft ? 'left-above' : 'right-above');
+    } else {
+      setPanelPlacement('viewport');
+    }
+
+    setOpen(true);
+  }
+
   return (
     <span ref={wrapRef} className="relative inline-block">
       <button
@@ -72,7 +112,7 @@ export function GlossaryTerm({ term, children }: GlossaryTermProps) {
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen((o) => !o)}
+        onClick={handleToggle}
         className="inline cursor-help border-0 bg-transparent p-0 font-[inherit] text-[length:inherit] leading-[inherit] text-text underline decoration-dotted decoration-chapter-5 decoration-2 underline-offset-4 hover:decoration-solid focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
       >
         {children}
@@ -81,7 +121,17 @@ export function GlossaryTerm({ term, children }: GlossaryTermProps) {
         <span
           id={panelId}
           role="note"
-          className="not-prose absolute left-0 top-full z-50 mt-2 block w-72 max-w-[calc(100vw-2rem)] border-2 border-chapter-5 bg-surface p-4 text-left shadow-[4px_4px_0_0_var(--color-text)]"
+          className={`not-prose z-50 block max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain border border-text/20 bg-background p-4 text-left shadow-xl ${
+            panelPlacement === 'viewport'
+              ? 'fixed inset-x-4 bottom-4 top-auto w-auto max-w-none'
+              : panelPlacement === 'right-above'
+                ? 'absolute bottom-full right-0 mb-2 w-72 max-w-[calc(100vw-2rem)]'
+                : panelPlacement === 'left-above'
+                  ? 'absolute bottom-full left-0 mb-2 w-72 max-w-[calc(100vw-2rem)]'
+                  : panelPlacement === 'right-below'
+                    ? 'absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-2rem)]'
+                    : 'absolute left-0 top-full mt-2 w-72 max-w-[calc(100vw-2rem)]'
+          }`}
         >
           <span className="mb-1 block font-mono text-sm font-bold text-chapter-5">
             {entry.term}
@@ -92,7 +142,7 @@ export function GlossaryTerm({ term, children }: GlossaryTermProps) {
             href={anchor}
             className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-chapter-5 underline decoration-2 underline-offset-2 hover:decoration-4 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
           >
-            Full definition →
+            Full definition
           </Link>
         </span>
       )}

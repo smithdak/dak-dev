@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { SECTION_THEME, type SectionColor } from './sectionTheme';
 
 interface ConnectLink {
@@ -16,50 +15,40 @@ interface SectionConnectsProps {
   links: ConnectLink[];
 }
 
-/**
- * The cross-link grid that keeps the four pillars one system, not four silos.
- * Section-coloured header rule; reveals on scroll. Shared by all three
- * sections so "Where This Connects" reads identically everywhere.
- */
+/** Cross-references the four Learn fields without turning them into a card wall. */
 export function SectionConnects({ id, color, heading, intro, links }: SectionConnectsProps) {
-  const t = SECTION_THEME[color];
+  const theme = SECTION_THEME[color];
   const headingId = `${id}-heading`;
 
   return (
-    <section
-      id={id}
-      aria-labelledby={headingId}
-      className="mt-20 px-4 sm:px-6 lg:px-0 scroll-mt-20"
-    >
-      <ScrollReveal>
-        <div className={`border-l-8 ${t.borderLeft} border-b-2 border-text/30 pl-5 pb-4 mb-8`}>
-          <h2 id={headingId} className="text-2xl md:text-3xl font-bold tracking-tight">
+    <section id={id} aria-labelledby={headingId} className="mt-24 scroll-mt-24">
+      <div className="grid gap-8 border-t border-text/20 pt-7 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-14">
+        <div>
+          <h2
+            id={headingId}
+            className="font-display text-3xl leading-tight tracking-tight md:text-4xl"
+          >
             {heading}
           </h2>
-          <p className="text-sm text-muted mt-2 max-w-3xl leading-relaxed">{intro}</p>
+          <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">{intro}</p>
         </div>
-      </ScrollReveal>
 
-      <ScrollReveal>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {links.map((c) => (
-            <Link
-              key={c.href}
-              href={c.href}
-              className="group flex items-center justify-between gap-3 border-2 border-text/30 bg-surface/40 px-4 py-3 transition-all duration-150 hover:border-text hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_var(--color-text)] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
-            >
-              <span className="text-sm font-semibold truncate group-hover:text-accent transition-colors">
-                {c.label}
-              </span>
-              <span
-                className={`text-[10px] font-mono uppercase tracking-widest ${t.text} shrink-0`}
+        <ul className="border-t border-text/20">
+          {links.map((link) => (
+            <li key={link.href} className="border-b border-text/20">
+              <Link
+                href={link.href}
+                className="group grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-5 py-4 transition-colors hover:text-accent focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent"
               >
-                {c.kind}
-              </span>
-            </Link>
+                <span className="font-display text-xl leading-tight group-hover:underline group-hover:underline-offset-4">
+                  {link.label}
+                </span>
+                <span className={`text-xs font-semibold ${theme.text}`}>{link.kind}</span>
+              </Link>
+            </li>
           ))}
-        </div>
-      </ScrollReveal>
+        </ul>
+      </div>
     </section>
   );
 }

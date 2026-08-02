@@ -1,262 +1,46 @@
 ---
-title: "Commands: Compositions"
-topic: "commands"
-subPage: "compositions"
+title: 'Commands and Workflows: Compositions'
+topic: 'commands'
+subPage: 'compositions'
 order: 4
-description: "Commands combined with skills, hooks, agents, MCP, and CLAUDE.md for orchestrated automation workflows."
-relatedPatterns: ["progressive-disclosure", "safety-net", "convention-file"]
-relatedTopics: ["skills", "hooks", "agents", "mcp", "claude-md"]
+description: 'Compose commands with skills, project instructions, hooks, subagents, and human approvals.'
+relatedPatterns: ['progressive-disclosure', 'checkpoint-loop', 'parallel-fan-out']
+relatedTopics: ['skills', 'project-instructions', 'hooks', 'agents']
 published: true
-keywords: ["commands compositions", "commands and skills", "command orchestration", "workflow automation"]
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-commands', 'claude-skills', 'codex-commands', 'codex-skills', 'copilot-cli-reference']
+keywords:
+  [
+    'command compositions',
+    'commands and skills',
+    'agent workflow orchestration',
+    'command approval',
+  ]
 ---
 
 # Compositions
 
-Commands become powerful when combined with other Claude Code primitives. Each primitive occupies a distinct role — commands orchestrate workflows, hooks enforce invariants, skills provide background knowledge, agents parallelize execution, MCP connects external systems, and CLAUDE.md documents the whole system.
+## Command + Skill
 
-## Commands + Skills
+The command supplies explicit operator timing and inputs. The skill supplies the reviewed procedure and resources. Maintain one core workflow.
 
-Commands and skills occupy complementary slots in the same invocation system.
+## Command + Project Instructions
 
-**Skills with `disable-model-invocation: false`** act as background knowledge. Claude loads them automatically when the task matches the description. A `frontend-design` skill loads design system rules whenever Claude builds UI components — no user action required.
+Instructions define when the workflow is required. The command starts it. Avoid duplicating the procedure in the always-loaded file.
 
-**Commands with `disable-model-invocation: true`** act as explicit workflows. The user triggers them when they want a specific multi-step process. A `/deploy` command runs only when the user types it — Claude never deploys on its own.
+## Command + Hooks
 
-The composition pattern in practice:
+Hooks can validate preconditions or capture evidence around the workflow. Keep final release authorization independent.
 
-```
-User types: /write-post "building fast APIs"
+## Command + Subagents
 
-1. Command injects: multi-step writing workflow instructions
-2. Claude starts executing: reads content calendar, begins drafting
-3. Skill auto-loads: "brand-voice" skill activates because Claude is writing content
-4. Both are now in context: command provides structure, skill provides constraints
-```
+A command may fan out bounded research or review. Define ownership, limits, and reconciliation before spawning.
 
-The skill activates because its description matches what Claude is doing, not because the command referenced it. This is implicit composition — no wiring required. The command defines *what* to do; the skill constrains *how* to do it.
+## Command + Human Approval
 
-### When to Split vs. Combine
+Pause before publication, destructive changes, external messages, spend, or other material effects. Display the exact proposed action and evidence, not a generic confirmation.
 
-| Scenario | Approach |
-|----------|----------|
-| Workflow steps that always run together | Single command |
-| Domain knowledge that applies across multiple commands | Skill (auto-loads when relevant) |
-| Workflow + domain knowledge | Command for workflow, skill for knowledge |
-| Reusable across repos, no user trigger needed | Skill in `~/.claude/skills/` |
-| Repo-specific, always user-triggered | Command in `.claude/commands/` |
+## Command + Ledger
 
-## Commands + Hooks
-
-Hooks run deterministically at lifecycle points. Commands are suggestions Claude follows with judgment. Together they form a two-layer system: commands handle workflow orchestration, hooks enforce invariants.
-
-### Hook Configuration
-
-Hooks live in `.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "command": "npx prettier --write \"$TOOL_INPUT_FILE_PATH\"",
-        "description": "Auto-format after any file write"
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "command": "node .claude/hooks/validate-bash.js",
-        "description": "Block dangerous bash commands"
-      }
-    ]
-  }
-}
-```
-
-### The Two-Layer Pattern
-
-**Commands suggest.** Claude follows command instructions with judgment — it can adapt, skip steps, or deviate when circumstances warrant it.
-
-**Hooks guarantee.** A PreToolUse hook that blocks `rm -rf` executes deterministically. Claude cannot override it, argue with it, or decide to skip it.
-
-Practical composition: A `/deploy` command handles workflow logic (check branch, run tests, deploy to environment). A PreToolUse hook blocks any `git push --force` or `rm -rf` commands regardless of what any command instructs. The command provides flexibility; the hook provides safety.
-
-```
-/deploy production
-  |
-  ├── Command says: "Run tests, then deploy"
-  ├── Claude runs: npm test (allowed)
-  ├── Claude runs: git push --force (BLOCKED by hook)
-  └── Hook wins — every time, no exceptions
-```
-
-### Lifecycle Hook Points
-
-| Hook | Fires When | Composition Use |
-|------|------------|-----------------|
-| `PreToolUse` | Before any tool call | Block dangerous operations during command execution |
-| `PostToolUse` | After any tool call | Auto-format files, run linters after edits |
-| `Notification` | Claude sends a notification | Trigger alerts when long-running commands complete |
-| `Stop` | Claude finishes responding | Run validation after command completes |
-| `InstructionsLoaded` | CLAUDE.md changes detected | Reload context when project config changes |
-
-The `Stop` hook is particularly useful with commands: run a validation script after `/deploy` finishes to verify the deployment succeeded, regardless of what Claude reported.
-
-## Commands + Agents
-
-Commands can instruct Claude to spawn subagents for parallel execution. The orchestrator pattern: one Claude instance reads the command and coordinates, while subagents handle independent subtasks.
-
-```markdown
----
-name: refactor
-description: Large-scale refactoring with parallel validation
----
-
-# Refactor
-
-Refactor $ARGUMENTS across the codebase.
-
-## Strategy
-
-1. **Plan**: Identify all files that need changes
-2. **Execute in parallel**: Use Task agents for independent file groups
-3. **Validate**: Run the test suite after all changes complete
-4. **Report**: Summary of all modifications
-
-For independent files that don't share state, spawn Task agents
-to handle them in parallel. Each agent handles one file group.
-Do not spawn agents for files that import from each other.
-```
-
-The command defines the coordination protocol. Claude acts as the orchestrator, deciding which files can be handled in parallel and which have dependencies requiring sequential processing.
-
-### Agent Boundaries
-
-| Task Type | Agent Strategy |
-|-----------|---------------|
-| Independent file edits | Parallel subagents |
-| Dependent file changes | Sequential in main agent |
-| Test execution | Main agent (needs full project context) |
-| Documentation updates | Parallel subagent |
-
-Commands that use agents should explicitly state the parallelization strategy. Without explicit instructions, Claude tends to process everything sequentially.
-
-## Commands + MCP
-
-MCP servers expose tools that commands can reference directly. This connects command workflows to external systems — issue trackers, databases, deployment platforms, monitoring services.
-
-```markdown
----
-name: triage
-description: Triage incoming issues from JIRA
-allowed-tools: Read,Grep,mcp__jira__search_issues,mcp__jira__update_issue
----
-
-# Triage Issues
-
-1. Use the JIRA MCP to search for unassigned issues in the current sprint
-2. For each issue, read relevant code files to assess complexity
-3. Categorize as: bug, feature, tech-debt
-4. Update JIRA labels and provide triage summary
-```
-
-MCP prompts also appear as slash commands with the format `/mcp__servername__promptname`. These server-defined workflows sit alongside your custom commands in autocomplete, giving you access to external system workflows without writing command files.
-
-### Tool Scoping with MCP
-
-The `allowed-tools` field accepts MCP tool names with the `mcp__` prefix. This creates precise scoping: a triage command can query JIRA and read code but cannot edit files or run arbitrary bash commands.
-
-```yaml
-# Precise MCP tool scoping
-allowed-tools: Read,Grep,mcp__jira__search_issues,mcp__jira__update_issue,mcp__slack__post_message
-```
-
-## Commands + CLAUDE.md
-
-CLAUDE.md is the discovery layer for commands. It tells both Claude and human developers what commands exist, when to use them, and how they chain together.
-
-```markdown
-# CLAUDE.md
-
-## Content Workflow
-
-| Command | Description |
-|---------|-------------|
-| `/write-post` | Create a new blog post with brand-consistent structure |
-| `/review-post` | Review a post for brand consistency and SEO |
-| `/content-calendar` | View/manage content pipeline and idea backlog |
-
-Integration chain: `/content-strategist` -> `/content-calendar` -> `/write-post` -> `/review-post`
-```
-
-This documentation serves three purposes:
-
-1. **Claude reads it at startup** and knows the workflow chain exists, enabling it to suggest the next command after one completes.
-2. **Human developers** see available commands when they open the project.
-3. **New team members** understand the automation landscape without exploring `.claude/commands/` manually.
-
-## Command Chaining Through Shared State
-
-Commands cannot invoke other commands at runtime. Claude has no mechanism to programmatically trigger `/review` from within `/deploy`. Three patterns work around this limitation.
-
-### Pattern 1: CLAUDE.md Documents the Chain
-
-```markdown
-# CLAUDE.md
-
-## Deployment Pipeline
-
-After `/deploy` completes, suggest running `/verify-deployment`.
-After `/verify-deployment` passes, suggest running `/notify-team`.
-```
-
-Claude reads this at startup. When `/deploy` finishes, Claude knows to suggest the next step. The user still triggers each command manually.
-
-### Pattern 2: Meta-Commands Inline Everything
-
-```markdown
----
-name: ship
----
-
-# Ship
-
-Execute in order, stopping on failure:
-1. Lint and auto-fix
-2. Run full test suite
-3. Self-review for security and quality
-4. Create conventional commit
-5. Deploy to staging
-```
-
-The meta-command duplicates the intent of each sub-workflow. Changes to individual commands do not propagate to the meta-command. Accept this trade-off or maintain the meta-command as the single source of truth.
-
-### Pattern 3: Shared State Files
-
-One command writes to a JSON file, the next reads from it. The content workflow in this project uses `content-plan.json` as shared state between `/content-strategist` and `/write-post`.
-
-```
-/content-strategist writes -> seo/strategy.json
-/content-calendar writes  -> calendar/content-plan.json
-/write-post reads         -> calendar/content-plan.json
-/review-post reads        -> brand/guidelines.json
-```
-
-Each command is self-contained. The chain works because artifacts flow through the filesystem, not through command invocation.
-
-## The Full Stack
-
-A mature Claude Code setup composes all primitives:
-
-| Layer | Primitive | Role |
-|-------|-----------|------|
-| Discovery | CLAUDE.md | Documents commands, suggests workflows |
-| Knowledge | Skills | Background context loaded on demand |
-| Orchestration | Commands | User-triggered multi-step workflows |
-| Safety | Hooks | Deterministic enforcement, formatting, validation |
-| Parallelism | Agents | Subagent spawning for independent tasks |
-| External systems | MCP | Connect to APIs, databases, services |
-| Persistence | State files | Shared data between command invocations |
-
-Each layer does one thing. Commands orchestrate. Hooks enforce. Skills inform. The composition is emergent — you wire them through conventions and shared state, not through explicit coupling.
+Record workflow version, inputs, actions, checks, approvals, artifacts, and result. This makes an operator shortcut part of an accountable delivery system rather than an opaque prompt macro.

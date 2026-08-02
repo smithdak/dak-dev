@@ -1,289 +1,44 @@
 ---
-title: "Agents: Playbook"
-topic: "agents"
-subPage: "playbook"
+title: 'Agents and Subagents: Playbook'
+topic: 'agents'
+subPage: 'playbook'
 order: 3
-description: "Production delegation patterns — the briefing pattern, foreground vs background, worktree agents, and parallel execution strategies."
-relatedPatterns: ["parallel-fan-out", "vertical-slice", "scaffold-first"]
-relatedTopics: ["agent-teams", "skills", "hooks"]
+description: 'Delegate bounded work across Claude Code, Codex, and Copilot with ownership, authority, and verification defined up front.'
+relatedPatterns: ['scope-fence', 'parallel-fan-out', 'checkpoint-loop']
+relatedTopics: ['agent-teams', 'skills', 'hooks']
 published: true
-keywords: ["agents playbook", "delegation patterns", "briefing pattern", "worktree agents", "parallel agents"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-subagents', 'codex-subagents', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords:
+  ['subagent playbook', 'delegate coding agents', 'agent ownership', 'agent result contract']
 ---
 
-# Agents: Playbook
+# Playbook
 
-Delegation patterns that work in production, not toy demos. Every pattern here addresses a specific failure mode — vague prompts, context blowup, uncontrolled costs, or merge conflicts.
+## 1. Decide Whether to Delegate
 
-## The Briefing Pattern
+Delegate when the task is bounded, noisy, independently verifiable, or benefits from a specialist. Keep tightly coupled reasoning in the parent.
 
-The prompt string is the only channel from parent to subagent. Treat it like a briefing document, not a casual request.
+## 2. Assign Ownership
 
-**Anti-pattern:**
+Name files, modules, or an analysis question. State that other agents may be changing the repository and that the child must preserve unrelated work.
 
-```
-Review my code
-```
+## 3. Bound Authority
 
-The subagent has zero context. It wastes turns exploring blindly.
+Specify read, write, command, network, and external-action permissions. Subagent creation does not broaden the user's original authorization.
 
-**Production pattern:**
+## 4. Define the Result
 
-```
-# Briefing: JWT Validation Audit
+Require a compact artifact: findings with evidence, a patch plus tests, or a decision table. Include uncertainty and unfinished work.
 
-## Context
-- Authentication module lives in src/auth/
-- We use jose@5.2 for JWT operations
-- Login flow: POST /api/auth/login -> createSession() -> signJWT()
+## 5. Isolate Writes
 
-## Objective
-Review src/auth/session.ts and src/auth/middleware.ts for:
-1. Token expiration handling on every request
-2. Refresh token race conditions under concurrent requests
-3. Key rotation support
+Use separate file ownership for disjoint changes. Use a worktree or environment when agents need overlapping paths or incompatible dependency state.
 
-## Constraints
-- Read-only analysis — do not modify files
-- Check node_modules/jose for version-specific API usage
+## 6. Verify in the Parent
 
-## Expected Output
-Bullet list of findings. Each item: file path, line number, severity
-(critical/warning/info), description, and fix suggestion.
-```
+Review the actual diff and rerun the load-bearing check after integration. A child's “tests passed” statement is a pointer, not proof.
 
-The briefing pattern has five sections: **Context** (what the subagent needs to know), **Objective** (exactly what to accomplish), **Constraints** (boundaries and restrictions), **Expected Output** (format of the return), and **Files** (specific paths to examine).
+## 7. Measure the Trade
 
-## Foreground vs. Background Dispatch
-
-| Aspect | Foreground | Background |
-|--------|-----------|------------|
-| Blocking | Parent waits | Parent continues |
-| Permission prompts | Passed through interactively | Pre-approved before launch; unapproved auto-denied |
-| `AskUserQuestion` | Works | Fails silently (subagent continues without answer) |
-| Use case | Interactive tasks, tasks needing user input | Long-running analysis, parallel research, test suites |
-| Invocation | Default behavior | "Run this in the background", Ctrl+B, or `background: true` |
-
-**Background agent workflow:**
-
-1. Permissions are pre-approved before launch
-2. Agent runs independently — no interactive prompts possible
-3. Monitor with `/tasks` to see running background subagents
-4. Named background subagents appear in @-mention typeahead with status
-5. If the agent fails due to missing permissions, retry as foreground
-
-Three ways to launch background agents:
-
-```markdown
-<!-- Natural language — Claude infers background -->
-"Run the full test suite in the background and let me know when it's done"
-
-<!-- Explicit @-mention with background flag -->
-@"test-runner (agent)" Run all integration tests — do this in the background
-
-<!-- Keyboard shortcut while composing a prompt -->
-<!-- Ctrl+B sends the current prompt as a background task -->
-```
-
-Monitoring:
-
-```bash
-# Inside Claude Code, check running background tasks
-/tasks
-
-# Named agents show status in @-mention typeahead:
-#   @test-runner (running...)
-#   @code-reviewer (completed)
-```
-
-Disable background tasks entirely with `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1`.
-
-## Research Agents
-
-Delegate investigation to keep your main context clean. The subagent does the heavy lifting; you receive a summary.
-
-```
-Research the authentication module in parallel:
-1. Subagent A: Trace the login flow from route handler to database
-2. Subagent B: Find all JWT creation and validation call sites
-3. Subagent C: Check auth dependency versions against known CVEs
-
-Each agent: return a bullet-point summary only, no raw file contents.
-```
-
-Research agents work best with the **Explore** type (Haiku model, read-only tools). Cost per research agent is a fraction of Opus.
-
-**Key design decision:** Each research path must be independent. If subagent B needs results from subagent A, use sequential dispatch instead.
-
-## Code Generation Agents
-
-Pattern: **research first, implement second, review third.**
-
-```
-Phase 1: Spawn Explore agent to analyze existing API endpoint patterns
-  → Returns: routing conventions, middleware chain, error handling patterns
-
-Phase 2: Review findings, approve approach
-
-Phase 3: Spawn implementation agent with approved patterns
-  → Briefing includes: target endpoint spec + patterns from Phase 1
-
-Phase 4: Spawn read-only review agent to validate implementation
-  → Briefing includes: files modified + project coding standards
-```
-
-The three-phase approach prevents the implementation agent from inventing conventions that diverge from your codebase. Phase 1 gives it ground truth.
-
-## Worktree Agents for Risky Changes
-
-Worktree isolation gives the subagent a disposable copy of the repository. Failed experiments disappear. Successful ones merge cleanly.
-
-```yaml
----
-name: experimental-refactor
-description: Attempts risky refactoring in an isolated worktree
-isolation: worktree
-tools: Read, Edit, Write, Bash, Grep, Glob
-permissionMode: acceptEdits
----
-
-You are a refactoring specialist. Work in your isolated worktree.
-Run tests after every structural change. If tests fail, document
-what broke and revert. Commit working checkpoints frequently.
-```
-
-**Workflow:**
-
-1. Subagent spawns in `.claude/worktrees/experimental-refactor/`
-2. Makes changes, runs tests, iterates
-3. If successful: you merge the worktree branch
-4. If failed: worktree is discarded, main workspace untouched
-
-```bash
-# After the worktree agent completes successfully:
-cd .claude/worktrees/experimental-refactor/
-git log --oneline main..HEAD    # Review what the agent committed
-
-# Merge the worktree branch into main
-cd /path/to/project
-git merge claude/worktree/experimental-refactor
-
-# Clean up
-git worktree remove .claude/worktrees/experimental-refactor
-git branch -d claude/worktree/experimental-refactor
-```
-
-**When to use worktree vs. standard:**
-
-| Scenario | Isolation |
-|----------|-----------|
-| Read-only analysis | Standard (no isolation needed) |
-| Single-file targeted edit | Standard |
-| Multi-file refactoring | Worktree |
-| Experimental approach you might discard | Worktree |
-| Parallel implementation on different features | Worktree (prevents file conflicts) |
-
-## Parallel Execution Strategies
-
-**Independent file modifications:**
-
-```
-Spawn three subagents in parallel:
-1. Update error handling in src/api/users.ts
-2. Update error handling in src/api/posts.ts
-3. Update error handling in src/api/comments.ts
-
-Each follows the pattern in src/api/shared/error-handler.ts.
-```
-
-**Hard constraint:** Parallel agents must work on **non-overlapping files**. Same-file concurrent edits create merge conflicts. Subagents (unlike agent teams) have no file locking.
-
-**Practical ceiling:** 2-4 parallel sessions. Beyond that, review overhead and API rate limits create more friction than the parallelism saves.
-
-**Decision framework:**
-
-| Condition | Dispatch |
-|-----------|----------|
-| 3+ unrelated tasks, no shared state, clear file boundaries | Parallel |
-| Tasks with dependencies or shared files | Sequential |
-| Research/analysis where results aren't immediately blocking | Background |
-| Unclear scope or potential file overlap | Sequential first, parallelize after scoping |
-
-## Controlling Subagent Output
-
-The subagent's final message returns to the parent context. Be explicit about what you need back.
-
-| Output Style | Context Cost | When to Use |
-|-------------|-------------|-------------|
-| "Did tests pass?" | ~50 tokens | Binary decision gate |
-| "Bullet-point summary of findings" | ~200-500 tokens | Research, code review |
-| "Full analysis with code snippets" | ~1,000-3,000 tokens | Complex investigation |
-| "Write findings to docs/audit.md" | ~100 tokens (acknowledgment) | Persistent output needed |
-
-A research subagent returning 3,000 tokens of analysis consumes ~15% of available context. For sustained investigations, ask the subagent to write to a file and return only a summary.
-
-## Agent Definition: Full Frontmatter Reference
-
-```yaml
----
-name: agent-name            # Required. Lowercase letters and hyphens
-description: When to use    # Required. Claude uses this for auto-delegation
-tools: Read, Grep, Glob     # Optional. Allowlist (inherits all if omitted)
-disallowedTools: Write       # Optional. Denylist
-model: haiku                 # Optional. sonnet | opus | haiku | full-id
-permissionMode: default      # Optional. default | acceptEdits | auto | dontAsk | bypassPermissions | plan
-maxTurns: 20                 # Optional. Max agentic turns
-skills:                      # Optional. Injected at startup
-  - api-conventions
-mcpServers:                  # Optional. MCP servers for this agent
-  - playwright:
-      type: stdio
-      command: npx
-      args: ["-y", "@playwright/mcp@latest"]
-hooks:                       # Optional. Lifecycle hooks scoped to agent
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "./scripts/validate.sh"
-memory: project              # Optional. user | project | local
-background: false            # Optional. Always run in background
-effort: medium               # Optional. low | medium | high | max
-isolation: worktree          # Optional. Isolated git worktree
-color: blue                  # Optional. UI color
-initialPrompt: "..."         # Optional. Auto-submitted first turn (--agent only)
----
-
-System prompt in Markdown. This replaces the default Claude Code system prompt.
-CLAUDE.md files are still additive.
-```
-
-## Forcing Delegation
-
-Claude often handles everything inline instead of using configured subagents. Auto-selection fires inconsistently.
-
-**Fixes:**
-
-- **@-mention**: `@"code-reviewer (agent)"` guarantees delegation
-- **Action-oriented descriptions**: "Use proactively after code changes" beats "code reviewer"
-- **Limit agent count**: 3-5 well-scoped agents. Too many reduces reliable routing
-- **Trigger phrases**: Include phrases in descriptions that match how you naturally prompt
-
-A well-tuned description vs. a poor one:
-
-```yaml
-# Poor — Claude handles code review itself (~30% delegation rate)
----
-name: code-reviewer
-description: Reviews code
----
-
-# Good — action-oriented with trigger phrases (~90%+ delegation rate)
----
-name: code-reviewer
-description: |
-  Use proactively after code changes to check for regressions,
-  security issues, and style violations. Invoke when the user says
-  "review", "check my code", "audit", or "look over these changes".
-  Do not review code inline — always delegate to this agent.
----
-```
+Compare elapsed time, total model usage, defects, and integration effort with a single-agent baseline. More agents are justified only when the system outcome improves.

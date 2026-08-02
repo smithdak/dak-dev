@@ -15,30 +15,36 @@ interface TagProps {
  * Can be interactive (link) or static (display only)
  */
 export function Tag({ tag, interactive = true, className = '', count }: TagProps) {
-  const baseStyles = 'inline-block px-3 py-1 text-sm font-semibold border-2 border-text transition-all duration-200';
-  const interactiveStyles = 'hover:bg-text hover:text-background hover:border-accent hover:shadow-[0_0_12px_var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background';
-  const staticStyles = 'bg-transparent text-text';
+  const baseStyles =
+    'inline-block border-b border-text/20 px-0.5 py-1 text-xs font-semibold uppercase tracking-[0.1em] transition-colors duration-200';
+  const interactiveStyles =
+    'text-muted hover:border-accent hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background';
+  const staticStyles = 'text-muted';
 
-  const classNames = [
-    baseStyles,
-    interactive ? interactiveStyles : staticStyles,
-    className,
-  ].join(' ');
+  const classNames = [baseStyles, interactive ? interactiveStyles : staticStyles, className].join(
+    ' '
+  );
 
   // Generate slug from tag (lowercase, replace spaces with hyphens)
   const tagSlug = tag.toLowerCase().replace(/\s+/g, '-');
 
   if (interactive) {
     return (
-      <motion.span whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+      <motion.span whileTap={{ scale: 0.98 }}>
         <Link href={`/blog/tags/${tagSlug}`} className={classNames}>
-          #{tag}{count !== undefined && ` (${count})`}
+          #{tag}
+          {count !== undefined && ` (${count})`}
         </Link>
       </motion.span>
     );
   }
 
-  return <span className={classNames}>#{tag}{count !== undefined && ` (${count})`}</span>;
+  return (
+    <span className={classNames}>
+      #{tag}
+      {count !== undefined && ` (${count})`}
+    </span>
+  );
 }
 
 interface TagListProps {

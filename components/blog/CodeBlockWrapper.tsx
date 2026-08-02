@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 export function CodeBlockWrapper({ children }: { children: React.ReactNode }) {
-  const [copied, setCopied] = useState(false);
   const preRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,7 +36,7 @@ export function CodeBlockWrapper({ children }: { children: React.ReactNode }) {
         justify-content: space-between;
         padding: 0.5rem 1rem;
         background-color: var(--color-surface);
-        border-bottom: 2px solid var(--color-text);
+        border-bottom: 1px solid var(--color-rule);
       `;
 
       // Language badge
@@ -60,21 +59,22 @@ export function CodeBlockWrapper({ children }: { children: React.ReactNode }) {
         padding: 0.25rem 0.75rem;
         font-size: 0.75rem;
         font-weight: 600;
-        color: var(--color-background);
-        background-color: var(--color-text);
-        border: 2px solid var(--color-background);
+        color: var(--color-text);
+        background-color: transparent;
+        border: 0;
+        border-bottom: 1px solid var(--color-text);
         cursor: pointer;
         transition: background-color 0.2s;
         font-family: var(--font-sans);
       `;
 
       button.addEventListener('mouseenter', () => {
-        button.style.backgroundColor = 'var(--color-muted)';
+        button.style.color = 'var(--color-accent)';
       });
 
       button.addEventListener('mouseleave', () => {
         if (button.textContent !== 'COPIED!') {
-          button.style.backgroundColor = 'var(--color-text)';
+          button.style.color = 'var(--color-text)';
         }
       });
 
@@ -88,14 +88,10 @@ export function CodeBlockWrapper({ children }: { children: React.ReactNode }) {
         try {
           await navigator.clipboard.writeText(codeText);
           button.textContent = 'COPIED!';
-          button.style.backgroundColor = 'var(--color-accent)';
-          button.style.color = 'var(--color-background)';
-          button.style.transform = 'scale(1.1)';
+          button.style.color = 'var(--color-accent)';
           setTimeout(() => {
             button.textContent = 'COPY';
-            button.style.backgroundColor = 'var(--color-text)';
-            button.style.color = 'var(--color-background)';
-            button.style.transform = 'scale(1)';
+            button.style.color = 'var(--color-text)';
           }, 2000);
         } catch (error) {
           void error;

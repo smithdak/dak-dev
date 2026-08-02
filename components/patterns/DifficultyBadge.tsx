@@ -1,9 +1,9 @@
 import type { PatternDifficulty } from '@/lib/patterns';
 
 const STYLES: Record<PatternDifficulty, string> = {
-  beginner: 'border-chapter-1 text-chapter-1',
-  intermediate: 'border-chapter-5 text-chapter-5',
-  advanced: 'border-chapter-6 text-chapter-6',
+  beginner: 'text-chapter-1',
+  intermediate: 'text-chapter-5',
+  advanced: 'text-chapter-6',
 };
 
 export const DIFFICULTY_META: Record<PatternDifficulty, { label: string; description: string }> = {
@@ -13,7 +13,7 @@ export const DIFFICULTY_META: Record<PatternDifficulty, { label: string; descrip
   },
   intermediate: {
     label: 'Intermediate',
-    description: 'Assumes you\'ve used coding agents on real projects.',
+    description: "Assumes you've used coding agents on real projects.",
   },
   advanced: {
     label: 'Advanced',
@@ -32,7 +32,7 @@ export function DifficultyBadge({ difficulty, className = '' }: DifficultyBadgeP
   return (
     <span
       title={meta.description}
-      className={`inline-block text-[10px] font-mono font-bold uppercase tracking-wider border-2 px-2 py-0.5 ${STYLES[difficulty]} ${className}`}
+      className={`inline-block text-[10px] font-semibold uppercase tracking-[0.12em] ${STYLES[difficulty]} ${className}`}
     >
       {meta.label}
     </span>

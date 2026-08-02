@@ -16,12 +16,9 @@ interface AnnotationProps {
 export function Annotation({ term, children }: AnnotationProps) {
   return (
     <aside
-      className="not-prose my-6 flex gap-3 border-l-4 border-chapter-5 bg-chapter-5/5 p-4"
+      className="not-prose my-6 flex gap-3 border-y border-rule bg-chapter-5/5 px-4 py-3"
       aria-label={`In plain English: ${term}`}
     >
-      <span aria-hidden="true" className="select-none font-mono text-lg font-bold leading-none text-chapter-5">
-        ←
-      </span>
       <div className="min-w-0">
         <span className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-chapter-5">
           {term}

@@ -1,4 +1,4 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env -S pnpm exec tsx
 /**
  * Publish Preparation Pipeline
  *
@@ -12,10 +12,10 @@
  *   7. Content calendar sync (--fix)
  *
  * Usage:
- *   npm run publish:prepare                           # Modified/unpublished posts only
- *   npm run publish:prepare -- --slug my-post         # Single post
- *   npm run publish:prepare -- --all                  # All posts
- *   npm run publish:prepare:fix                       # Auto-fix blur + calendar sync
+ *   pnpm publish:prepare                           # Modified/unpublished posts only
+ *   pnpm publish:prepare -- --slug my-post         # Single post
+ *   pnpm publish:prepare -- --all                  # All posts
+ *   pnpm publish:prepare:fix                       # Auto-fix blur + calendar sync
  */
 
 import fs from 'fs';
@@ -31,7 +31,6 @@ import {
   injectBlurPlaceholders,
   syncCalendarStatus,
   type ValidationResult,
-  type ValidationIssue,
 } from '../lib/content-validation';
 
 interface StepResult {
@@ -154,7 +153,8 @@ async function runPipeline(slug: string, fix: boolean): Promise<PostPipelineResu
       blurFixMsg = `Injected: ${parts.join(', ')}`;
     }
     if (blurResult.errors.length > 0) {
-      blurFixMsg = (blurFixMsg ? blurFixMsg + ' | ' : '') + `Errors: ${blurResult.errors.join('; ')}`;
+      blurFixMsg =
+        (blurFixMsg ? blurFixMsg + ' | ' : '') + `Errors: ${blurResult.errors.join('; ')}`;
     }
   }
 
@@ -222,7 +222,9 @@ async function runPipeline(slug: string, fix: boolean): Promise<PostPipelineResu
 function printResult(result: PostPipelineResult) {
   const icon = result.overallPassed ? '\u2705' : '\u274C';
   console.log(`\n${icon} ${result.title} (${result.slug})`);
-  console.log(`   Score: ${result.overallScore}/100 | Issues: ${result.totalIssues} | Warnings: ${result.totalWarnings}`);
+  console.log(
+    `   Score: ${result.overallScore}/100 | Issues: ${result.totalIssues} | Warnings: ${result.totalWarnings}`
+  );
 
   for (const step of result.steps) {
     const stepIcon = step.result.issues.length === 0 ? '\u2705' : '\u274C';
@@ -254,7 +256,9 @@ async function main() {
   console.log('\n\uD83D\uDE80 Publish Preparation Pipeline');
   console.log('\u2550'.repeat(50));
   console.log(`Date: ${new Date().toISOString().split('T')[0]}`);
-  console.log(`Mode: ${opts.slug ? `Single (${opts.slug})` : opts.all ? 'All posts' : 'Published posts'}`);
+  console.log(
+    `Mode: ${opts.slug ? `Single (${opts.slug})` : opts.all ? 'All posts' : 'Published posts'}`
+  );
   console.log(`Fix mode: ${opts.fix ? 'ON (blur inject + calendar sync)' : 'OFF'}`);
   console.log('\u2550'.repeat(50));
 

@@ -1,230 +1,185 @@
 # /frontend-design
 
-Create distinctive, production-grade frontend interfaces following the DAK blog neo-brutalist design system. Use this skill when building web components, pages, or UI elements.
+Create or revise production UI for Dakota Smith's professional publication at
+`daksmith.dev`. Use this skill for pages, components, layout, visual hierarchy,
+responsive behavior, or design-system work.
 
-## Description
+## Product position
 
-This skill activates when the user asks to build, create, or modify UI components, pages, layouts, or any visual frontend element. It enforces the established neo-brutalist design system, ensuring every piece of UI is consistent with the DAK blog's aesthetic identity.
+The interface should look like the publication of a principal architect who
+builds accountable AI systems and is progressing toward AI innovation
+leadership. It must demonstrate that trajectory through judgment and work; it
+must not claim that Dakota currently holds the title Head of AI Innovation.
 
----
+Identity is exact:
 
-## Design System Reference
+- wordmark: **Dakota Smith**;
+- domain signature: **daksmith.dev**;
+- current professional position: **Principal Architect**.
 
-### Color Tokens
+`DAK`, `dak.dev`, and aspirational-title branding are not substitutes.
 
-All colors are defined as CSS custom properties in `app/globals.css`. **Never use raw hex values** — always reference semantic tokens via Tailwind utilities.
+## Visual direction
 
-| Token | Dark Mode | Light Mode | Tailwind Class |
-|-------|-----------|------------|----------------|
-| `--color-background` | `#0a0a0a` | `#f5f5f5` | `bg-background`, `text-background` |
-| `--color-surface` | `#333333` | `#e0e0e0` | `bg-surface`, `text-surface` |
-| `--color-text` | `#f5f5f5` | `#0a0a0a` | `bg-text`, `text-text`, `border-text` |
-| `--color-muted` | `#a9a9a9` | `#666666` | `text-muted`, `border-muted` |
-| `--color-accent` | `#00ff88` | `#00cc6a` | `bg-accent`, `text-accent`, `border-accent` |
+The system is executive editorial: warm paper, deep ink, fine rules, restrained
+green, typographic authority, and generous negative space. It is not the former
+dark neo-brutalist grid.
 
-Theme switching is handled via `html.light` / `html.dark` classes. Components must work in both themes without conditional logic — the CSS variable system handles it automatically.
+1. **Typography establishes hierarchy.** Use serif display type for major
+   editorial statements and the locally hosted sans for navigation, body copy,
+   labels, and controls.
+2. **Composition beats containment.** Prefer spacing, reading measure,
+   alignment, and horizontal rules over repeated cards, badges, and boxes.
+3. **Accent is scarce.** Green marks links, focus, current state, or one
+   decisive idea. If everything is accented, nothing is.
+4. **Hairlines create structure.** Use the `rule` token for editorial dividers.
+   Heavy borders and hard shadows are exceptions for functional legacy content,
+   not the site-wide language.
+5. **Light is intentional.** Warm-ivory light mode is the default. Dark mode
+   preserves the same hierarchy without becoming a different product.
+6. **Motion is quiet.** Use it to clarify state and sequence, never to make the
+   page feel “techy.” Primary content must be visible without hydration.
 
-### Typography
+## Token contract
 
-- **Font Family**: Space Grotesk (loaded via `next/font/google`, applied as `--font-space-grotesk`)
-- **Weights**: 400 (Regular), 600 (Semibold), 700 (Bold)
-- **Tailwind config**: `font-sans` maps to Space Grotesk via `@theme inline` in `globals.css`
-- **Scale**: Use Tailwind's default type scale (`text-sm` through `text-6xl`)
-- **Line Height**: 1.5 for body text (`leading-relaxed`), 1.2 for headings (`leading-tight`)
+All colors come from CSS variables in `app/globals.css`, mapped through Tailwind
+v4 `@theme inline`. Never add a raw color literal to a component.
 
-### Neo-Brutalist Design Principles
+| Semantic token | Light         | Dark              | Use                        |
+| -------------- | ------------- | ----------------- | -------------------------- |
+| `background`   | warm ivory    | deep forest-black | page canvas                |
+| `surface`      | warm stone    | raised forest     | quiet panels and code      |
+| `text`         | forest ink    | warm white        | primary foreground         |
+| `muted`        | gray-green    | pale gray-green   | secondary copy             |
+| `accent`       | deep green    | soft mint         | links, focus, active state |
+| `rule`         | warm hairline | forest hairline   | editorial dividers         |
 
-1. **Thick Borders**: Use `border-2` minimum, `border-4` for primary elements. Always `border-text` or `border-accent`.
-2. **Hard Shadows**: Offset box shadows only — `shadow-[4px_4px_0_0_var(--color-text)]` or `shadow-[8px_8px_0_0_var(--color-text)]`. No blur, no spread.
-3. **Zero Border Radius**: Never use `rounded-*` classes. All elements are sharp-cornered.
-4. **No Gradients**: Flat colors only. No `bg-gradient-*`, no `linear-gradient()`.
-5. **No Soft Shadows**: No `shadow-sm`, `shadow-md`, `shadow-lg`, etc. Only hard offset shadows using arbitrary values.
-6. **High Contrast**: Text on background must meet WCAG AA (4.5:1 minimum). The token system guarantees this when used correctly.
-7. **Bold Typography**: Headings are `font-bold` or `font-semibold`. Body text is confident and large enough to read.
-8. **Raw Aesthetic**: Design should feel engineered and intentional, not polished or corporate.
+Use `bg-background`, `bg-surface`, `text-text`, `text-muted`, `text-accent`,
+`border-rule`, and related semantic utilities. Chapter colors remain scoped to
+Learn navigation and chapter identity.
 
----
+### Typography contract
 
-## Design Thinking
+- `font-sans` maps to local Space Grotesk files through
+  `--font-editorial-sans` in `app/layout.tsx`.
+- `font-serif` and `font-display` map to the editorial serif system stack in
+  `app/globals.css`.
+- Major theses and publication headlines may use serif display type. UI labels,
+  metadata, navigation, body copy, and controls use the sans.
+- Maintain readable measure and line height. Do not solve weak hierarchy by
+  making every heading larger or bolder.
 
-Work within the established system. Creative expression comes from **composition, spacing, and interaction** — not from breaking the visual language. When designing a new component:
+## Technical requirements
 
-1. **Start with structure**: What semantic HTML element is this? (`<article>`, `<section>`, `<nav>`, `<aside>`, etc.)
-2. **Apply the system**: Border weight, shadow depth, color tokens. The system provides the aesthetic automatically.
-3. **Add interaction**: Hover escalation (shadow grows, border changes to accent), press feedback (shadow shrinks), focus rings.
-4. **Consider hierarchy**: More important elements get thicker borders (4px) and deeper shadows (8px). Secondary elements use thinner borders (2px) and shallower shadows (4px).
-5. **Respect whitespace**: Generous padding (`p-6`, `p-8`) and gaps (`gap-6`, `gap-8`). The brutalist aesthetic needs breathing room.
+- Next.js App Router, SSG end to end. Do not introduce middleware, request-time
+  data fetching, cookies, or another backend tier.
+- Server Components own filesystem data and content shaping. Add `'use client'`
+  only to the smallest stateful, animated, or event-driven leaf.
+- TypeScript strict mode; explicit prop types; no `any`.
+- Tailwind v4 CSS-first tokens; no `tailwind.config.ts`.
+- Use `next/image` for content images and supply meaningful `alt` and `sizes`.
+- Reuse shared Framer Motion variants from `lib/animations.ts` when applicable;
+  global `MotionConfig reducedMotion="user"` owns the motion preference.
+- New CSS keyframes require their own `prefers-reduced-motion` guard.
 
----
+## Composition patterns
 
-## Technical Stack (Hard Requirements)
+### Editorial shell
 
-Every component must use:
+Use `editorial-shell`, `editorial-kicker`, `editorial-link`, and the established
+homepage/header/footer composition as references. Strong sections commonly use:
 
-- **Next.js 16+** App Router — Server Components by default, `'use client'` only when needed
-- **React 19+** — Functional components with hooks, named exports
-- **TypeScript** strict mode — Explicit types for all props, no `any`
-- **Tailwind CSS** with semantic tokens — Use the custom token classes (`bg-background`, `text-text`, `border-accent`, etc.)
-- **Framer Motion** — For component animations, import variants from `@/lib/animations`
-- **`next/image`** — For all image rendering (never raw `<img>`)
+- a small uppercase kicker;
+- a serif headline or thesis;
+- one concise supporting paragraph;
+- a full-width `rule` divider;
+- asymmetric columns or measured single-column prose;
+- one clear action, not a row of competing buttons.
 
----
+### Lists and indexes
 
-## Established Component Patterns
+Prefer rows separated by `border-rule` or `border-text/15` over card grids.
+Reveal title, description, metadata, and destination in that order. A grid is
+allowed only when the content is genuinely spatial or comparative; “there are
+several items” is not enough.
 
-### Card (`components/ui/Card.tsx`)
+### Controls
 
-```tsx
-// Border-4, hard shadow, hover escalation to accent
-<Link className="block bg-surface border-4 border-text shadow-[8px_8px_0_0_var(--color-text)] hover:shadow-[12px_12px_0_0_var(--color-accent)] hover:border-accent transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background">
-```
+Controls remain square or nearly square, compact, and legible. Use subtle
+surface changes, underlines, or rule changes for hover. Focus must be unmistakable:
+`focus:ring-2 focus:ring-accent` with an appropriate background offset or inset
+ring. Avoid decorative hard shadows, hover jumps, glow, and scale effects on
+ordinary navigation.
 
-Key patterns:
-- `border-4 border-text` base border
-- `shadow-[8px_8px_0_0_var(--color-text)]` hard offset shadow
-- Hover: shadow grows to 12px and shifts to accent color, border becomes accent, element lifts (`-translate-y-1`)
-- Focus: `ring-4 ring-accent ring-offset-4 ring-offset-background`
+### Long-form and technical content
 
-### Button (`components/ui/Button.tsx`)
+Protect reading measure and heading rhythm. MDX code blocks retain their strong
+functional treatment, including line numbers, highlights, and diffs; do not
+generalize that dense visual language to the editorial shell.
 
-4 variants with consistent interaction:
+## Accessibility and budgets
 
-| Variant | Base | Hover |
-|---------|------|-------|
-| `primary` | `bg-text text-background border-4 border-text shadow-[4px_4px_0_0]` | Inverts colors, shadow grows to 6px accent |
-| `secondary` | `bg-surface text-text border-4 border-text shadow-[4px_4px_0_0]` | `bg-text text-background`, shadow to accent |
-| `ghost` | `bg-transparent text-text border-2 border-text` | `bg-text text-background` |
-| `accent` | `bg-transparent text-accent border-4 border-accent shadow-[4px_4px_0_0_accent]` | `bg-accent text-background` |
+Hard merge gates:
 
-All buttons use Framer Motion: `whileHover={{ scale: 1.02 }}` and `whileTap={{ scale: 0.98 }}`.
+- Lighthouse Accessibility, Best Practices, and SEO: **100**;
+- Lighthouse Performance: **at least 90**;
+- keyboard-operable interactions with visible focus;
+- accessible names for icon-only controls;
+- meaningful image alternatives;
+- at least 44×44px touch targets where applicable;
+- no information or essential content gated by animation.
 
-### Tag (`components/ui/Tag.tsx`)
+Preserve the project budgets in `CLAUDE.md` and `DESIGN.md`; verify rather than
+asserting them.
 
-```tsx
-// Border-2, glow on hover
-<span className="inline-block px-3 py-1 text-sm font-semibold border-2 border-text transition-all duration-200 hover:bg-text hover:text-background hover:border-accent hover:shadow-[0_0_12px_var(--color-accent)]">
-```
+## Anti-patterns
 
-Key: hover adds a glow shadow `shadow-[0_0_12px_var(--color-accent)]` — one of the few non-offset shadows allowed, used sparingly for accent emphasis.
+- `dak.dev`, `DAK` as the primary brand, or “Head of AI Innovation” as a held title.
+- Repeated card grids used as the default page structure.
+- Terminal windows, circuit-board decoration, neon glow, cyberpunk gradients,
+  or generic AI iconography as shorthand for technical credibility.
+- Thick borders and hard offset shadows on ordinary editorial sections.
+- Raw hex colors, default Tailwind palette colors, or component-local theme logic.
+- Dense badge collections, pill-heavy layouts, decorative metrics, or fake dashboards.
+- Excessive rounded containers, glassmorphism, gradient mesh backgrounds, or
+  generic SaaS landing-page composition.
+- Promoting a whole page to a Client Component for one interaction.
+- Inline reusable animation variants, unguarded CSS motion, or content hidden
+  until an observer fires.
+- Raw `<img>` elements for content imagery or unlabeled icon buttons.
 
-### ScrollReveal (`components/ui/ScrollReveal.tsx`)
+## File placement
 
-Viewport-triggered animations using `whileInView`:
+| Directory               | Responsibility                             |
+| ----------------------- | ------------------------------------------ |
+| `components/editorial/` | professional publication compositions      |
+| `components/layout/`    | header, footer, navigation, page structure |
+| `components/ui/`        | reusable primitives and interaction leaves |
+| `components/blog/`      | post rendering and blog-specific UI        |
+| `components/learn/`     | shared Learn chrome                        |
+| `components/toolkit/`   | capability and evidence views              |
+| `components/patterns/`  | pattern-specific UI                        |
+| `app/`                  | route composition and metadata             |
+| `app/globals.css`       | tokens and shared visual mechanisms        |
 
-```tsx
-<motion.div
-  variants={stagger ? staggerContainerVariants : singleVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true, margin: '-80px' }}
->
-```
+## Implementation workflow
 
-Use `ScrollReveal` for section-level reveals and `ScrollRevealItem` for individual items within a staggered container.
+1. Read `DESIGN.md` §6 and `docs/ui-workflow.md`.
+2. Inspect the existing rendered page at desktop and mobile widths.
+3. State the hierarchy and the smallest component boundary that solves it.
+4. Implement with semantic tokens and a Server-first boundary.
+5. Inspect desktop/mobile in light and dark themes; test keyboard and reduced motion.
+6. Run the relevant lint, typecheck, tests, and production build. MDX work is
+   incomplete until `pnpm build` succeeds because Shiki is production-only.
 
----
+## Completion checklist
 
-## Animation Guidelines
-
-### Shared Variants (`lib/animations.ts`)
-
-Import from `@/lib/animations` — never define one-off variants inline when a shared one exists:
-
-| Export | Use For |
-|--------|---------|
-| `fadeInVariants` | Simple opacity fade (0.3s) |
-| `slideUpVariants` | Content entering from below (0.4s, custom ease) |
-| `slideDownVariants` | Content entering from above (0.4s) |
-| `scaleVariants` | Scale-in effect (0.95 to 1) |
-| `staggerContainerVariants` | Parent of staggered children (0.1s stagger) |
-| `staggerItemVariants` | Children within a stagger container |
-| `pageTransitionVariants` | Route change animations (initial/animate/exit) |
-| `drawLineVariants` | Horizontal line drawing effect (scaleX 0 to 1) |
-| `glitchHoverVariants` | Subtle positional jitter on hover |
-
-### Rules
-
-- **Always wrap** the top-level client component in `<MotionConfig reducedMotion="user">` or verify the parent layout already does
-- **CSS transitions** for simple state changes (hover colors, shadow shifts): `transition-all duration-200` or `duration-300`
-- **Framer Motion** for entrance animations, stagger effects, and complex interactions
-- **Performance budget**: Animation-related JS must stay under 5KB total. Import only what you need from framer-motion.
-- **New variants**: If a new animation pattern is needed and will be reused, add it to `lib/animations.ts` rather than defining inline
-
----
-
-## Accessibility Requirements
-
-**Minimum: WCAG 2.1 AA. Target: AAA where feasible.**
-
-- **Color contrast**: >= 4.5:1 for normal text, >= 3:1 for large text. The token system handles this — don't override it.
-- **Keyboard navigation**: All interactive elements must be focusable and operable via keyboard
-- **Focus indicators**: `focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background` (visible, high-contrast)
-- **Touch targets**: Minimum 44x44px for interactive elements (`min-w-[44px] min-h-[44px]`)
-- **Semantic HTML**: Use `<article>`, `<section>`, `<nav>`, `<aside>`, `<main>`, `<header>`, `<footer>` appropriately
-- **ARIA attributes**: Add `aria-label` to icon-only buttons, `aria-current` for navigation, `role` when semantic HTML isn't sufficient
-- **Alt text**: All `<Image>` components must have descriptive `alt` text (never empty unless purely decorative with `alt=""` and `aria-hidden="true"`)
-- **Reduced motion**: Animations are handled by `MotionConfig reducedMotion="user"`. CSS animations use `@media (prefers-reduced-motion: reduce)` in `globals.css`.
-
----
-
-## Performance Requirements
-
-- **Lighthouse**: 98+ across all categories
-- **Server Components**: Default. Only add `'use client'` when the component needs hooks, event handlers, or browser APIs.
-- **Dynamic imports**: Use `next/dynamic` for heavy client components (modals, interactive widgets, comment sections)
-- **Images**: Always use `next/image` with `sizes` prop, appropriate `placeholder="blur"`, and AVIF/WebP format support
-- **Bundle size**: Total JS < 100KB gzipped. Use `@next/bundle-analyzer` to verify.
-- **Fonts**: Space Grotesk is loaded via `next/font` with `display: 'swap'` — no additional font loading needed
-
----
-
-## Anti-Patterns (Never Do These)
-
-- **Raw hex colors**: Use token classes (`text-text`, `bg-accent`), never `text-[#f5f5f5]`
-- **`rounded-*` classes**: No border radius. Ever. Not `rounded-sm`, not `rounded-full`, nothing.
-- **Soft shadows**: No `shadow-sm`, `shadow-md`, `shadow-lg`, `shadow-xl`. Only hard offset `shadow-[Xpx_Ypx_0_0_color]`.
-- **Gradients**: No `bg-gradient-*`, no CSS `linear-gradient()` or `radial-gradient()`
-- **Default Tailwind colors**: No `text-gray-500`, `bg-blue-600`, etc. Only the 5 semantic tokens.
-- **External UI libraries**: No Radix, Shadcn, MUI, Chakra, etc. All components are custom-built.
-- **Inline animation variants**: If a variant will be reused, add it to `lib/animations.ts`
-- **`<img>` tags**: Always use `next/image` (`Image` from `next/image`)
-- **Missing `'use client'`**: If the component uses hooks, event handlers, or motion components, it needs the directive
-- **Implicit `any`**: All props must have explicit TypeScript interfaces
-
----
-
-## File Organization
-
-| Directory | Purpose | Example |
-|-----------|---------|---------|
-| `components/ui/` | Design system primitives | `Button.tsx`, `Card.tsx`, `Tag.tsx` |
-| `components/blog/` | Blog-specific components | `PostHeader.tsx`, `ShareButtons.tsx` |
-| `components/layout/` | Structural/layout components | `Header.tsx`, `Footer.tsx`, `Container.tsx` |
-| `lib/` | Utilities and shared logic | `animations.ts`, `posts.ts`, `seo.ts` |
-| `app/` | Pages and route layouts | `page.tsx`, `layout.tsx` |
-
-Rules:
-- One component per file
-- Named exports (not default)
-- Component filename matches export name: `Button.tsx` exports `function Button()`
-- Props interface defined in the same file, named `ComponentNameProps`
-- `'use client'` directive at the top of the file if the component uses client features
-
----
-
-## Implementation Checklist
-
-When creating or modifying a UI component, verify:
-
-- [ ] Uses semantic color tokens (no raw hex)
-- [ ] Zero border radius
-- [ ] Hard offset shadows only
-- [ ] Proper border weights (2px or 4px)
-- [ ] Focus states with accent ring
-- [ ] Touch targets >= 44x44px for interactive elements
-- [ ] `alt` text on all images
-- [ ] `'use client'` directive if using hooks/motion/events
-- [ ] TypeScript props interface defined
-- [ ] Animations imported from `@/lib/animations` where applicable
-- [ ] Works in both dark and light themes (via token system)
-- [ ] Keyboard navigable
+- [ ] Identity reads `Dakota Smith` / `daksmith.dev` / `Principal Architect`.
+- [ ] No aspirational role is represented as a current title.
+- [ ] The result reads as executive editorial, not a hobby dashboard.
+- [ ] Semantic tokens only; light and dark both verified.
+- [ ] Typography, whitespace, and rules establish hierarchy before containers.
+- [ ] Server/Client boundary remains narrow.
+- [ ] Focus, labels, alt text, touch targets, contrast, and reduced motion verified.
+- [ ] Desktop and mobile screenshots inspected for overflow and hierarchy.
+- [ ] Required project gates pass.

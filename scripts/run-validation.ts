@@ -1,28 +1,19 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env -S pnpm exec tsx
 /**
  * Content Validation CLI
  *
  * Usage:
- *   npx tsx scripts/run-validation.ts validate <slug>     # Validate a specific post
- *   npx tsx scripts/run-validation.ts brand-check <text>  # Check text against brand voice
- *   npx tsx scripts/run-validation.ts list                # List all posts with validation status
+ *   pnpm exec tsx scripts/run-validation.ts validate <slug>     # Validate a specific post
+ *   pnpm exec tsx scripts/run-validation.ts brand-check <text>  # Check text against brand voice
+ *   pnpm exec tsx scripts/run-validation.ts list                # List all posts with validation status
  */
 
-import {
-  validatePost,
-  validateBrandVoice,
-  validateFrontmatter,
-  validateStructure,
-  validateSEO,
-  type ValidationResult,
-} from '../lib/content-validation';
-import { getAllPosts, getPostBySlug } from '../lib/posts';
+import { validatePost, validateBrandVoice, type ValidationResult } from '../lib/content-validation';
+import { getAllPosts } from '../lib/posts';
 import {
   scanAllComponents,
   groupResultsByCategory,
   calculateAverageScore,
-  getIssueSummary,
-  type ComponentScanResult,
   type ComponentCategory,
 } from '../lib/component-validation';
 
@@ -34,7 +25,7 @@ async function main() {
     case 'validate': {
       const slug = args[1];
       if (!slug) {
-        console.error('Usage: npx tsx scripts/run-validation.ts validate <slug>');
+        console.error('Usage: pnpm exec tsx scripts/run-validation.ts validate <slug>');
         process.exit(1);
       }
       await validatePostCommand(slug);
@@ -44,7 +35,7 @@ async function main() {
     case 'brand-check': {
       const text = args.slice(1).join(' ');
       if (!text) {
-        console.error('Usage: npx tsx scripts/run-validation.ts brand-check <text>');
+        console.error('Usage: pnpm exec tsx scripts/run-validation.ts brand-check <text>');
         process.exit(1);
       }
       brandCheckCommand(text);
@@ -80,12 +71,12 @@ Commands:
   scan [--posts|--components] Scan all content for brand consistency
 
 Examples:
-  npx tsx scripts/run-validation.ts validate how-apl-built-this-blog
-  npx tsx scripts/run-validation.ts brand-check "I think this might be useful"
-  npx tsx scripts/run-validation.ts list
-  npx tsx scripts/run-validation.ts scan
-  npx tsx scripts/run-validation.ts scan --posts
-  npx tsx scripts/run-validation.ts scan --components
+  pnpm exec tsx scripts/run-validation.ts validate how-apl-built-this-blog
+  pnpm exec tsx scripts/run-validation.ts brand-check "I think this might be useful"
+  pnpm exec tsx scripts/run-validation.ts list
+  pnpm exec tsx scripts/run-validation.ts scan
+  pnpm exec tsx scripts/run-validation.ts scan --posts
+  pnpm exec tsx scripts/run-validation.ts scan --components
 `);
   }
 }
@@ -121,7 +112,9 @@ async function validatePostCommand(slug: string) {
   if (result.issues.length > 0) {
     console.log('\n--- Errors ---');
     for (const issue of result.issues) {
-      console.log(`  ✗ [${issue.category}${issue.field ? '/' + issue.field : ''}] ${issue.message}`);
+      console.log(
+        `  ✗ [${issue.category}${issue.field ? '/' + issue.field : ''}] ${issue.message}`
+      );
       if (issue.suggestion) {
         console.log(`    → ${issue.suggestion}`);
       }
@@ -132,7 +125,9 @@ async function validatePostCommand(slug: string) {
   if (result.warnings.length > 0) {
     console.log('\n--- Warnings ---');
     for (const warning of result.warnings) {
-      console.log(`  ⚠ [${warning.category}${warning.field ? '/' + warning.field : ''}] ${warning.message}`);
+      console.log(
+        `  ⚠ [${warning.category}${warning.field ? '/' + warning.field : ''}] ${warning.message}`
+      );
       if (warning.suggestion) {
         console.log(`    → ${warning.suggestion}`);
       }
@@ -199,9 +194,7 @@ async function listPostsCommand() {
     const result = await validatePost(slug);
     const status = post.frontmatter.published ? 'published' : 'draft';
     const statusIcon = result.passed ? '✓' : '✗';
-    console.log(
-      `${slug.padEnd(45)}${status.padEnd(12)}${statusIcon} ${result.score}/100`
-    );
+    console.log(`${slug.padEnd(45)}${status.padEnd(12)}${statusIcon} ${result.score}/100`);
   }
 
   console.log('\n' + '='.repeat(70));
@@ -212,11 +205,11 @@ async function validateAllCommand(includeDrafts: boolean) {
   console.log('='.repeat(60));
 
   const posts = getAllPosts();
-  const filteredPosts = includeDrafts
-    ? posts
-    : posts.filter((p) => p.frontmatter.published);
+  const filteredPosts = includeDrafts ? posts : posts.filter((p) => p.frontmatter.published);
 
-  console.log(`\nValidating ${filteredPosts.length} posts${includeDrafts ? ' (including drafts)' : ''}\n`);
+  console.log(
+    `\nValidating ${filteredPosts.length} posts${includeDrafts ? ' (including drafts)' : ''}\n`
+  );
 
   let passed = 0;
   let failed = 0;
@@ -255,7 +248,12 @@ async function scanCommand(options: { postsOnly: boolean; componentsOnly: boolea
 
   const posts = getAllPosts();
   const componentResults = options.postsOnly ? [] : scanAllComponents();
-  const postResults: Array<{ slug: string; score: number; issues: Array<{ message: string; suggestion?: string }>; warnings: Array<{ message: string; suggestion?: string }> }> = [];
+  const postResults: Array<{
+    slug: string;
+    score: number;
+    issues: Array<{ message: string; suggestion?: string }>;
+    warnings: Array<{ message: string; suggestion?: string }>;
+  }> = [];
 
   // Scan posts if not components-only
   if (!options.componentsOnly) {
@@ -275,7 +273,9 @@ async function scanCommand(options: { postsOnly: boolean; componentsOnly: boolea
   const postCount = postResults.length;
   const componentCount = componentResults.length;
 
-  console.log(`\nScanned: ${totalFiles} files | Posts: ${postCount} | Components: ${componentCount}\n`);
+  console.log(
+    `\nScanned: ${totalFiles} files | Posts: ${postCount} | Components: ${componentCount}\n`
+  );
 
   // Display post results
   if (!options.componentsOnly && postResults.length > 0) {
@@ -391,8 +391,8 @@ async function scanCommand(options: { postsOnly: boolean; componentsOnly: boolea
   for (const post of postResults) {
     for (const issue of [...post.issues, ...post.warnings]) {
       if (issue.message.includes('blur placeholder')) {
-        if (!quickFixes.includes('Run `npm run images:process` for blur placeholders')) {
-          quickFixes.push('Run `npm run images:process` for blur placeholders');
+        if (!quickFixes.includes('Run `pnpm images:generate` for deterministic post art')) {
+          quickFixes.push('Run `pnpm images:generate` for deterministic post art');
         }
       } else if (issue.message.includes('Excerpt') && issue.suggestion) {
         contentUpdates.push(`Expand excerpt in ${post.slug}: ${issue.suggestion}`);
@@ -440,16 +440,23 @@ async function scanCommand(options: { postsOnly: boolean; componentsOnly: boolea
   // Summary line
   console.log('='.repeat(60));
 
-  const postAvg = postResults.length > 0
-    ? Math.round(postResults.reduce((sum, p) => sum + p.score, 0) / postResults.length)
-    : 100;
+  const postAvg =
+    postResults.length > 0
+      ? Math.round(postResults.reduce((sum, p) => sum + p.score, 0) / postResults.length)
+      : 100;
   const componentAvg = calculateAverageScore(componentResults);
-  const overallHealth = errors === 0 && warnings <= 5 ? 'Excellent'
-    : errors === 0 && warnings <= 15 ? 'Good'
-    : errors <= 3 ? 'Needs Attention'
-    : 'Needs Work';
+  const overallHealth =
+    errors === 0 && warnings <= 5
+      ? 'Excellent'
+      : errors === 0 && warnings <= 15
+        ? 'Good'
+        : errors <= 3
+          ? 'Needs Attention'
+          : 'Needs Work';
 
-  console.log(`Posts: ${postAvg} avg | Components: ${componentAvg} avg | Overall Health: ${overallHealth}`);
+  console.log(
+    `Posts: ${postAvg} avg | Components: ${componentAvg} avg | Overall Health: ${overallHealth}`
+  );
   console.log('');
 
   // Exit with appropriate code

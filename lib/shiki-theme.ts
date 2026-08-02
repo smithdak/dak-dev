@@ -1,134 +1,133 @@
 import type { ThemeRegistration } from 'shiki';
 
 /**
- * Custom neo-brutalist dark theme for Shiki syntax highlighting
- * Based on Tokyo Night Dark with adjustments for #0A0A0A background
- * and high WCAG AA contrast ratios
+ * Ink-and-patina syntax theme for the editorial design system.
+ *
+ * Shiki supports arbitrary CSS color values, so the renderer emits the same
+ * tokens defined in globals.css instead of maintaining a second palette here.
+ * The single dark code plate is deliberate in both reading themes.
  */
-export const neoBrutalistTheme: ThemeRegistration = {
-  name: 'neo-brutalist-dark',
+export const editorialCodeTheme: ThemeRegistration = {
+  name: 'dakota-editorial-ink',
   type: 'dark',
   colors: {
-    // Editor colors
-    'editor.background': '#0A0A0A',
-    'editor.foreground': '#F5F5F5',
-    'editorLineNumber.foreground': '#666666',
-    'editorLineNumber.activeForeground': '#A9A9A9',
-    'editor.selectionBackground': '#333333',
-    'editor.lineHighlightBackground': '#1A1A1A',
-
-    // UI colors
-    'activityBar.background': '#0A0A0A',
-    'sideBar.background': '#0A0A0A',
-    'terminal.background': '#0A0A0A',
+    'editor.background': 'var(--color-code-canvas)',
+    'editor.foreground': 'var(--color-code-foreground)',
+    'editorLineNumber.foreground': 'var(--color-code-muted)',
+    'editorLineNumber.activeForeground': 'var(--color-code-foreground)',
+    'editor.selectionBackground': 'var(--color-code-selection)',
+    'editor.lineHighlightBackground': 'var(--color-code-line-highlight)',
+    'activityBar.background': 'var(--color-code-canvas)',
+    'sideBar.background': 'var(--color-code-canvas)',
+    'terminal.background': 'var(--color-code-canvas)',
   },
   tokenColors: [
     {
       scope: ['comment', 'punctuation.definition.comment'],
       settings: {
-        foreground: '#7A7A7A',
+        foreground: 'var(--color-code-muted)',
         fontStyle: 'italic',
       },
     },
     {
       scope: ['string', 'string.quoted'],
       settings: {
-        foreground: '#A8E6A3', // Soft green for strings
+        foreground: 'var(--color-code-string)',
       },
     },
     {
       scope: ['constant.numeric', 'constant.language', 'constant.character'],
       settings: {
-        foreground: '#FFB86C', // Orange for numbers/constants
+        foreground: 'var(--color-code-number)',
       },
     },
     {
       scope: ['keyword', 'storage.type', 'storage.modifier'],
       settings: {
-        foreground: '#FF79C6', // Pink for keywords
+        foreground: 'var(--color-code-keyword)',
         fontStyle: 'bold',
       },
     },
     {
       scope: ['keyword.control', 'keyword.operator'],
       settings: {
-        foreground: '#FF79C6',
+        foreground: 'var(--color-code-keyword)',
       },
     },
     {
       scope: ['entity.name.function', 'support.function'],
       settings: {
-        foreground: '#8BE9FD', // Cyan for functions
+        foreground: 'var(--color-code-function)',
       },
     },
     {
       scope: ['entity.name.type', 'entity.name.class', 'support.class'],
       settings: {
-        foreground: '#FFD493', // Light orange for classes/types
+        foreground: 'var(--color-code-type)',
       },
     },
     {
       scope: ['variable', 'variable.parameter'],
       settings: {
-        foreground: '#F5F5F5', // White for variables
+        foreground: 'var(--color-code-foreground)',
       },
     },
     {
       scope: ['variable.language'],
       settings: {
-        foreground: '#BD93F9', // Purple for this/self/etc
+        foreground: 'var(--color-code-special)',
         fontStyle: 'italic',
       },
     },
     {
       scope: ['entity.name.tag'],
       settings: {
-        foreground: '#FF79C6', // Pink for HTML/JSX tags
+        foreground: 'var(--color-code-function)',
       },
     },
     {
       scope: ['entity.other.attribute-name'],
       settings: {
-        foreground: '#A8E6A3', // Green for attributes
+        foreground: 'var(--color-code-string)',
       },
     },
     {
       scope: ['markup.heading'],
       settings: {
-        foreground: '#BD93F9',
+        foreground: 'var(--color-code-type)',
         fontStyle: 'bold',
       },
     },
     {
       scope: ['markup.bold'],
       settings: {
-        foreground: '#FFB86C',
+        foreground: 'var(--color-code-number)',
         fontStyle: 'bold',
       },
     },
     {
       scope: ['markup.italic'],
       settings: {
-        foreground: '#F5F5F5',
+        foreground: 'var(--color-code-foreground)',
         fontStyle: 'italic',
       },
     },
     {
       scope: ['markup.inline.raw', 'markup.fenced_code'],
       settings: {
-        foreground: '#A8E6A3',
+        foreground: 'var(--color-code-string)',
       },
     },
     {
       scope: ['punctuation'],
       settings: {
-        foreground: '#D4D4D4',
+        foreground: 'var(--color-code-punctuation)',
       },
     },
     {
       scope: ['invalid'],
       settings: {
-        foreground: '#FF5555',
+        foreground: 'var(--color-code-invalid)',
         fontStyle: 'bold',
       },
     },

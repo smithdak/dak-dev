@@ -1,42 +1,40 @@
 ---
-title: "Skills: Expert's Guide"
-topic: "skills"
+title: 'Reusable Skills Across Claude Code, Codex, and Copilot'
+topic: 'skills'
 order: 1
-description: "Master Claude Code skills — reusable prompt engineering, skill composition, and invocation patterns for production workflows."
-relatedPatterns: ["progressive-disclosure", "convention-file"]
-relatedTopics: ["hooks", "commands", "claude-md", "agents"]
+description: 'Design portable Agent Skills with progressive disclosure, explicit activation, supporting resources, and product-specific control adapters.'
+relatedPatterns: ['progressive-disclosure', 'context-priming']
+relatedTopics: ['hooks', 'commands', 'project-instructions', 'agents']
 published: true
-keywords: ["claude code skills", "prompt engineering", "skill composition", "invocation patterns"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-skills', 'codex-skills', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords:
+  ['Agent Skills', 'Claude Code skills', 'Codex skills', 'Copilot skills', 'progressive disclosure']
 ---
 
-# Skills
+# Reusable Skills
 
-Skills are Claude Code's on-demand knowledge system. Each skill is a directory containing a `SKILL.md` file with YAML frontmatter and markdown instructions — loaded into context only when relevant, keeping your baseline token budget clean.
+A skill packages specialized instructions, reference material, scripts, and assets so an agent can load them when a task requires them. Claude Code, Codex, and Copilot now all document first-party skill mechanisms, making the capability more portable than the surrounding product UX suggests.
 
-## Why Skills Matter
+## The Stable Contract
 
-CLAUDE.md burns tokens on every turn whether the instructions are relevant or not. Skills solve this with progressive disclosure: Claude sees a lightweight registry of skill names and descriptions (~100 tokens each), then loads the full body only when the task demands it. Twenty skills cost ~2,000 tokens of always-present overhead. The same content in CLAUDE.md would cost that on every single turn regardless of relevance.
+A strong cross-product skill has four parts:
 
-## When to Use Skills vs. Alternatives
+1. **A discriminating name and description** that make activation predictable.
+2. **A lean entrypoint** that defines the workflow and its completion criteria.
+3. **Progressively disclosed resources** that are loaded only when required.
+4. **Executable helpers** for operations that should not be re-generated from prose.
 
-| Need | Use |
-|------|-----|
-| Task-specific multi-step workflow | **Skill** |
-| Always-present project rules | CLAUDE.md |
-| Deterministic enforcement of constraints | Hook |
-| Block dangerous operations before execution | Hook (PreToolUse) |
-| Reusable procedure across multiple repos | **Skill** (personal `~/.claude/skills/`) |
-| One-off saved prompt | Legacy command (`.claude/commands/`) |
-| External tool connectivity | MCP server |
-| Distribute workflows as packages | **Skill** (plugin) |
+The portable core is the instruction and resource architecture. Invocation controls, allowed-tool syntax, discovery paths, precedence, and compaction behavior remain product-specific.
 
-The critical distinction: skills extend what Claude *can* do on demand. Hooks constrain *how* Claude does it deterministically. CLAUDE.md tells Claude what it *should* do at all times.
+## Skills Are Not Policy
 
-## What's Inside
+Skills extend what an agent can do and how it approaches a task. Their activation and interpretation still involve model judgment unless the product and configuration force a particular path. Do not use a skill as the sole control for a rule that must never be bypassed.
 
-Explore the sub-pages for deep expertise:
+Use project instructions for stable, always-relevant repository facts. Use a skill for a repeatable task with a beginning, decision points, and a completion condition. Use a hook or external gate for deterministic enforcement.
 
-- **Mental Model** — How skills are loaded, matched, and injected through the three-stage progressive disclosure system
-- **Playbook** — Production skill architectures: knowledge-based, workflow, checklist-driven, and forked execution patterns
-- **Compositions** — Skills combined with hooks, agents, MCP, CLAUDE.md, and memory for orchestrated workflows
-- **Pitfalls** — Activation failures, context bloat, conflicting skills, and the anti-patterns that make skills unreliable
+## Portability Strategy
+
+Keep the core procedure vendor-neutral. Put product-specific frontmatter and invocation controls in thin adapters. Test the skill separately in each supported surface because “Agent Skills compatible” does not guarantee identical discovery, argument passing, tool permissions, or persistence through context compaction.
+
+The deeper lenses retain Claude Code examples and April-era implementation detail. Treat them as a concrete reference implementation; validate current product syntax against the source register before copying configuration.

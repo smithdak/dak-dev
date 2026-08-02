@@ -1,49 +1,46 @@
-import { notFound } from 'next/navigation';
-import { MDXRemote } from 'next-mdx-remote/rsc';
-import { getPostBySlug, getAllSlugs, getRelatedPosts } from '@/lib/posts';
-import { extractTableOfContents } from '@/lib/toc';
-import { CodeBlockWrapper } from '@/components/blog/CodeBlockWrapper';
-import { TableOfContents } from '@/components/blog/TableOfContents';
-import { Comments } from '@/components/blog/Comments';
-import { RelatedPosts } from '@/components/blog/RelatedPosts';
-import { ReadingProgress } from '@/components/blog/ReadingProgress';
-import { ShareButtons } from '@/components/blog/ShareButtons';
-import { TagList } from '@/components/ui/Tag';
-import { mdxComponents } from '@/components/blog/MdxComponents';
-import { JsonLd } from '@/components/seo/JsonLd';
-import { generateBlogPostingSchema, generateBreadcrumbSchema } from '@/lib/schema';
-import { SITE_URL as baseUrl } from '@/lib/site';
-import { getMdxOptions } from '@/lib/mdx-options';
 import Image from 'next/image';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { MDXRemote } from 'next-mdx-remote/rsc';
+import { CodeBlockWrapper } from '@/components/blog/CodeBlockWrapper';
+import { Comments } from '@/components/blog/Comments';
+import { mdxComponents } from '@/components/blog/MdxComponents';
+import { ReadingProgress } from '@/components/blog/ReadingProgress';
+import { RelatedPosts } from '@/components/blog/RelatedPosts';
+import { ShareButtons } from '@/components/blog/ShareButtons';
+import { TableOfContents } from '@/components/blog/TableOfContents';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { getMdxOptions } from '@/lib/mdx-options';
+import { getPostBySlug, getPublishedPostSlugs, getRelatedPosts } from '@/lib/posts';
+import { generateBlogPostingSchema, generateBreadcrumbSchema } from '@/lib/schema';
+import { SITE_URL as baseUrl } from '@/lib/site';
+import { slugifyTag } from '@/lib/tags';
+import { extractTableOfContents } from '@/lib/toc';
+import { formatCalendarDate } from '@/lib/utils';
+import { formatWritingTag } from '@/lib/writing';
 
-export async function generateStaticParams() {
-  const slugs = getAllSlugs();
-  return slugs.map((slug) => ({ slug }));
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return getPublishedPostSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
 
-  if (!post) {
-    return {
-      title: 'Post Not Found',
-    };
+  if (!post || !post.frontmatter.published) {
+    return { title: 'Post not found' };
   }
 
-  // Use the article's hero image for OG (absolute URL required)
   const ogImageUrl = post.frontmatter.hero
     ? `${baseUrl}${post.frontmatter.hero}`
-    : `${baseUrl}/api/og?title=${encodeURIComponent(post.frontmatter.title)}&date=${encodeURIComponent(post.frontmatter.date)}`;
+    : `${baseUrl}/og-default.png`;
 
-  // Bare title — the root layout's `%s | Dakota Smith` template adds the suffix
-  // once. Returning a pre-suffixed title doubles it.
   return {
     title: post.frontmatter.title,
     description: post.frontmatter.excerpt,
     keywords: post.frontmatter.keywords,
-    robots: post.frontmatter.published ? undefined : { index: false, follow: false },
     alternates: { canonical: `/blog/${slug}` },
     openGraph: {
       title: post.frontmatter.title,
@@ -57,7 +54,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
           url: ogImageUrl,
           width: 1600,
           height: 900,
-          alt: post.frontmatter.title,
+          alt: `Editorial artwork for ${post.frontmatter.title}`,
         },
       ],
     },
@@ -74,16 +71,10 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = getPostBySlug(slug);
 
-  if (!post) {
-    notFound();
-  }
+  if (!post || !post.frontmatter.published) notFound();
 
-  // Extract table of contents
   const toc = extractTableOfContents(post.content);
-
-  // Get related posts
-  const relatedPostsData = getRelatedPosts(slug, 3);
-  const relatedPosts = relatedPostsData.map((relatedPost) => ({
+  const relatedPosts = getRelatedPosts(slug, 3).map((relatedPost) => ({
     slug: relatedPost.frontmatter.slug,
     title: relatedPost.frontmatter.title,
     excerpt: relatedPost.frontmatter.excerpt,
@@ -91,192 +82,150 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
     tags: relatedPost.frontmatter.tags,
     date: relatedPost.frontmatter.date,
   }));
-
-  const mdxOptions: any = await getMdxOptions();
-
-  const formattedDate = new Date(post.frontmatter.date).toLocaleDateString('en-US', {
+  const mdxOptions = await getMdxOptions();
+  const formattedDate = formatCalendarDate(post.frontmatter.date, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
+  const fullUrl = `${baseUrl}/blog/${slug}`;
 
-  // Generate Schema.org structured data
   const blogPostingSchema = generateBlogPostingSchema(post.frontmatter);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: '/' },
-    { name: 'Blog', url: '/blog' },
+    { name: 'Writing', url: '/blog' },
     { name: post.frontmatter.title },
   ]);
 
-  // Generate full URL for sharing
-  const fullUrl = `${baseUrl}/blog/${slug}`;
-
   return (
-    <article className="min-h-screen pb-16">
-      {/* Reading Progress Indicator */}
+    <article className="min-h-screen pb-16 md:pb-20">
       <ReadingProgress />
-
-      {/* Schema.org JSON-LD */}
       <JsonLd data={blogPostingSchema} />
       <JsonLd data={breadcrumbSchema} />
 
-      {/* Full-Width Header Section */}
-      <header className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-8">
-        <div className="flex gap-6 lg:gap-12">
-          {/* Main Header Content */}
-          <div className="flex-1 min-w-0">
-            {/* Breadcrumb */}
-            <nav className="mb-6" aria-label="Breadcrumb">
-              <ol className="flex items-center gap-2 text-sm text-muted">
-                <li>
-                  <Link
-                    href="/blog"
-                    className="hover:text-text hover:underline underline-offset-2 focus:outline-none focus:ring-2 focus:ring-text focus:ring-offset-2 focus:ring-offset-background"
-                  >
-                    Blog
-                  </Link>
-                </li>
-                <li aria-hidden="true">/</li>
-                <li aria-current="page">
-                  <span className="text-text font-semibold line-clamp-1">
-                    {post.frontmatter.title}
-                  </span>
-                </li>
-              </ol>
-            </nav>
+      <header className="editorial-shell pb-8 pt-10 md:pb-10 md:pt-14 lg:pt-16">
+        <nav aria-label="Breadcrumb">
+          <ol className="flex min-w-0 items-center gap-2 text-sm text-muted">
+            <li>
+              <Link
+                href="/blog"
+                className="editorial-link focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                Writing
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li aria-current="page" className="min-w-0 truncate text-text">
+              {post.frontmatter.title}
+            </li>
+          </ol>
+        </nav>
 
-            {/* Title */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+        <div className="mt-8 grid gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(15rem,0.35fr)] lg:items-end lg:gap-14">
+          <div>
+            <h1 className="max-w-[18ch] font-display text-5xl leading-[1.01] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
               {post.frontmatter.title}
             </h1>
-
-            {/* Excerpt/Summary */}
-            {post.frontmatter.excerpt && (
-              <p className="text-xl md:text-2xl text-muted mb-6 leading-relaxed max-w-4xl">
-                {post.frontmatter.excerpt}
-              </p>
-            )}
-
-            {/* Metadata */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-muted mb-6">
-              <time dateTime={post.frontmatter.date} className="font-semibold">
-                {formattedDate}
-              </time>
-              <span aria-hidden="true">•</span>
-              <span>{post.readingTime}</span>
-              {post.frontmatter.author && (
-                <>
-                  <span aria-hidden="true">•</span>
-                  <span>By {post.frontmatter.author}</span>
-                </>
-              )}
-            </div>
-
-            {/* Tags */}
-            {post.frontmatter.tags && post.frontmatter.tags.length > 0 && (
-              <TagList tags={post.frontmatter.tags} interactive={true} />
-            )}
+            <p className="mt-6 max-w-[58rem] text-xl leading-relaxed text-muted md:text-2xl">
+              {post.frontmatter.excerpt}
+            </p>
           </div>
 
-          {/* Share Button - Right Side */}
-          <div className="flex-shrink-0 pt-8">
+          <div className="border-y border-rule py-5">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted">
+              <time dateTime={post.frontmatter.date} className="font-semibold text-text">
+                {formattedDate}
+              </time>
+              <span>{post.readingTime}</span>
+            </div>
+            <p className="mt-2 text-sm text-muted">
+              By {post.frontmatter.author || 'Dakota Smith'}
+            </p>
             <ShareButtons
               title={post.frontmatter.title}
               url={fullUrl}
               excerpt={post.frontmatter.excerpt}
               variant="dropdown"
+              className="mt-4"
             />
           </div>
         </div>
+
+        <nav aria-label="Article topics" className="mt-7 flex flex-wrap gap-x-5 gap-y-2">
+          {post.frontmatter.tags.map((tag) => (
+            <Link
+              key={tag}
+              href={`/blog/tags/${slugifyTag(tag)}`}
+              className="inline-flex min-h-11 items-center border-b border-rule text-xs font-semibold uppercase tracking-[0.1em] text-muted transition-colors hover:border-accent hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              {formatWritingTag(tag)}
+            </Link>
+          ))}
+        </nav>
       </header>
 
-      {/* Divider */}
-      <div className="border-b-4 border-text" />
+      <div className="editorial-shell border-t border-rule pt-7 md:pt-9">
+        <figure className="relative aspect-video overflow-hidden bg-surface">
+          <Image
+            src={post.frontmatter.hero}
+            alt=""
+            fill
+            priority
+            className="object-cover"
+            sizes="(max-width: 1536px) calc(100vw - 2rem), 1440px"
+            placeholder={post.frontmatter.heroBlur ? 'blur' : 'empty'}
+            blurDataURL={post.frontmatter.heroBlur}
+          />
+        </figure>
 
-      {/* Two-Column Grid */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid lg:grid-cols-[1fr_300px] gap-12">
-          {/* Main Content */}
+        <div className="mt-10 grid gap-12 xl:mt-16 xl:grid-cols-[minmax(0,68ch)_15rem] xl:justify-center xl:gap-20">
           <div className="min-w-0">
-            {/* Hero Image */}
-            {post.frontmatter.hero && (
-              <figure className="mb-12">
-                <div className="relative aspect-[16/9] border-4 border-text overflow-hidden">
-                  <Image
-                    src={post.frontmatter.hero}
-                    alt={`Cover image for ${post.frontmatter.title}`}
-                    fill
-                    priority
-                    className="object-cover object-center"
-                    sizes="(max-width: 1024px) 100vw, 65vw"
-                    placeholder="blur"
-                    blurDataURL={
-                      post.frontmatter.heroBlur ??
-                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 225'%3E%3Crect width='100%25' height='100%25' fill='%230a0a0a'/%3E%3C/svg%3E"
-                    }
-                  />
-                </div>
-              </figure>
-            )}
+            {toc.length > 0 ? (
+              <details className="mb-10 border-y border-rule xl:hidden">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-5 py-3 text-sm font-semibold text-text marker:hidden focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent [&::-webkit-details-marker]:hidden">
+                  <span>On this page</span>
+                  <span className="text-xs uppercase tracking-[0.1em] text-muted">
+                    {toc.length} sections
+                  </span>
+                </summary>
+                <TableOfContents
+                  items={toc}
+                  showTitle={false}
+                  observeActive={false}
+                  className="border-t border-rule py-5"
+                />
+              </details>
+            ) : null}
 
-            {/* Post Content */}
-            <div
-              className="prose prose-invert prose-lg max-w-[65ch] mdx-content"
-              style={{ maxWidth: '65ch' }}
-            >
+            <div className="mdx-content max-w-[68ch] text-lg">
               <CodeBlockWrapper>
-                <MDXRemote source={post.content} options={mdxOptions} components={mdxComponents} />
+                <MDXRemote
+                  source={post.content}
+                  options={mdxOptions as Parameters<typeof MDXRemote>[0]['options']}
+                  components={mdxComponents}
+                />
               </CodeBlockWrapper>
             </div>
           </div>
 
-          {/* Sidebar */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-24">
-              <TableOfContents items={toc} />
-
-              {/* Share Buttons */}
-              <div className="mt-6">
-                <div className="border-4 border-text bg-surface p-6">
-                  <h2 className="text-lg font-bold mb-4 uppercase tracking-wider">Share</h2>
-                  <ShareButtons
-                    title={post.frontmatter.title}
-                    url={fullUrl}
-                    excerpt={post.frontmatter.excerpt}
-                  />
-                </div>
+          {toc.length > 0 ? (
+            <aside className="hidden xl:block">
+              <div className="sticky top-28">
+                <TableOfContents items={toc} />
               </div>
-            </div>
-          </aside>
+            </aside>
+          ) : null}
         </div>
 
-        {/* Related Posts */}
-        {relatedPosts.length > 0 && <RelatedPosts posts={relatedPosts} className="mt-16" />}
-
-        {/* Comments Section */}
+        {relatedPosts.length > 0 ? <RelatedPosts posts={relatedPosts} className="mt-16" /> : null}
         <Comments className="mt-16" />
 
-        {/* Back to Blog */}
-        <div className="mt-16 pt-8 border-t-4 border-text">
+        <div className="mt-16 border-t border-rule pt-8">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-text font-semibold hover:underline underline-offset-4 decoration-4 focus:outline-none focus:ring-4 focus:ring-text focus:ring-offset-4 focus:ring-offset-background"
+            className="inline-flex min-h-11 items-center text-xs font-semibold uppercase tracking-[0.11em] text-text underline-offset-4 hover:text-accent hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Back to All Posts
+            Return to all writing
           </Link>
         </div>
       </div>

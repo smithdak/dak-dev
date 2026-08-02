@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getAllPatterns, CHAPTERS } from '@/lib/patterns';
+import { getAllPatterns } from '@/lib/patterns';
 import { computeGraphLayout, COLUMN_COUNT, SIDE_PADDING, TOP_PADDING } from '@/lib/graph-layout';
 import { PatternLanguageGraph } from '@/components/patterns/PatternLanguageGraph';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -11,17 +11,12 @@ import { SITE_URL as siteUrl } from '@/lib/site';
 export function generateMetadata(): Metadata {
   const allPatterns = getAllPatterns();
   const description = `Interactive graph showing how ${allPatterns.length} agent patterns relate to each other — enables, composes, prevents, and contrasts relationships at a glance.`;
-  const ogImage = `${siteUrl}/api/og?type=pattern&title=${encodeURIComponent('Pattern Language Map')}`;
+  const ogImage = `${siteUrl}/og-default.png`;
 
   return {
     title: 'Pattern Language Map',
     description,
-    keywords: [
-      'pattern language',
-      'pattern map',
-      'agent patterns',
-      'pattern relationships',
-    ],
+    keywords: ['pattern language', 'pattern map', 'agent patterns', 'pattern relationships'],
     openGraph: {
       title: 'Pattern Language Map — Agent Patterns',
       description,
@@ -54,7 +49,7 @@ export default function PatternGraphPage() {
       <JsonLd data={breadcrumbSchema} />
 
       {/* Header */}
-      <header className="pt-2 pb-8 -mx-4 sm:-mx-6 lg:-mx-0 px-4 sm:px-6 lg:px-0">
+      <header className="px-4 pb-8 pt-2 sm:px-6 lg:px-0">
         <nav className="mb-5" aria-label="Breadcrumb">
           <ol className="flex items-center gap-2 text-xs text-muted font-mono">
             <li>
@@ -80,17 +75,17 @@ export default function PatternGraphPage() {
             </li>
           </ol>
         </nav>
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
+        <p className="editorial-kicker mb-4">Relationship model</p>
+        <h1 className="mb-4 font-display text-5xl tracking-tight md:text-7xl">
           Pattern Language Map
         </h1>
         <p className="text-muted max-w-2xl leading-relaxed">
-          Hover to highlight connections. Click any node to navigate to that
-          pattern. Lines show how patterns relate: enables, composes, prevents,
-          and contrasts.
+          Hover to highlight connections. Click any node to navigate to that pattern. Lines show how
+          patterns relate: enables, composes, prevents, and contrasts.
         </p>
       </header>
 
-      <div className="border-b-2 border-text/30" />
+      <div className="border-b border-text/20" />
 
       {/* Graph */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 py-10">

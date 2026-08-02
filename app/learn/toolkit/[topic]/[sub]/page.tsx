@@ -3,23 +3,33 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { PageTransition } from '@/components/ui/PageTransition';
-import { getAllToolkitTopicSlugs, getToolkitTopicBySlug, getToolkitPage, SUB_PAGE_META, type ToolkitSubPage } from '@/lib/toolkit';
 import { mdxComponents } from '@/components/blog/MdxComponents';
+import { CodeBlockWrapper } from '@/components/blog/CodeBlockWrapper';
+import { TableOfContents } from '@/components/blog/TableOfContents';
+import { SectionKicker } from '@/components/learn/SectionKicker';
+import { MobileTableOfContents } from '@/components/learn/MobileTableOfContents';
+import { EvidenceScopeNote } from '@/components/toolkit/EvidenceScopeNote';
+import { SourceRegister } from '@/components/toolkit/SourceRegister';
+import {
+  SUB_PAGE_META,
+  TOOLKIT_LENSES,
+  getAllToolkitTopicSlugs,
+  getToolkitPage,
+  getToolkitSourcesByIds,
+  getToolkitTopicBySlug,
+  isToolkitSubPage,
+} from '@/lib/toolkit';
 import { getMdxOptions } from '@/lib/mdx-options';
 import { generateBreadcrumbSchema } from '@/lib/schema';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { CodeBlockWrapper } from '@/components/blog/CodeBlockWrapper';
-import { TableOfContents } from '@/components/blog/TableOfContents';
 import { extractTableOfContents } from '@/lib/toc';
-import { SectionKicker } from '@/components/learn/SectionKicker';
-
 import { SITE_URL as siteUrl } from '@/lib/site';
-const VALID_SUB_PAGES: ToolkitSubPage[] = ['mental-model', 'playbook', 'compositions', 'pitfalls'];
+
+export const dynamicParams = false;
 
 export function generateStaticParams() {
-  const topics = getAllToolkitTopicSlugs();
-  return topics.flatMap((topic) =>
-    VALID_SUB_PAGES.map((sub) => ({ topic, sub }))
+  return getAllToolkitTopicSlugs().flatMap((topic) =>
+    TOOLKIT_LENSES.map((lens) => ({ topic, sub: lens.slug }))
   );
 }
 
@@ -31,7 +41,7 @@ export async function generateMetadata({
   const { topic: topicSlug, sub } = await params;
   const topic = getToolkitTopicBySlug(topicSlug);
   const page = getToolkitPage(topicSlug, sub);
-  if (!topic || !page) return {};
+  if (!topic || !page || !isToolkitSubPage(sub)) return {};
 
   return {
     title: page.frontmatter.title,
@@ -52,15 +62,16 @@ export default async function ToolkitSubPageRoute({
   params: Promise<{ topic: string; sub: string }>;
 }) {
   const { topic: topicSlug, sub } = await params;
+  if (!isToolkitSubPage(sub)) notFound();
+
   const topic = getToolkitTopicBySlug(topicSlug);
   const page = getToolkitPage(topicSlug, sub);
   if (!topic || !page) notFound();
 
-  const subMeta = SUB_PAGE_META[sub as ToolkitSubPage];
-  if (!subMeta) notFound();
-
+  const subMeta = SUB_PAGE_META[sub];
+  const sources = getToolkitSourcesByIds(page.frontmatter.sourceIds);
   const toc = extractTableOfContents(page.content);
-  const mdxOptions: any = await getMdxOptions();
+  const mdxOptions = await getMdxOptions();
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Learn', url: '/learn' },
@@ -70,31 +81,64 @@ export default async function ToolkitSubPageRoute({
   ]);
 
   return (
-    <PageTransition className="min-h-screen pb-16">
+    <PageTransition className="min-h-screen pb-20">
       <JsonLd data={breadcrumbSchema} />
 
-      <nav className="mb-5 pt-4 px-4 sm:px-6 lg:px-0" aria-label="Breadcrumb">
-        <ol className="flex flex-wrap items-center gap-2 text-xs text-muted font-mono">
-          <li><Link href="/learn" className="hover:text-text hover:underline underline-offset-2">Learn</Link></li>
+      <nav className="mb-5 px-4 pt-4 sm:px-6 lg:px-0" aria-label="Breadcrumb">
+        <ol className="flex flex-wrap items-center gap-2 text-sm text-muted">
+          <li>
+            <Link href="/learn" className="underline-offset-2 hover:text-text hover:underline">
+              Learn
+            </Link>
+          </li>
           <li aria-hidden="true">/</li>
-          <li><Link href="/learn/toolkit" className="hover:text-text hover:underline underline-offset-2">Toolkit</Link></li>
+          <li>
+            <Link
+              href="/learn/toolkit"
+              className="underline-offset-2 hover:text-text hover:underline"
+            >
+              Toolkit
+            </Link>
+          </li>
           <li aria-hidden="true">/</li>
-          <li><Link href={`/learn/toolkit/${topic.slug}`} className="hover:text-text hover:underline underline-offset-2">{topic.name}</Link></li>
+          <li>
+            <Link
+              href={`/learn/toolkit/${topic.slug}`}
+              className="underline-offset-2 hover:text-text hover:underline"
+            >
+              {topic.name}
+            </Link>
+          </li>
           <li aria-hidden="true">/</li>
-          <li aria-current="page"><span className="text-text font-semibold">{subMeta.label}</span></li>
+          <li aria-current="page">
+            <span className="font-semibold text-text">{subMeta.label}</span>
+          </li>
         </ol>
       </nav>
 
-      <div className="lg:grid lg:grid-cols-[1fr_220px] lg:gap-10 px-4 sm:px-6 lg:px-0">
-        <article className="min-w-0 prose prose-invert prose-lg mdx-content">
+      <div className="px-4 sm:px-6 lg:grid lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-10 lg:px-0">
+        <article className="mdx-content min-w-0 text-lg">
           <SectionKicker
             section="Toolkit"
             kicker={`${topic.name} · ${subMeta.label}`}
             color="cyan"
           />
-          <CodeBlockWrapper>
-          <MDXRemote source={page.content} components={mdxComponents} options={mdxOptions} />
-          </CodeBlockWrapper>
+          <EvidenceScopeNote
+            topicHref={`/learn/toolkit/${topic.slug}`}
+            lens={sub}
+            reviewedAt={page.frontmatter.reviewedAt}
+          />
+          <MobileTableOfContents items={toc} />
+          <div className="max-w-[68ch]">
+            <CodeBlockWrapper>
+              <MDXRemote
+                source={page.content}
+                components={mdxComponents}
+                options={mdxOptions as Parameters<typeof MDXRemote>[0]['options']}
+              />
+            </CodeBlockWrapper>
+          </div>
+          <SourceRegister sources={sources} heading={`${topic.name} sources`} />
         </article>
 
         <aside className="hidden lg:block">

@@ -1,15 +1,6 @@
+import Link from 'next/link';
 import type { PatternFrontmatter } from '@/lib/patterns';
 import { DifficultyBadge } from './DifficultyBadge';
-import Link from 'next/link';
-
-const CHAPTER_BORDER_COLORS: Record<number, string> = {
-  1: 'border-l-chapter-1',
-  2: 'border-l-chapter-2',
-  3: 'border-l-chapter-3',
-  4: 'border-l-chapter-4',
-  5: 'border-l-chapter-5',
-  6: 'border-l-chapter-6',
-};
 
 const CHAPTER_TEXT_COLORS: Record<number, string> = {
   1: 'text-chapter-1',
@@ -36,106 +27,70 @@ export function QuickReferenceCard({
   className = '',
 }: QuickReferenceCardProps) {
   const isHero = variant === 'hero';
-  const isStandalone = variant === 'standalone';
 
-  const Wrapper = isStandalone ? Link : 'div';
-  const wrapperProps = isStandalone ? { href: `/learn/patterns/${frontmatter.slug}` } : {};
-  const TitleTag = isHero ? 'h1' : 'h3';
-
-  return (
-    <Wrapper
-      {...(wrapperProps as any)}
-      className={`relative block border-l-4 ${CHAPTER_BORDER_COLORS[frontmatter.chapter]} overflow-hidden ${
-        isStandalone
-          ? 'border-2 border-text/60 bg-surface/60 p-5 transition-all duration-150 hover:border-text hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_var(--color-text)] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background group'
-          : ''
-      } ${isHero ? 'border-2 border-text/40 bg-surface/20 p-6 md:p-8' : ''} ${className}`}
-    >
-      {/* Ghost pattern number */}
-      <span
-        className={`absolute top-2 right-3 font-mono font-bold leading-none pointer-events-none select-none ${CHAPTER_TEXT_COLORS[frontmatter.chapter]} ${
-          isHero ? 'text-7xl md:text-8xl opacity-[0.08]' : 'text-5xl opacity-[0.12]'
-        }`}
-        aria-hidden="true"
-      >
-        {frontmatter.number}
-      </span>
-
-      {/* Header row */}
-      <div className={`flex items-center gap-3 relative ${isHero ? 'mb-3' : 'mb-2'}`}>
-        {!isHero && (
-          <span
-            className={`font-mono font-bold text-xs ${CHAPTER_TEXT_COLORS[frontmatter.chapter]} tabular-nums`}
-          >
-            {frontmatter.number}
-          </span>
-        )}
+  const content = (
+    <>
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <span className={`font-display text-2xl ${CHAPTER_TEXT_COLORS[frontmatter.chapter]}`}>
+          {frontmatter.number}
+        </span>
         <DifficultyBadge difficulty={frontmatter.difficulty} />
-        {readingTime && <span className="text-xs text-muted font-mono">{readingTime}</span>}
+        {readingTime ? (
+          <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+            {readingTime}
+          </span>
+        ) : null}
       </div>
 
-      {/* Name */}
-      <TitleTag
-        className={`font-bold tracking-tight relative ${
-          isHero
-            ? 'text-2xl md:text-3xl lg:text-4xl mb-3 leading-tight'
-            : isStandalone
-              ? 'text-lg mb-2 group-hover:underline decoration-2 underline-offset-4'
-              : 'text-base mb-2'
-        }`}
-      >
-        {frontmatter.name}
-      </TitleTag>
+      {isHero ? (
+        <h1 className="font-display text-4xl leading-tight tracking-[-0.03em] md:text-6xl">
+          {frontmatter.name}
+        </h1>
+      ) : (
+        <h3 className="font-display text-2xl leading-tight tracking-tight group-hover:underline group-hover:underline-offset-4">
+          {frontmatter.name}
+        </h3>
+      )}
 
-      {/* Intent */}
       <p
-        className={`text-muted leading-relaxed relative ${
-          isHero ? 'text-base md:text-lg mb-5' : 'text-sm mb-3 line-clamp-2'
-        }`}
+        className={`max-w-3xl leading-relaxed text-muted ${isHero ? 'mt-5 text-lg' : 'mt-2 text-sm'}`}
       >
         {frontmatter.intent}
       </p>
 
-      {/* Signals */}
-      {signals.length > 0 && (
-        <div className="relative">
-          <p
-            className={`font-mono font-bold uppercase tracking-wider text-muted ${
-              isHero ? 'text-[11px] mb-2' : 'text-[10px] mb-1.5'
-            }`}
-          >
+      {signals.length > 0 ? (
+        <div className={isHero ? 'mt-7' : 'mt-5'}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
             Signals
           </p>
-          <ul className={isHero ? 'space-y-1.5' : 'space-y-1'}>
-            {signals.map((signal, i) => (
-              <li
-                key={i}
-                className={`text-muted leading-snug pl-3 relative before:content-['›'] before:absolute before:left-0 before:text-muted before:font-mono ${
-                  isHero ? 'text-sm' : 'text-xs'
-                }`}
-              >
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-muted marker:text-accent">
+            {signals.map((signal) => (
+              <li key={signal} className="pl-1">
                 {signal}
               </li>
             ))}
           </ul>
         </div>
-      )}
+      ) : null}
 
-      {/* Keywords */}
-      {frontmatter.keywords && frontmatter.keywords.length > 0 && (
-        <div className={`flex flex-wrap gap-1.5 relative ${isHero ? 'mt-5' : 'mt-3'}`}>
-          {frontmatter.keywords.slice(0, isHero ? 5 : 4).map((kw) => (
-            <span
-              key={kw}
-              className={`font-mono text-muted border border-text/20 px-1.5 py-0.5 ${
-                isHero ? 'text-[11px]' : 'text-[10px]'
-              }`}
-            >
-              {kw}
-            </span>
-          ))}
-        </div>
-      )}
-    </Wrapper>
+      {frontmatter.keywords && frontmatter.keywords.length > 0 ? (
+        <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+          {frontmatter.keywords.slice(0, isHero ? 5 : 4).join(' · ')}
+        </p>
+      ) : null}
+    </>
   );
+
+  if (variant === 'standalone') {
+    return (
+      <Link
+        href={`/learn/patterns/${frontmatter.slug}`}
+        className={`group block border-t border-text/20 py-6 transition-colors hover:text-accent focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent ${className}`}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={`border-y border-text/20 py-8 ${className}`}>{content}</div>;
 }

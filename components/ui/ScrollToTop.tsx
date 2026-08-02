@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 /**
  * Floating scroll-to-top button
- * Shows after 500px scroll, neo-brutalist styling
+ * Shows after 500px scroll with the publication's quiet utility treatment.
  * Respects prefers-reduced-motion
  */
 export function ScrollToTop() {
@@ -50,22 +50,9 @@ export function ScrollToTop() {
           transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
           onClick={scrollToTop}
           aria-label="Scroll to top"
-          className="fixed bottom-6 right-6 z-40 flex items-center justify-center w-12 h-12 bg-surface border-4 border-text shadow-[4px_4px_0_0_var(--color-text)] hover:shadow-[6px_6px_0_0_var(--color-accent)] hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+          className="fixed bottom-6 right-6 z-40 flex min-h-11 min-w-11 items-center justify-center border border-text/25 bg-background px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-text shadow-lg transition-colors hover:border-text hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
         >
-          <svg
-            className="w-6 h-6 text-text"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={3}
-              d="M5 15l7-7 7 7"
-            />
-          </svg>
+          Top
         </motion.button>
       )}
     </AnimatePresence>

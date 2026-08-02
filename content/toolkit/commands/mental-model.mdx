@@ -1,152 +1,40 @@
 ---
-title: "Commands: Mental Model"
-topic: "commands"
-subPage: "mental-model"
+title: 'Commands and Workflows: Mental Model'
+topic: 'commands'
+subPage: 'mental-model'
 order: 2
-description: "How slash commands work internally — discovery, resolution, argument expansion, context injection, and the key difference from skills."
-relatedPatterns: ["progressive-disclosure", "context-priming"]
-relatedTopics: ["skills", "claude-md", "settings"]
+description: 'Separate session-control commands, user-invoked workflows, and reusable skills across coding-agent products.'
+relatedPatterns: ['progressive-disclosure', 'checkpoint-loop']
+relatedTopics: ['skills', 'settings', 'project-instructions']
 published: true
-keywords: ["commands mental model", "slash command lifecycle", "command resolution", "context injection"]
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-commands', 'claude-skills', 'codex-commands', 'codex-skills', 'copilot-cli-reference']
+keywords: ['agent commands mental model', 'slash commands', 'invocable workflows', 'command skills']
 ---
 
 # Mental Model
 
-A slash command is not a function call. It is a prompt injection — markdown content that enters the conversation as a single message and stays there until the session ends or context compacts. Every architectural decision about commands flows from this fact.
+A leading slash is a user-interface convention, not a portable execution contract. Coding-agent command surfaces contain three different mechanisms:
 
-## The Full Lifecycle
+1. **Session controls** change model, permissions, context, or interface state.
+2. **Operator shortcuts** invoke a named prompt or simple action.
+3. **Reusable workflows** package instructions, resources, scripts, and completion logic—often through the skills system.
 
-When you type `/` in Claude Code, five stages execute in sequence.
+Claude Code, Codex CLI, and Copilot CLI all document commands, but names and semantics differ. Claude and Copilot also preserve command-file compatibility while positioning skills as the richer packaging model. Codex separates interactive commands from reusable skills.
 
-### 1. Discovery
+## The Portable Unit
 
-Claude Code scans all registered command locations and builds an autocomplete dropdown. The scan covers six sources simultaneously:
+Port the workflow contract, not the slash name:
 
-| Source | Location | Scope | Autocomplete Label |
-|--------|----------|-------|--------------------|
-| Project commands | `<repo>/.claude/commands/` | This repo | `(project)` |
-| Project skills | `<repo>/.claude/skills/*/SKILL.md` | This repo | `(project)` |
-| User commands | `~/.claude/commands/` | All projects | `(user)` |
-| User skills | `~/.claude/skills/*/SKILL.md` | All projects | `(user)` |
-| Plugin skills | Installed plugins | Per config | `(plugin:name)` |
-| MCP prompts | Connected MCP servers | Per config | `/mcp__server__prompt` |
+- Intent and inputs.
+- Preconditions and authority.
+- Steps and decision points.
+- Verification.
+- Result artifact.
 
-Typing characters after `/` filters the list. If a project command and user command share the same name, the project command wins. Plugin and MCP commands use namespaced prefixes to avoid collisions entirely.
+Then expose that unit through the target product's current command or skill adapter.
 
-### 2. Resolution
+## Invocation Is Not Authorization
 
-The filename minus `.md` becomes the command name. `deploy.md` creates `/deploy`. For skills in `.claude/skills/name/SKILL.md`, the directory name determines the command name unless a `name` field in frontmatter overrides it.
-
-Name constraints: lowercase letters, numbers, hyphens only. Maximum 64 characters. No reserved words.
-
-### 3. Argument Expansion
-
-Three substitution mechanisms are available:
-
-```markdown
-# $ARGUMENTS — everything after the command name
-Fix the bug described in GitHub issue #$ARGUMENTS.
-
-# Positional — $1, $2, etc.
-Migrate the database schema from $1 to $2.
-
-# Implicit append — if no placeholder exists, arguments go to the end
-```
-
-Usage: `/fix-issue 123` replaces `$ARGUMENTS` with `123`. `/migrate v2 v3` replaces `$1` with `v2` and `$2` with `v3`. If the file contains no `$ARGUMENTS` placeholder and you pass arguments, they get appended after the file content.
-
-### 4. Context Injection
-
-The rendered markdown enters the conversation as a single user message. This is the most important thing to understand about commands:
-
-- The content **stays in context** for the rest of the session. It is not re-read on later turns.
-- After `/compact`, the content gets summarized along with everything else. Specific variable names, edge cases, and nuanced constraints often do not survive compression.
-- The injection is a **one-time event**. If you edit the command file mid-session, the old content is already in context. The edit has no effect until the next session.
-
-### 5. Execution
-
-Claude reads the injected instructions and follows them using available tools. There is no special runtime. It is the same Claude, with the same tools, operating on new instructions in context. If `allowed-tools` frontmatter restricts tool access, those restrictions apply for the duration of the skill execution.
-
-## Command File Anatomy
-
-A command file is markdown with optional YAML frontmatter:
-
-```markdown
----
-name: deploy
-description: Deploy the application to production
-disable-model-invocation: true
-allowed-tools: Bash,Read,Grep
-mode: false
----
-
-# Deploy to Production
-
-Run the full deployment pipeline for $ARGUMENTS (defaults to staging).
-
-## Steps
-
-1. Run `git status` — abort if uncommitted changes exist
-2. Run `npm run build` — abort on failure
-3. Deploy with `vercel --prod`
-```
-
-### Frontmatter Fields
-
-| Field | Type | Default | Purpose |
-|-------|------|---------|---------|
-| `name` | string | filename | Command name. Max 64 chars, lowercase/numbers/hyphens. |
-| `description` | string | none | How Claude decides auto-invocation relevance. Max 1024 chars. Critical for skills, optional for commands. |
-| `disable-model-invocation` | boolean | `false` | When `true`, only the user can trigger via `/name`. Required for destructive operations. |
-| `user-invocable` | boolean | `true` | When `false`, only Claude can invoke. For background knowledge skills only. |
-| `allowed-tools` | string | all tools | Comma-separated tool list. Supports patterns: `Bash(git:*)`, `Bash(npm run build:*)`. |
-| `mode` | boolean | `false` | When `true`, appears under "Mode Commands" in autocomplete. For behavior-changing commands. |
-
-The `description` field serves double duty. For skills that Claude auto-invokes, the description is the **only** signal Claude uses to decide relevance. For commands with `disable-model-invocation: true`, the description is informational — it shows in `/help` output and autocomplete tooltips.
-
-## Commands vs. Skills: The Invocation Axis
-
-The core distinction is who triggers execution:
-
-| Dimension | Command (legacy) | Skill |
-|-----------|------------------|-------|
-| Location | `.claude/commands/name.md` | `.claude/skills/name/SKILL.md` |
-| Invocation | User only (`/name`) | User OR model (automatic) |
-| Structure | Single markdown file | Directory with supporting files |
-| Frontmatter | Optional, minimal | Full YAML support |
-| Supporting files | None | Scripts, templates, configs alongside SKILL.md |
-
-Both formats create the same `/name` slash command for user invocation. The commands directory is the legacy format. Skills are the current recommended approach for anything beyond simple prompt shortcuts.
-
-**Backward compatibility** is maintained: `.claude/commands/deploy.md` and `.claude/skills/deploy/SKILL.md` both create `/deploy` and work identically when the user types the command.
-
-**Decision framework:**
-- Single markdown file, user-triggered only, no supporting assets: use a **command**
-- Needs templates, scripts, or reference docs alongside it: use a **skill**
-- Should auto-invoke based on task context: use a **skill** with a precise `description`
-- Destructive operation requiring human confirmation: use either, but set `disable-model-invocation: true`
-
-## Context Window Impact
-
-This is the most under-appreciated aspect of commands.
-
-**At startup:** Only skill names and descriptions load — roughly 100 tokens per skill. The full content of command files is NOT loaded until invocation. Twenty commands cost ~2,000 tokens of startup overhead total.
-
-**On invocation:** The full file content enters context and stays there permanently. A 500-line command file consumes ~2,000 tokens on injection.
-
-**After compaction:** `/compact` summarizes the conversation. Command instructions lose fidelity. The first 5 lines and last 5 lines of a command file are most reliably retained; middle content degrades first.
-
-**The competition:** Claude Code's system prompt uses ~50 instruction slots out of roughly 150-200 that frontier models follow reliably. Your CLAUDE.md, loaded skills, and command content all compete for the remaining ~100-150 slots.
-
-**Rule of thumb:** Keep command files under 200 lines. If you need more, split into multiple commands or instruct Claude to read external files on demand rather than inlining everything into the command body.
-
-## How Resolution Order Determines Precedence
-
-When multiple sources define the same command name:
-
-1. **Project** commands override **user** commands
-2. **Plugin** commands use `plugin:name` prefix — no collision possible
-3. **MCP** prompts use `mcp__server__prompt` prefix — no collision possible
-4. Within the same scope, **commands** and **skills** with the same name conflict unpredictably — avoid this
-
-Personal workflow customization lives in `~/.claude/commands/`. Team-shared automation lives in `<repo>/.claude/commands/`. Project commands always win if names collide, giving teams control over the canonical behavior while individuals can extend with non-overlapping names.
+Typing a command expresses intent. It does not automatically authorize destructive, external, or costly effects. Preserve confirmations and policy checks at the action boundary.

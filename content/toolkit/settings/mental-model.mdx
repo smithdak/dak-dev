@@ -1,268 +1,35 @@
 ---
-title: "Settings: Mental Model"
-topic: "settings"
-subPage: "mental-model"
+title: 'Settings and Policy: Mental Model'
+topic: 'settings'
+subPage: 'mental-model'
 order: 2
-description: "The complete settings hierarchy — 5 configuration scopes, permission evaluation order, model selection, and the profile system."
-relatedPatterns: ["scope-fence", "constraint-over-instruction"]
-relatedTopics: ["claude-md", "hooks", "agents"]
+description: 'Model agent configuration as layered capability, authorization, isolation, and organization-policy controls.'
+relatedPatterns: ['scope-fence', 'safety-net', 'convention-file']
+relatedTopics: ['project-instructions', 'hooks', 'mcp']
 published: true
-keywords: ["settings mental model", "configuration hierarchy", "permission system", "model selection"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-settings', 'codex-config', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords:
+  ['agent settings mental model', 'configuration precedence', 'agent permissions', 'managed policy']
 ---
 
 # Mental Model
 
-Claude Code's configuration system has five scopes, three permission types, six permission modes, and over 100 environment variables. This page maps the entire system so you know exactly what controls what.
+Agent settings govern four separate layers:
 
-## The Five Scopes
+1. **Capability** — which tools, skills, agents, servers, and models exist.
+2. **Authorization** — which actions are allowed, denied, or require approval.
+3. **Isolation** — what the executing process can actually access.
+4. **Policy** — which higher-trust controls a user or repository cannot weaken.
 
-Every setting in Claude Code belongs to one of five scopes. Settings merge from lowest to highest priority, with more specific scopes overriding broader ones.
+Project instructions sit beside these layers as behavioral guidance. They should explain the operating model but cannot substitute for it.
 
-```
-Managed (highest priority)
-  ↓
-CLI arguments
-  ↓
-Local (.claude/settings.local.json)
-  ↓
-Project (.claude/settings.json)
-  ↓
-User (~/.claude/settings.json) (lowest priority)
-```
+## Effective Configuration
 
-| Scope | Location | Who It Affects | Committed to Git? |
-|-------|----------|----------------|-------------------|
-| **Managed** | Server-managed, MDM/plist/registry, or `managed-settings.json` | All users on the machine | Deployed by IT |
-| **CLI args** | `--model`, `--permission-mode`, `--allowedTools`, etc. | Current session only | No |
-| **Local** | `.claude/settings.local.json` | You, in this repo only | No (gitignored) |
-| **Project** | `.claude/settings.json` | All collaborators | Yes |
-| **User** | `~/.claude/settings.json` | You, across all projects | No |
+The setting written in one file is not necessarily the setting in force. Products merge user, repository, local, environment, command-line, IDE, cloud, and managed sources differently. Correctness depends on the resolved configuration at execution time.
 
-**Array merge behavior:** Array-valued settings like `permissions.allow` are concatenated and deduplicated across scopes, not replaced. Lower-priority scopes add entries without overriding higher-priority ones.
+## Defense in Depth
 
-**Managed tier precedence:** Within the managed tier, the order is: server-managed > MDM/OS-level policies > file-based (`managed-settings.d/*.json` + `managed-settings.json`) > HKCU registry (Windows only). Only one managed source is used — sources do not merge across tiers.
+A tool deny rule constrains the tool router. A sandbox constrains the process. An MCP credential constrains the external service. CI constrains release. Each covers paths the others may not see.
 
-### Managed Settings Delivery
-
-Managed settings reach machines through multiple channels:
-
-- **Server-managed:** Anthropic's servers via Claude.ai admin console
-- **macOS MDM:** `com.anthropic.claudecode` managed preferences domain (Jamf, Kandji)
-- **Windows Group Policy:** `HKLM\SOFTWARE\Policies\ClaudeCode` registry key
-- **Windows user-level:** `HKCU\SOFTWARE\Policies\ClaudeCode` (lowest policy priority)
-- **File-based:** Platform-specific paths with a drop-in directory
-
-File-based paths:
-
-| Platform | Path |
-|----------|------|
-| macOS | `/Library/Application Support/ClaudeCode/managed-settings.json` |
-| Linux/WSL | `/etc/claude-code/managed-settings.json` |
-| Windows | `C:\Program Files\ClaudeCode\managed-settings.json` |
-
-The drop-in directory `managed-settings.d/` sits alongside the main file. Files are sorted alphabetically and deep-merged. Use numeric prefixes (`10-telemetry.json`, `20-security.json`) to control merge order.
-
-```bash
-# Example: managed-settings.d/ drop-in directory
-/etc/claude-code/
-  managed-settings.json              # Base managed config
-  managed-settings.d/
-    10-telemetry.json                # {"disableTelemetry": true}
-    20-security.json                 # {"permissions": {"deny": [...]}}
-    30-models.json                   # {"availableModels": ["sonnet"]}
-```
-
-```json
-// 20-security.json — merged into managed-settings.json
-{
-  "permissions": {
-    "deny": [
-      "Bash(curl *)",
-      "Bash(wget *)",
-      "Read(~/.ssh/**)",
-      "Read(~/.aws/**)"
-    ]
-  },
-  "allowManagedPermissionRulesOnly": true
-}
-```
-
-## Permission System Architecture
-
-### Three Rule Types
-
-| Type | Effect |
-|------|--------|
-| **Allow** | Claude uses the tool without prompting |
-| **Ask** | Prompts for confirmation each time |
-| **Deny** | Blocks the tool entirely |
-
-**Evaluation order:** deny → ask → allow. First match wins. Deny always takes precedence over everything.
-
-### Six Permission Modes
-
-| Mode | Behavior |
-|------|----------|
-| `default` | Prompts on first use of each tool |
-| `acceptEdits` | Auto-accepts file edits and common filesystem commands in working directory |
-| `plan` | Read-only — Claude can analyze but not modify |
-| `auto` | Background classifier reviews commands (research preview) |
-| `dontAsk` | Auto-denies unless pre-approved via `permissions.allow` |
-| `bypassPermissions` | Skips all prompts except writes to `.git`, `.claude`, `.vscode`, `.idea`, `.husky` |
-
-Set via `permissions.defaultMode` in settings or `--permission-mode` at startup.
-
-### Permission Rule Syntax
-
-Rules follow the format `Tool` or `Tool(specifier)`.
-
-**Bash patterns:**
-
-```bash
-Bash                          # Matches ALL Bash commands
-Bash(npm run build)           # Exact match
-Bash(npm run *)               # Glob wildcard (space = word boundary)
-Bash(npm*)                    # No space = no word boundary; matches "npm" and "npmrc"
-Bash(git * main)              # Wildcard in middle
-Bash(* --version)             # Wildcard at start
-```
-
-**Read/Edit patterns (gitignore syntax):**
-
-```bash
-Read(./.env)                  # Relative to current directory
-Read(/src/**/*.ts)            # Relative to project root
-Read(~/Documents/*.pdf)       # Home directory
-Read(//Users/alice/secrets)   # Absolute path (double slash!)
-Edit(/docs/**)                # Recursive in project docs/
-```
-
-**Other tools:**
-
-```bash
-WebFetch(domain:example.com)  # Domain restriction
-mcp__puppeteer                # All tools from an MCP server
-mcp__puppeteer__navigate      # Specific MCP tool
-Agent(Explore)                # Specific subagent
-```
-
-### Compound Command Awareness
-
-Claude Code is shell-aware. `Bash(safe-cmd *)` does NOT allow `safe-cmd && dangerous-cmd`. Shell operators (`&&`, `||`, `;`, `|`, `|&`, `&`, newlines) are recognized and each subcommand must match independently.
-
-**Process wrappers:** Before matching, Claude Code strips `timeout`, `time`, `nice`, `nohup`, `stdbuf`, and bare `xargs`. So `Bash(npm test *)` also matches `timeout 30 npm test`.
-
-### Managed-Only Settings
-
-These settings have NO effect in user or project settings — they only work in managed settings:
-
-| Setting | Purpose |
-|---------|---------|
-| `allowManagedHooksOnly` | Block all non-managed hooks |
-| `allowManagedMcpServersOnly` | Only allow admin-defined MCP servers |
-| `allowManagedPermissionRulesOnly` | Block user/project permission rules |
-| `forceRemoteSettingsRefresh` | Block startup until remote settings fetched |
-| `sandbox.filesystem.allowManagedReadPathsOnly` | Only admin-defined read paths |
-| `sandbox.network.allowManagedDomainsOnly` | Only admin-defined network domains |
-
-Placing these in project or user settings does nothing — no error, no warning, just silent ignore.
-
-## Model Selection Strategy
-
-### Available Models and Aliases
-
-| Alias | Model | Best For |
-|-------|-------|----------|
-| `sonnet` | Sonnet 4.6 | Daily coding, implementation, fast iteration |
-| `opus` | Opus 4.6 | Complex reasoning, architecture, debugging |
-| `haiku` | Haiku 4.5 | Simple tasks, quick lookups, background work |
-| `best` | Currently Opus 4.6 | Maximum capability |
-| `opusplan` | Opus for planning, Sonnet for execution | Best cost/quality ratio |
-| `sonnet[1m]` | Sonnet 4.6 with 1M context | Long sessions, large codebases |
-| `opus[1m]` | Opus 4.6 with 1M context | Complex work in large codebases |
-
-### Model Priority Order
-
-1. `/model <alias>` during session (highest)
-2. `claude --model <alias>` at startup
-3. `ANTHROPIC_MODEL` environment variable
-4. `model` field in settings.json (lowest)
-
-### Effort Levels
-
-Controls adaptive reasoning depth. Supported on Opus 4.6 and Sonnet 4.6.
-
-| Level | Use Case |
-|-------|----------|
-| `low` | Fast, straightforward tasks |
-| `medium` | Default for Pro/Max subscribers |
-| `high` | Default for API/Team/Enterprise; complex work |
-| `max` | Deepest reasoning, Opus 4.6 only, does not persist |
-
-Set via `/effort`, `--effort` flag, `CLAUDE_CODE_EFFORT_LEVEL` env var, or `effortLevel` in settings. Include "ultrathink" in a prompt to trigger high effort for a single turn.
-
-### Cost Guidance
-
-Opus 4.6 is roughly 15x more expensive than Haiku. Pick models deliberately:
-
-| Task Type | Recommended Model |
-|-----------|-------------------|
-| Exploration, simple lookups | `haiku` |
-| Daily implementation, code review | `sonnet` |
-| Complex debugging, architecture | `opus` |
-| Mixed complexity projects | `opusplan` |
-| Large codebase navigation | `sonnet[1m]` or `opus[1m]` |
-
-## The Profile System
-
-Claude Code has no built-in profile system. Profiles are achieved through `CLAUDE_CONFIG_DIR`, which points to a fully isolated configuration directory — credentials, settings, history, plugins, agents, hooks.
-
-```bash
-# Create profile directories
-mkdir -p ~/.claude-work ~/.claude-personal
-
-# Shell aliases
-alias claude-work='CLAUDE_CONFIG_DIR=~/.claude-work claude'
-alias claude-personal='CLAUDE_CONFIG_DIR=~/.claude-personal claude'
-```
-
-Each profile directory is completely independent. Switching profiles means switching everything.
-
-**Community tools for profile management:**
-
-- **claude-code-profiles:** Complete isolated profile directories
-- **claudectx:** `claudectx work` switches in one command
-- **claude-provider:** Plugin + CLI for switching providers
-
-## Key Environment Variables
-
-Over 100 environment variables exist. These are the ones that matter most:
-
-| Category | Variable | Purpose |
-|----------|----------|---------|
-| **Auth** | `ANTHROPIC_API_KEY` | API key |
-| **Auth** | `CLAUDE_CODE_OAUTH_TOKEN` | OAuth access token |
-| **Model** | `ANTHROPIC_MODEL` | Override model selection |
-| **Model** | `CLAUDE_CODE_SUBAGENT_MODEL` | Model for subagents |
-| **Behavior** | `CLAUDE_CONFIG_DIR` | Config directory (default `~/.claude`) |
-| **Behavior** | `CLAUDE_CODE_DISABLE_CLAUDE_MDS` | Skip CLAUDE.md loading |
-| **Performance** | `BASH_DEFAULT_TIMEOUT_MS` | Bash timeout (default 120000ms) |
-| **Performance** | `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | Auto-compaction trigger (1-100) |
-| **CI/CD** | `DISABLE_TELEMETRY` | Disable telemetry |
-| **CI/CD** | `CLAUDE_CODE_SKIP_PROMPT_HISTORY` | Skip writing transcripts |
-| **Cloud** | `CLAUDE_CODE_USE_BEDROCK` | Use AWS Bedrock provider |
-| **Cloud** | `ANTHROPIC_BASE_URL` | API endpoint override (proxies/gateways) |
-
-All env vars can also be set in `settings.json` under the `env` key, making them version-controllable.
-
-## The settings.json Schema
-
-Add the official JSON Schema for IDE autocomplete:
-
-```json
-{
-  "$schema": "https://json.schemastore.org/claude-code-settings.json"
-}
-```
-
-This gives you validation and autocomplete for every field in your editor. The schema covers all settings.json fields including `permissions`, `hooks`, `sandbox`, `model`, `env`, and the 50+ other configuration options.
+The crux is the bypass graph: enumerate every route to the protected outcome, then place controls at the narrowest independently governed boundaries.

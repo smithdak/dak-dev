@@ -23,6 +23,7 @@ Topic → Research → Draft → Validate → Fix → Repeat until score ≥ 80 
 ### Step 1: Gather Research
 
 Before writing, collect:
+
 - **Metrics**: Specific numbers (%, ms, KB, x improvement)
 - **Code Examples**: Real, tested snippets
 - **Facts**: Verified technical details
@@ -30,31 +31,32 @@ Before writing, collect:
 - **Recency**: External stats/studies must be ≤6 months old at time of publication. Older data is only acceptable for historical context clearly marked as such (e.g., "Back in 2023...").
 
 **Anti-Slop Rule:** Writing cannot start without:
+
 - Specific metrics (generic claims like "improves performance" are rejected)
 - Identified tradeoffs or limitations for the approach
 - "When NOT to use" boundaries defined
 
 ### Step 2: Determine Content Type
 
-| Type | Template | Use When |
-|------|----------|----------|
-| `general` | post.mdx.template | Standard blog posts |
-| `tutorial` | tutorial.mdx.template | Step-by-step guides with code |
-| `project` | project.mdx.template | Project showcases with metrics |
+| Type       | Template              | Use When                       |
+| ---------- | --------------------- | ------------------------------ |
+| `general`  | post.mdx.template     | Standard blog posts            |
+| `tutorial` | tutorial.mdx.template | Step-by-step guides with code  |
+| `project`  | project.mdx.template  | Project showcases with metrics |
 
 ### Step 3: Generate Frontmatter
 
 ```yaml
-title: "{{Topic refined to 30-70 chars, primary keyword included}}"
+title: '{{Topic refined to 30-70 chars, primary keyword included}}'
 date: "{{Today's date YYYY-MM-DD}}"
-excerpt: "{{140-160 chars EXACTLY - action verb + learning + benefit}}"
-slug: "{{url-friendly-slug}}"
-tags: [{{2-5 relevant tags}}]
-thumbnail: "/images/posts/{{slug}}/thumbnail.jpg"
-hero: "/images/posts/{{slug}}/hero.jpg"
+excerpt: '{{140-160 chars EXACTLY - action verb + learning + benefit}}'
+slug: '{{url-friendly-slug}}'
+tags: [{ { 2-5 relevant tags } }]
+thumbnail: '/images/posts/{{slug}}/thumbnail.jpg'
+hero: '/images/posts/{{slug}}/hero.jpg'
 published: false
-author: "Dakota Smith"
-keywords: [{{3-7 SEO keywords from research}}]
+author: 'Dakota Smith'
+keywords: [{ { 3-7 SEO keywords from research } }]
 ```
 
 ### Step 4: Fill Template
@@ -62,11 +64,13 @@ keywords: [{{3-7 SEO keywords from research}}]
 Load template from `.content/templates/` and fill each section:
 
 **Introduction:**
+
 - Bottom line first: lead with the key insight or result
 - Context: What problem we're solving
 - Promise: What the reader will learn
 
 **Body Sections (3+ H2 headings):**
+
 - Each section has clear heading
 - Concrete explanations with metrics
 - Code examples where relevant
@@ -77,6 +81,7 @@ Load template from `.content/templates/` and fill each section:
   - The complexity cost
 
 **Conclusion:**
+
 - Summary paragraph
 - 3-5 bullet-point takeaways
 - Optional call to action
@@ -84,11 +89,13 @@ Load template from `.content/templates/` and fill each section:
 ### Step 5: Validate
 
 Run full validation:
+
 ```bash
 npx tsx scripts/run-validation.ts validate <slug>
 ```
 
 **Quality Gates:**
+
 - Overall score ≥ 80
 - Zero forbidden phrases
 - All metrics are specific
@@ -100,6 +107,7 @@ npx tsx scripts/run-validation.ts validate <slug>
 ### Step 6: Iterate (if needed)
 
 If score < 80:
+
 1. Review specific issues
 2. Rewrite affected sections
 3. Re-validate
@@ -108,6 +116,7 @@ If score < 80:
 ### Step 7: Update Calendar
 
 Update `.content/calendar/content-plan.json`:
+
 - If from backlog: move idea to topics with status "review"
 - If new: add to topics with status "review"
 
@@ -133,7 +142,7 @@ Code Blocks: 4
 --- Next Steps ---
 1. Review the post at /content/posts/edge-caching-api-response-times.mdx
 2. Add images to /public/images/posts/edge-caching-api-response-times/
-3. Run: npm run images:process
+3. Run: pnpm images:generate
 4. Set published: true when ready
 
 --- Calendar Updated ---
@@ -143,16 +152,19 @@ Added to topics as "review" status
 ## Examples
 
 ### Basic Usage
+
 ```
 /write-post "Next.js caching strategies"
 ```
 
 ### Tutorial Type
+
 ```
-/write-post "Setting up Claude Code MCP servers" --type tutorial
+/write-post "Comparing MCP support across Claude Code, Codex, and Copilot" --type tutorial
 ```
 
 ### From Calendar
+
 ```
 /write-post --from-calendar idea_001
 ```
@@ -168,23 +180,27 @@ This skill delegates to:
 ## Anti-AI-Slop Enforcement
 
 ### Required Before Writing
+
 - [ ] Specific metrics gathered (not "improves performance")
 - [ ] Real code examples (not generic pseudo-code)
 - [ ] Verified facts with sources
 - [ ] External sources are ≤6 months old (or clearly framed as historical)
 
 ### Checked During Writing
+
 - [ ] No forbidden phrases (31+ patterns)
 - [ ] Active voice (≤20% passive)
 - [ ] Short sentences (≤35 words each)
 
 ### Transparency Checks
+
 - [ ] Tradeoffs/limitations stated for technical advice
 - [ ] No oversimplification phrases ("seamlessly", "effortlessly", "perfect solution", "zero overhead", "no downsides")
 - [ ] "When NOT to use" boundaries included
 - [ ] Real metrics from real projects (not synthetic)
 
 ### Validated After Writing
+
 - [ ] Score ≥ 80
 - [ ] Title 30-70 chars
 - [ ] Excerpt 140-160 chars exactly

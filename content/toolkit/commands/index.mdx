@@ -1,66 +1,41 @@
 ---
-title: "Commands: Expert's Guide"
-topic: "commands"
+title: 'Commands and Invocable Workflows Across Claude Code, Codex, and Copilot'
+topic: 'commands'
 order: 1
-description: "Master Claude Code custom slash commands — workflow automation, command composition, and the line between commands and skills."
-relatedPatterns: ["progressive-disclosure", "convention-file"]
-relatedTopics: ["skills", "hooks", "claude-md"]
+description: 'Separate interactive product commands from reusable custom workflows across Claude Code, Codex, and Copilot CLI.'
+relatedPatterns: ['progressive-disclosure', 'checkpoint-loop']
+relatedTopics: ['skills', 'hooks', 'settings']
 published: true
-keywords: ["claude code commands", "slash commands", "workflow automation", "command composition"]
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-commands', 'claude-skills', 'codex-commands', 'codex-skills', 'copilot-cli-reference']
+keywords:
+  ['agent commands', 'slash commands', 'Claude commands', 'Codex commands', 'Copilot CLI commands']
 ---
 
-# Commands
+# Commands & Invocable Workflows
 
-Slash commands are Claude Code's user-triggered automation layer. Each command is a markdown file that injects instructions into the conversation when you type `/name` — turning multi-step workflows into single keystrokes.
+Coding-agent products expose two things that look alike in the prompt but have different contracts:
 
-## Why Commands Matter
+- **Built-in commands** control the session, model, permissions, context, or product UI.
+- **Custom invocable workflows** package repeatable operator intent and often share machinery with skills.
 
-Without commands, you retype the same multi-paragraph prompts every session. "Review this PR for security issues, check for N+1 queries, verify error handling, output findings as severity/location/issue/fix" becomes `/review`. The prompt lives in version control, shared across the team, executed identically every time.
+Claude Code, Codex CLI, and Copilot CLI all provide interactive command surfaces. Their command names, argument conventions, availability, and persistence are product-specific. Do not build a cross-vendor process around the assumption that `/name` means the same thing everywhere.
 
-Commands sit in `.claude/commands/` as `.md` files. The filename minus extension becomes the slash command name. `deploy.md` creates `/deploy`. Arguments pass through `$ARGUMENTS` or positional `$1`, `$2` placeholders. The entire file content enters the conversation as a single message — not a function call, but a prompt injection that Claude follows using its standard tools.
+## Design the Workflow First
 
-A minimal command file:
+A durable custom workflow should define:
 
-```markdown
----
-name: review
-description: Review code changes for quality and security issues
-disable-model-invocation: true
-allowed-tools: Read,Grep,Glob,Bash(git diff:*)
----
+1. The operator intent and accepted inputs.
+2. Preconditions and permission boundaries.
+3. A bounded sequence with explicit decision points.
+4. Verification that proves the requested outcome.
+5. A result artifact or summary that another human or agent can inspect.
 
-# Code Review
+Package the workflow as a skill when it needs reference files, scripts, or model-driven discovery. Keep a command as a thin, manually invoked entrypoint when direct operator timing is the value.
 
-Review the changes in $ARGUMENTS.
+## Safety Boundary
 
-For each finding, report:
-- **Severity**: critical / warning / suggestion
-- **Location**: file:line
-- **Issue**: What's wrong
-- **Fix**: Concrete suggestion
+Invocation does not expand authority. A command named `deploy` should not silently infer permission to publish, spend money, or mutate external systems. Preserve the product's approval controls and require explicit confirmation at irreversible boundaries.
 
-Do NOT make changes. Report only.
-```
-
-## When to Use Commands vs. Skills
-
-| Need | Use |
-|------|-----|
-| Explicit multi-step workflow triggered by the user | **Command** |
-| Background knowledge Claude loads automatically | Skill |
-| Workflow with supporting templates or scripts | Skill (directory structure) |
-| Destructive operation requiring human intent | **Command** with `disable-model-invocation: true` |
-| Simple saved prompt, single markdown file | **Command** |
-| Reusable across repos without per-project setup | User command (`~/.claude/commands/`) |
-| Deterministic enforcement, not suggestions | Hook |
-
-The critical distinction: commands are explicit and user-initiated. Skills can be model-initiated. If you never want Claude to run something without your say-so, it belongs in a command with `disable-model-invocation: true`.
-
-## What's Inside
-
-Explore the sub-pages for deep expertise:
-
-- **Mental Model** — How slash commands are discovered, resolved, expanded, and injected into context, plus the key architectural difference from skills
-- **Playbook** — Production command patterns: deployment pipelines, code review, parameterized workflows, meta-commands, and team-shared libraries
-- **Compositions** — Commands combined with skills, hooks, agents, MCP, and CLAUDE.md for orchestrated automation
-- **Pitfalls** — Autocomplete failures, commands vs skills confusion, context bloat, silent YAML errors, and platform-specific debugging
+The deeper lenses retain Claude Code command-file examples. Claude now recommends skills for multi-step commands, while Codex and Copilot have their own command and skill precedence. Translate the workflow contract, then implement the target product's current adapter.

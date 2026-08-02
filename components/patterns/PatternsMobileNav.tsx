@@ -129,7 +129,7 @@ export function PatternsMobileNav({
                 <Link
                   href={`/learn/patterns/chapter/${chapter.slug}`}
                   onClick={() => setIsOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 border-l-4 ${BORDER_COLORS[chapter.number]} hover:bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent`}
+                  className={`flex items-center gap-3 px-4 py-3 border-l ${BORDER_COLORS[chapter.number]} hover:bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent`}
                 >
                   <span className={`font-mono font-bold text-xs ${TEXT_COLORS[chapter.number]}`}>
                     {chapter.number}

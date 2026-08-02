@@ -1,252 +1,34 @@
 ---
-title: "MCP: Mental Model"
-topic: "mcp"
-subPage: "mental-model"
+title: 'MCP Integration: Mental Model'
+topic: 'mcp'
+subPage: 'mental-model'
 order: 2
-description: "The MCP protocol internals — transport layers, capability negotiation, tool registration, and how Claude discovers and uses MCP tools."
-relatedPatterns: ["agent-friendly-architecture", "convention-file"]
-relatedTopics: ["settings", "agents", "claude-md"]
+description: 'Understand MCP as negotiated external capability with product-specific primitive, transport, authentication, and trust boundaries.'
+relatedPatterns: ['agent-friendly-architecture', 'scope-fence', 'safety-net']
+relatedTopics: ['settings', 'hooks', 'agents']
 published: true
-keywords: ["MCP mental model", "protocol internals", "transport layers", "tool registration"]
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-mcp', 'codex-mcp', 'copilot-customize-cli', 'copilot-cli-reference', 'copilot-cloud-mcp']
+keywords: ['MCP mental model', 'Model Context Protocol', 'MCP primitives', 'MCP trust boundary']
 ---
 
 # Mental Model
 
-MCP is JSON-RPC 2.0 with a handshake. Every message between Claude Code and an MCP server is a JSON-RPC request, response, or notification. The transport layer serializes these messages, but the protocol logic is transport-independent. Understanding this separation is what separates debugging from guessing.
+MCP separates an agent client from external capabilities through a discoverable protocol. The client connects, negotiates capabilities, and exposes permitted primitives to the model.
 
-## Transport Layers
+## Five Contracts
 
-Three transports exist. Two are recommended.
+1. **Primitive** — tools, resources, prompts, or another documented capability.
+2. **Transport** — how client and server communicate and recover.
+3. **Authentication** — how the server obtains and refreshes authority.
+4. **Approval** — what the user or policy must authorize before invocation.
+5. **Result** — how output is bounded, attributed, and returned to model context.
 
-| Transport | Mechanism | Use Case | Status |
-|-----------|-----------|----------|--------|
-| **stdio** | Server reads JSON-RPC from stdin, writes to stdout. Newline-delimited. | Local processes, CLI tools | Active, recommended for local |
-| **Streamable HTTP** | Single HTTP endpoint, bidirectional via POST/GET. Optional SSE for streaming. | Remote servers, cloud services | Active, recommended for remote |
-| **SSE** | Server-Sent Events over HTTP | Legacy remote transport | Deprecated (2025-06-18 spec) |
+Product support must be compared at this level. For example, Copilot cloud agent documents MCP tools while excluding resources, prompts, and remote OAuth. That is a different contract from Copilot CLI even though both are called MCP support.
 
-**The stdio constraint that breaks everything:** Servers using stdio transport must write *only* JSON-RPC messages to stdout. Debug prints, library warnings, console.log calls -- any non-JSON-RPC output corrupts the protocol stream and produces cryptic "Unexpected token" errors. All logging goes to stderr. This is the single most common cause of MCP server failures.
+## Trust Boundary
 
-## The Connection Lifecycle
+The model sees a tool description, not the downstream authorization system. A server must validate input and enforce identity, scope, tenancy, and rate limits independently. Treat server output as untrusted external data that may be stale, malformed, or adversarial.
 
-Every MCP session follows this sequence:
-
-```
-1. Claude Code loads server configs from all scopes
-2. Starts each server (subprocess for stdio, HTTP connect for remote)
-3. Initialize handshake (3 steps):
-   a. Client sends `initialize` (protocol version + client capabilities)
-   b. Server responds with its capabilities (supported primitives)
-   c. Client sends `initialized` notification (connection confirmed)
-4. Client calls `tools/list` -> server returns tool schemas
-5. Session active: tool calls, resource reads, prompt execution
-6. Session end: disconnect/shutdown
-```
-
-The handshake is where most startup failures occur. If the server does not respond to `initialize` within the timeout window, Claude Code marks it offline. Default timeout is configurable via `MCP_TIMEOUT` environment variable (milliseconds).
-
-## Configuration Scopes and Priority
-
-Claude Code discovers servers from five sources, loaded in priority order:
-
-| Priority | Scope | Storage | Visibility |
-|----------|-------|---------|------------|
-| 1 (highest) | Local | `~/.claude.json` per-project path | Private to you, this project only |
-| 2 | Project | `.mcp.json` at project root | Team-shared via version control |
-| 3 | User | `~/.claude.json` globally | You, across all projects |
-| 4 | Plugin | Plugin's `.mcp.json` or inline in `plugin.json` | Plugin scope |
-| 5 | Claude.ai connectors | claude.ai/settings/connectors | Account-wide |
-
-When the same server name appears in multiple scopes, Claude Code connects once using the highest-precedence definition. No duplicate connections.
-
-A typical `.mcp.json` at the project root — shared by the whole team via version control:
-
-```json
-{
-  "mcpServers": {
-    "db": {
-      "command": "npx",
-      "args": ["-y", "@bytebase/dbhub", "--dsn", "${DATABASE_URL}"],
-      "env": {
-        "DATABASE_URL": "${DATABASE_URL:-postgresql://localhost:5432/dev}"
-      }
-    },
-    "github": {
-      "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/"
-    },
-    "internal-api": {
-      "type": "http",
-      "url": "https://mcp.internal.example.com",
-      "headersHelper": ".claude/scripts/get-auth-headers.sh"
-    }
-  }
-}
-```
-
-And the user-scoped `~/.claude.json` for personal servers that should not be committed:
-
-```json
-{
-  "mcpServers": {
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@anthropic/mcp-memory"],
-      "env": {
-        "MEMORY_DIR": "${HOME}/.claude/memory"
-      }
-    },
-    "datadog": {
-      "type": "http",
-      "url": "https://mcp.datadoghq.com"
-    }
-  }
-}
-```
-
-## Tool Discovery and Lazy Loading
-
-Tool search is enabled by default. At session start, only tool *names* load into context. Full schemas are deferred and discovered on demand when Claude determines a tool is relevant. This means adding 20 MCP servers does not bloat the context window by 20 servers' worth of schema descriptions.
-
-Claude uses an internal search mechanism to match task requirements against tool names and descriptions. Well-written tool descriptions drive correct selection. Vague descriptions cause tools to be ignored or misused.
-
-## The Naming Convention
-
-Every MCP tool follows the pattern: `mcp__<server-name>__<tool-name>`
-
-```
-mcp__github__search_repositories
-mcp__db__query
-mcp__datadog__get_logs
-```
-
-This namespace prevents collisions. Two servers can expose a tool named `query` without conflict because the server name prefix disambiguates them.
-
-## The Three Primitives
-
-MCP defines three categories of capability. Each has a different controller.
-
-| Primitive | Controller | Purpose | Claude Code Access |
-|-----------|-----------|---------|-------------------|
-| **Tools** | Model-controlled | Executable functions. Claude decides when to invoke them. | Appear as `mcp__server__tool` in tool list |
-| **Resources** | Application-controlled | Read-only data sources. The host app decides when to include them. | Type `@server:protocol://path` in prompt |
-| **Prompts** | User-controlled | Reusable interaction templates. You explicitly trigger them. | Type `/mcp__server__prompt` as slash command |
-
-Tools get 90% of the attention, but resources are underused. Referencing a resource with `@` injects structured data into context without a tool call, reducing latency and token overhead.
-
-## Tool Output Limits
-
-Claude Code enforces output size boundaries:
-
-| Threshold | Behavior |
-|-----------|----------|
-| 10,000 tokens | Warning issued |
-| 25,000 tokens | Default hard max (configurable via `MAX_MCP_OUTPUT_TOKENS`) |
-| 500,000 chars | Server-configurable max via `_meta["anthropic/maxResultSizeChars"]` |
-
-For tools that legitimately return large payloads (database schemas, log dumps), set the per-tool annotation:
-
-```json
-{
-  "name": "get_schema",
-  "description": "Returns the full database schema",
-  "_meta": {
-    "anthropic/maxResultSizeChars": 200000
-  }
-}
-```
-
-Tool and server descriptions are truncated at 2KB each. Put critical information in the first paragraph.
-
-## The Security Model
-
-MCP servers run as local processes with full user permissions. There is no sandbox by default.
-
-**What servers CAN access:**
-- Full filesystem (all user-accessible files)
-- Environment variables (including secrets and API keys)
-- Outbound network connections
-- Every resource the running user can touch
-
-**What servers CANNOT do:**
-- Bypass Claude Code's permission system (deny rules always win)
-- Execute without user approval on first use (project-scoped servers require trust confirmation)
-- Override managed policy restrictions
-
-**Key risks to internalize:**
-- **No sandboxing.** A malicious or buggy server has your full user permissions.
-- **Confused deputy.** A server might execute actions using its own elevated credentials on behalf of user requests.
-- **Environment variable exposure.** Servers read all env vars. Secrets intended for other tools leak to every server.
-- **Network binding.** Some servers bind to `0.0.0.0`, exposing them to your entire local network.
-
-**Enterprise controls:** Administrators deploy `managed-mcp.json` for organization-wide server configuration. Policy-based restrictions use `allowedMcpServers` and `deniedMcpServers` to whitelist or blacklist servers by name, command, or URL pattern.
-
-```json
-{
-  "mcpServers": {
-    "company-tools": {
-      "type": "http",
-      "url": "https://mcp.company.com/tools",
-      "headers": {
-        "Authorization": "Bearer ${COMPANY_MCP_TOKEN}"
-      }
-    }
-  },
-  "allowedMcpServers": [
-    { "serverName": "company-tools" },
-    { "serverName": "github" },
-    { "serverUrl": "https://mcp.company.com/*" },
-    { "serverCommand": ["npx", "-y", "@company/*"] }
-  ],
-  "deniedMcpServers": [
-    { "serverUrl": "https://*.untrusted.com/*" },
-    { "serverCommand": ["npx", "-y", "@random-org/*"] }
-  ]
-}
-```
-
-Deny rules always override allow rules. A server matching both lists is denied.
-
-## Tool Schema Anatomy
-
-When a server responds to `tools/list`, it returns JSON-RPC with full schema definitions. Here is what Claude Code receives:
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "result": {
-    "tools": [
-      {
-        "name": "query-analytics",
-        "description": "Execute a read-only SQL query against the analytics database. Returns up to 1000 rows. Use for aggregate metrics and funnel data.",
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "query": {
-              "type": "string",
-              "description": "SQL SELECT statement. Must be read-only."
-            },
-            "limit": {
-              "type": "number",
-              "description": "Maximum rows to return (default 100, max 1000)",
-              "default": 100
-            }
-          },
-          "required": ["query"]
-        },
-        "annotations": {
-          "title": "Analytics Query",
-          "readOnlyHint": true,
-          "openWorldHint": false
-        }
-      }
-    ]
-  }
-}
-```
-
-The `annotations` field (added in the 2025-06-18 spec) provides hints to the client. `readOnlyHint: true` tells Claude the tool has no side effects. `openWorldHint: false` signals the tool operates on a closed, well-defined dataset. These hints influence Claude's tool selection and retry behavior.
-
-## Dynamic Updates
-
-MCP supports `list_changed` notifications. When a server adds or removes tools at runtime, it sends this notification and Claude Code refreshes available capabilities without reconnecting. This enables servers that adapt their tool surface based on session state or external events.
+MCP expands reach. It does not turn an agent runtime into a policy engine.

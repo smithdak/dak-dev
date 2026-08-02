@@ -1,385 +1,48 @@
 ---
-title: "MCP: Pitfalls"
-topic: "mcp"
-subPage: "pitfalls"
+title: 'MCP Integration: Pitfalls'
+topic: 'mcp'
+subPage: 'pitfalls'
 order: 5
-description: "Startup failures, timeout traps, transport issues, security risks, and debugging MCP communication problems."
-relatedPatterns: ["safety-net", "scope-fence"]
-relatedTopics: ["settings", "hooks", "agents"]
+description: 'Failure modes in MCP capability claims, credential scope, prompt injection, output size, retries, and cloud/local divergence.'
+relatedPatterns: ['scope-fence', 'safety-net', 'agent-friendly-architecture']
+relatedTopics: ['settings', 'hooks', 'memory']
 published: true
-keywords: ["MCP pitfalls", "startup failures", "timeout issues", "transport problems", "MCP debugging"]
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-mcp', 'codex-mcp', 'copilot-customize-cli', 'copilot-cli-reference', 'copilot-cloud-mcp']
+keywords: ['MCP pitfalls', 'MCP security', 'MCP prompt injection', 'MCP authentication']
 ---
 
 # Pitfalls
 
-MCP server issues fall into predictable categories. Most are configuration problems, transport misunderstandings, or missing timeout handling. This page covers every failure mode documented in production use, with diagnosis and fix for each.
+## Family-Level Support Claims
 
-## Server Startup Failures
+MCP primitives and authentication differ by surface. Name the client and verify the exact contract.
 
-**Symptom:** Server shows as "offline" in `/mcp`. Claude cannot access any of its tools.
+## Overprivileged Credentials
 
-| Cause | Fix |
-|-------|-----|
-| Missing `cmd /c` on Windows | Use `cmd /c npx -y @some/package` for all npx-based servers on native Windows |
-| Wrong TypeScript module resolution | Set `moduleResolution: NodeNext` in tsconfig.json |
-| Port conflict | Check with `lsof -i :PORT` (Unix) or `netstat -ano \| findstr :PORT` (Windows) |
-| Missing dependencies | Run `npm install` before starting the server |
-| protocolVersion handshake bug | Claude Code has had issues sending the proper `protocolVersion` field. A server that works with MCP Inspector may still fail with Claude Code. |
+The server can act with whatever its identity permits, regardless of the model's stated intent. Use least privilege and separate environments.
 
-**Diagnosis steps:**
+## Tool Descriptions as Authorization
 
-```bash
-# Check server status in Claude Code
-/mcp
+Descriptions guide model choice; they do not enforce who may act or which records may be touched.
 
-# Test the server standalone (should start without errors)
-npx -y @some/mcp-server
+## Prompt Injection in Results
 
-# Start Claude with debug logging
-claude --debug-file /tmp/claude.log
-# In another terminal:
-tail -f /tmp/claude.log
-```
+External content can contain instructions aimed at the model. Separate data from control, sanitize presentation, and constrain subsequent tools.
 
-If the server starts fine standalone but fails inside Claude Code, the issue is almost always in the handshake or transport layer, not your server code.
+## Unbounded Responses
 
-## Timeout Traps
+Large outputs consume context and obscure relevant facts. Paginate, summarize deterministically, and return references for drill-down.
 
-### The 16-Hour Hang
+## Non-Idempotent Retries
 
-A documented production case: Claude Code hung silently for 16+ hours with no warnings, spawning 70+ zombie processes. There is no built-in watchdog for unresponsive MCP servers. If a tool never returns, Claude waits indefinitely.
+Timeout recovery can repeat external writes. Use idempotency keys and return durable operation identifiers.
 
-### MCP_TIMEOUT Ignored for HTTP
+## Falsification Checklist
 
-Claude Code has known issues where `MCP_TIMEOUT` settings are not respected for HTTP/SSE servers. The client may use default timeout values regardless of your configuration, causing premature disconnections on servers that need longer startup times.
-
-### Mitigation: Always Implement Your Own Timeouts
-
-Do not rely on Claude Code's timeout handling. Implement timeouts in every tool handler:
-
-```typescript
-server.registerTool("analytics-query", {
-  description: "Execute an analytics query (30s timeout)",
-  inputSchema: z.object({ query: z.string() })
-}, async ({ query }): Promise<CallToolResult> => {
-  const timeout = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error("Query timed out after 30s")), 30000)
-  );
-  try {
-    const result = await Promise.race([executeQuery(query), timeout]);
-    return { content: [{ type: "text", text: JSON.stringify(result) }] };
-  } catch (error) {
-    return {
-      content: [{ type: "text", text: error.message }],
-      isError: true
-    };
-  }
-});
-```
-
-For operations that legitimately take longer than 30 seconds, split them into start/poll pairs:
-
-```typescript
-server.registerTool("start-export", { /* ... */ },
-  async ({ query }) => {
-    const jobId = await startExport(query);
-    return { content: [{ type: "text", text: `Export started. Job ID: ${jobId}. Use check-export to poll status.` }] };
-  }
-);
-
-server.registerTool("check-export", { /* ... */ },
-  async ({ jobId }) => {
-    const status = await checkExportStatus(jobId);
-    return { content: [{ type: "text", text: JSON.stringify(status) }] };
-  }
-);
-```
-
-## Transport Layer Issues
-
-### stdout Pollution (stdio)
-
-The most common MCP failure. Any non-JSON-RPC output on stdout corrupts the protocol stream.
-
-**Sources of pollution:**
-- `console.log()` calls in TypeScript (use `console.error()` instead)
-- `print()` calls in Python (use `logging` with `stream=sys.stderr`)
-- Library warnings that default to stdout
-- Dependency initialization messages
-
-```typescript
-// WRONG: corrupts protocol
-console.log("Debug: processing request");
-
-// CORRECT: goes to stderr
-console.error("Debug: processing request");
-```
-
-```python
-# WRONG: corrupts protocol
-print("Debug: processing request")
-
-# CORRECT: logs to stderr
-import sys, logging
-logging.basicConfig(stream=sys.stderr)
-logging.info("Debug: processing request")
-```
-
-A full Python logging setup that keeps stdout clean for the MCP protocol:
-
-```python
-import sys
-import logging
-
-# Configure ALL logging to stderr before importing anything else
-logging.basicConfig(
-    stream=sys.stderr,
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-)
-
-# Suppress noisy third-party loggers
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-logging.getLogger("httpx").setLevel(logging.WARNING)
-
-# Redirect any stray print() calls to stderr
-# This catches prints from dependencies you don't control
-import builtins
-_original_print = builtins.print
-def _stderr_print(*args, **kwargs):
-    kwargs.setdefault('file', sys.stderr)
-    _original_print(*args, **kwargs)
-builtins.print = _stderr_print
-
-logger = logging.getLogger("mcp-server")
-logger.info("Server starting — this goes to stderr, not stdout")
-```
-
-**Debugging tip:** If you see "Unexpected token" errors in Claude Code's debug log, stdout pollution is the first thing to check. Even a single print statement from a third-party dependency can break the entire server.
-
-### stdout Buffering
-
-OS-level buffering can delay message delivery on stdio transport. Some languages buffer stdout by default. In Python, use `PYTHONUNBUFFERED=1` or `sys.stdout.flush()` after each write. In Node.js, stdout is unbuffered to TTYs but may buffer when piped -- which is exactly how MCP uses it.
-
-### SSE Connection Drops
-
-SSE connections are fragile. Proxies, load balancers, and firewalls drop idle connections. The deprecated SSE transport has no built-in reconnection. Streamable HTTP is more resilient. If you must use SSE, implement reconnection logic in your client.
-
-### "Connection closed" on Windows
-
-Missing `cmd /c` wrapper for npx on native Windows. The fix is mechanical:
-
-```bash
-# Fails on Windows
-claude mcp add --transport stdio my-server -- npx -y @some/package
-
-# Works on Windows
-claude mcp add --transport stdio my-server -- cmd /c npx -y @some/package
-```
-
-## Tool Schema Problems
-
-### Poor Descriptions
-
-Claude selects tools based on names and descriptions. A vague description results in the tool never being selected or being selected for the wrong task.
-
-```typescript
-// BAD: Claude cannot determine when to use this
-server.registerTool("query", {
-  description: "Run a query"
-});
-
-// GOOD: Claude knows exactly when and how to use this
-server.registerTool("query-analytics", {
-  description: "Execute a read-only SQL query against the analytics database. Returns up to 1000 rows. Use for aggregate metrics, user behavior analysis, and funnel data. Do NOT use for user PII lookups (use query-users instead)."
-});
-```
-
-Write descriptions as if briefing a new engineer who needs to pick the right tool from a list of 50. Specify what the tool does, what data it accesses, what its limits are, and when to use an alternative.
-
-### Description Truncation
-
-Claude Code truncates tool descriptions at 2KB and server instructions at 2KB. If your description exceeds this, the end gets cut off. Put the most important information -- use cases, constraints, and alternatives -- in the first paragraph.
-
-## Security Risks
-
-### Overly Permissive Servers
-
-A database MCP server with write access when only reads are needed. This is the most common security mistake. Always use read-only credentials for any server connected to production data.
-
-```bash
-# WRONG: full access to production database
---dsn "postgresql://admin:adminpass@prod.db.com:5432/main"
-
-# CORRECT: read-only user with limited schema access
---dsn "postgresql://readonly:pass@prod.db.com:5432/analytics"
-```
-
-### Environment Variable Leakage
-
-MCP servers can read all environment variables in the process. Secrets intended for other tools are visible to every server. Use dedicated service accounts with minimal credentials per server.
-
-### Credential Anti-Patterns
-
-| Anti-Pattern | Risk | Alternative |
-|-------------|------|-------------|
-| Hardcoded API keys in server code | Keys in source control | Use `${VAR}` expansion in `.mcp.json` |
-| Committed `.mcp.json` with secrets | Secrets in git history | Use env var references, set vars externally |
-| `.env` files for production servers | Client may spawn server from a different directory | Runtime injection via secrets manager |
-| Shared credentials across servers | One compromise exposes all | Dedicated service accounts per server |
-
-**Credential rotation:** Set 30-90 day rotation schedules. Consider runtime injection from secrets managers (Doppler, 1Password CLI, HashiCorp Vault) using `headersHelper` or environment variable setup scripts.
-
-A `.mcp.json` that pulls credentials from 1Password at connection time instead of storing them in env vars:
-
-```json
-{
-  "mcpServers": {
-    "prod-db": {
-      "command": "bash",
-      "args": [
-        "-c",
-        "export DATABASE_URL=$(op read 'op://Engineering/prod-db/connection-string'); npx -y @bytebase/dbhub --dsn \"$DATABASE_URL\" --read-only"
-      ]
-    },
-    "internal-api": {
-      "type": "http",
-      "url": "https://mcp.internal.example.com",
-      "headersHelper": "bash -c 'echo \"{\\\"Authorization\\\": \\\"Bearer $(op read op://Engineering/mcp-token/credential)\\\"}\"'"
-    }
-  }
-}
-```
-
-The `op read` call fetches a fresh credential on each server start. No secrets in `.env` files, no secrets in git history.
-
-### Network Binding
-
-Some servers bind to `0.0.0.0` by default, making them accessible to every device on your local network. Verify binding addresses for any server that opens HTTP ports. Bind to `127.0.0.1` (localhost only) unless remote access is explicitly required.
-
-## Performance
-
-### Slow Tools Block Everything
-
-Claude waits synchronously for tool results. A tool that takes 60 seconds freezes the entire conversation for 60 seconds. There is no parallel tool execution -- each call blocks the agent.
-
-**Mitigation strategies:**
-
-- **Timeouts in every handler** (30 seconds max recommended)
-- **Partial results with truncation flag** rather than processing everything
-- **Pagination** for large result sets
-- **`anthropic/maxResultSizeChars` annotation** for tools that legitimately return large outputs
-- **Start/poll pairs** for inherently slow operations
-
-### Context Window Bloat from Tool Outputs
-
-Large tool outputs consume context rapidly. A tool returning 20,000 tokens of database rows leaves less room for conversation history and reasoning. Design tools to return summaries, aggregates, or paginated results. Use the output size annotations to set appropriate limits per tool.
-
-## Crash Recovery
-
-Claude Code does not automatically restart crashed MCP servers. A crashed server becomes unavailable for the remainder of the session.
-
-**Recommendations:**
-- Catch all exceptions in tool handlers -- return `isError: true` instead of throwing
-- Use process supervisors (pm2, systemd) for critical stdio servers in persistent environments
-- Monitor server health via PostToolUse hooks that detect repeated failures
-- Reconnect manually via `/mcp` in Claude Code when a server goes offline
-
-A pm2 ecosystem file for managing critical MCP servers:
-
-```javascript
-// ecosystem.config.js
-module.exports = {
-  apps: [
-    {
-      name: "mcp-db",
-      script: "npx",
-      args: ["-y", "@bytebase/dbhub", "--dsn", process.env.DATABASE_URL],
-      autorestart: true,
-      max_restarts: 10,
-      restart_delay: 2000,
-      env: {
-        DATABASE_URL: "postgresql://readonly:pass@localhost:5432/analytics",
-        NODE_ENV: "production"
-      }
-    },
-    {
-      name: "mcp-internal",
-      script: "node",
-      args: ["./mcp-servers/internal-api/dist/index.js"],
-      autorestart: true,
-      max_restarts: 5,
-      restart_delay: 3000,
-      error_file: "/var/log/mcp/internal-error.log",
-      out_file: "/dev/null"  // stdout must stay clean for stdio transport
-    }
-  ]
-};
-```
-
-A PostToolUse hook that detects repeated MCP failures and logs a warning:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "mcp__.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'INPUT=$(cat); IS_ERROR=$(echo \"$INPUT\" | jq -r \".tool_output.isError // false\"); TOOL=$(echo \"$INPUT\" | jq -r \".tool_name\"); if [ \"$IS_ERROR\" = \"true\" ]; then FAIL_FILE=\"/tmp/mcp-failures-${TOOL}\"; COUNT=$(cat \"$FAIL_FILE\" 2>/dev/null || echo 0); COUNT=$((COUNT + 1)); echo $COUNT > \"$FAIL_FILE\"; if [ $COUNT -ge 3 ]; then echo \"WARNING: $TOOL has failed $COUNT consecutive times. Server may be unhealthy. Check /mcp status.\" >&2; fi; else rm -f \"/tmp/mcp-failures-${TOOL}\" 2>/dev/null; fi'"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-## Debugging MCP Communication
-
-### MCP Inspector
-
-The official debugging tool provides a browser UI for testing servers in isolation:
-
-```bash
-npx @modelcontextprotocol/inspector node build/index.js
-# Opens browser UI at http://localhost:6274
-```
-
-The Inspector shows tool listings, resource browsing, prompt testing, and a live message log. Test your server here before connecting it to Claude Code. If it works in the Inspector but fails in Claude Code, the issue is in the handshake or transport integration.
-
-### Claude Code Debug Log
-
-```bash
-# Start with debug logging
-claude --debug-file /tmp/claude.log
-
-# Or enable mid-session
-/debug
-```
-
-The debug log shows every JSON-RPC message between Claude Code and MCP servers. Filter for your server name to see the exact protocol exchange.
-
-### In-Session Checks
-
-- `/mcp` -- view all server statuses, authenticate, reconnect failed servers
-- Ask Claude to list available MCP tools -- verifies tool discovery is working
-- Check `/mcp` after an error to see if the server is still connected
-
-## Version Compatibility
-
-The MCP specification has breaking changes on roughly 3-month cycles:
-
-| Date | Change |
-|------|--------|
-| 2025-03-26 | Added JSON-RPC batching |
-| 2025-06-18 | Removed JSON-RPC batching, added structured tool outputs, added elicitation, enhanced OAuth, deprecated SSE transport |
-
-**SDK version risks:**
-- Python SDK V1 to V2 is a breaking migration (`FastMCP` renamed to `McpServer`)
-- TypeScript SDK maintains backwards compatibility within major versions
-- Minor SDK updates may add features but should not break existing servers
-
-**Recommendations:** Pin SDK versions explicitly in `package.json` or `requirements.txt`. Test against MCP Inspector after every SDK update. Monitor the [MCP specification changelog](https://modelcontextprotocol.io/specification) before upgrading.
+- Are required primitives supported on this exact surface?
+- What authority does the server identity actually have?
+- Can untrusted output influence a more powerful tool?
+- Are writes idempotent and independently logged?
+- Does the hosted environment use the same network and authentication path as local testing?

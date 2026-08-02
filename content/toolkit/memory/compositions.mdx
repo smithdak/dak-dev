@@ -1,374 +1,45 @@
 ---
-title: "Memory: Compositions"
-topic: "memory"
-subPage: "compositions"
+title: 'Persistent Memory: Compositions'
+topic: 'memory'
+subPage: 'compositions'
 order: 4
-description: "Memory combined with CLAUDE.md, skills, agents, hooks, and MCP for persistent cross-session intelligence."
-relatedPatterns: ["memory-layer", "convention-file", "safety-net"]
-relatedTopics: ["claude-md", "skills", "agents", "hooks", "mcp"]
+description: 'Compose agent memory with project instructions, evidence, subagents, hooks, and governed knowledge sources.'
+relatedPatterns: ['memory-layer', 'context-priming', 'safety-net']
+relatedTopics: ['project-instructions', 'agents', 'hooks', 'mcp']
 published: true
-keywords: ["memory compositions", "CLAUDE.md integration", "agent memory", "hook-driven memory", "cross-session learning"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-memory', 'codex-memory', 'codex-agents-md', 'copilot-cli-reference']
+keywords:
+  [
+    'memory compositions',
+    'agent memory and instructions',
+    'memory evidence',
+    'shared agent context',
+  ]
 ---
 
 # Compositions
 
-Memory becomes powerful when combined with other Claude Code systems. Each composition creates feedback loops that accumulate knowledge automatically, route context precisely, or maintain memory without manual intervention.
+## Memory + Project Instructions
 
-## Memory + CLAUDE.md
+Instructions hold stable team contracts; memory holds learned or changing context. Let instructions route to memory without allowing memory to override policy silently.
 
-These two systems are complementary, not redundant. CLAUDE.md holds stable rules. Memory holds evolving knowledge. The composition pattern that ties them together is the routing table.
+## Memory + Evidence
 
-### The Routing Table Pattern
+Store pointers to verified artifacts rather than unsupported conclusions. Recompute or re-open the evidence when the decision matters.
 
-Instead of dumping every rule into CLAUDE.md, add a routing table that maps task types to memory files:
+## Memory + Subagents
 
-```markdown
-# CLAUDE.md
-
-## Memory Routing
-When working on authentication: load memory/project_auth_migration.md
-When debugging API issues: load memory/reference_external_apis.md
-When writing tests: load memory/feedback_testing.md
-When deploying: load memory/reference_deploy_urls.md
-```
-
-This keeps CLAUDE.md lean while directing Claude to the right detailed memory files. CLAUDE.md stays under 100 lines. The detail lives in memory where it can evolve without touching committed files.
-
-### Division of Responsibility
-
-| Belongs in CLAUDE.md | Belongs in Memory |
-|---------------------|-------------------|
-| Lint config, naming conventions | Patterns discovered through work |
-| Architecture overview | Decisions made and alternatives rejected |
-| "Always do X" / "Never do Y" | Bugs encountered and their fixes |
-| Build commands, test commands | Evolving project state |
-| Team conventions | External system quirks |
-
-**The test:** Would you put it in a README or CONTRIBUTING.md? Use CLAUDE.md. Would you put it in a personal lab notebook? Use memory.
-
-## Memory + Skills
-
-Skills can read and write memory, enabling self-improving workflows where each invocation builds on knowledge from previous runs.
-
-### Subagent with Persistent Memory
-
-```markdown
----
-description: Analyzes test failures and records patterns
-memory: project
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
----
-
-# Test Failure Analyst
-
-When invoked:
-1. Read the test output from stdin
-2. Check memory/feedback_testing.md for known patterns
-3. If this is a new pattern, append it to the memory file
-4. Suggest fix based on accumulated knowledge
-```
-
-### Memory Scope Options
-
-The `memory` frontmatter field controls where a subagent stores its persistent state:
-
-| Scope | Path | Use Case |
-|-------|------|----------|
-| `memory: user` | `~/.claude/agent-memory/<name>/` | Learnings across all projects |
-| `memory: project` | `.claude/agent-memory/<name>/` | Project-specific, VCS-trackable |
-| `memory: local` | `.claude/agent-memory-local/<name>/` | Project-specific, not in VCS |
-
-Subagents with memory get Read, Write, and Edit tools auto-enabled. Their first 200 lines of MEMORY.md are loaded at startup — the same lazy-loading pattern as the main memory system.
-
-### Self-Improving Skill Pattern
-
-A code review skill that gets better over time:
-
-```markdown
----
-description: Reviews pull requests using accumulated codebase knowledge
-memory: project
-allowed-tools:
-  - Read
-  - Grep
-  - Bash
----
-
-# Code Reviewer
-
-1. Read your MEMORY.md for known patterns and past review findings
-2. Review the diff against accumulated knowledge
-3. Flag patterns that violated conventions in past reviews
-4. After review, write any new patterns to memory/feedback_review.md
-```
-
-Each run, the reviewer reads its memory, does its work, and writes new patterns it discovered. Over time, it catches issues specific to your codebase without consuming more context window in the parent conversation.
-
-## Memory + Agents
-
-### What Subagents Can and Cannot Access
-
-| Access | Available |
-|--------|-----------|
-| Parent conversation history | No |
-| Parent's prior tool calls | No |
-| Other subagents' outputs | No |
-| Parent's permission policy | Yes (can be restricted per-subagent) |
-| Own persistent memory | Only with `memory:` frontmatter |
-
-Subagents without `memory:` start completely fresh each invocation. There is no implicit memory inheritance. This is intentional — it keeps subagent behavior predictable and prevents context contamination.
-
-### Knowledge-Accumulating Agent Pattern
-
-A subagent invoked repeatedly (code reviewer, test analyst, deploy checker) builds codebase knowledge in its own memory directory:
-
-```
-First invocation:
-  Agent reads empty MEMORY.md -> does work -> writes patterns found
-
-Fifth invocation:
-  Agent reads MEMORY.md with 4 sessions of patterns -> does work ->
-  writes new patterns, merges with existing
-
-Twentieth invocation:
-  Agent has deep codebase knowledge -> catches subtle issues ->
-  barely needs to explore code it's seen before
-```
-
-The compounding effect is significant. A code reviewer that's seen 20 PRs catches naming inconsistencies, test coverage gaps, and architectural drift that a fresh agent misses entirely.
-
-### Multi-Agent Memory Isolation
-
-When running parallel subagents, each gets its own memory directory:
-
-```
-.claude/agent-memory/
-  test-analyst/     # Only test-analyst reads/writes here
-  code-reviewer/    # Only code-reviewer reads/writes here
-  deploy-checker/   # Only deploy-checker reads/writes here
-```
-
-No cross-contamination. The test analyst doesn't know what the code reviewer learned. If you need shared knowledge, put it in CLAUDE.md or in a memory file that both agents are instructed to read.
+Role memory can preserve specialist calibration. Shared decisions belong in a common reviewed source so workers do not accumulate incompatible context.
 
 ## Memory + Hooks
 
-Hooks enable automated memory maintenance at lifecycle boundaries — capturing knowledge at session end, pre-loading relevant context at session start, and building compounding knowledge loops.
-
-### Stop Hook: Session-End Knowledge Capture
-
-Automatically extract learnings when a session ends:
-
-```json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/scripts/capture_session_knowledge.py",
-            "timeout": 30000
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-```python
-#!/usr/bin/env python3
-# ~/.claude/scripts/capture_session_knowledge.py
-import sys, json, os, re
-from datetime import datetime
-from pathlib import Path
-
-input_data = json.loads(sys.stdin.read())
-
-# Critical: check for recursive call
-if input_data.get("stop_hook_active"):
-    sys.exit(0)
-
-session_id = input_data.get("session_id", "unknown")
-project_path = input_data.get("cwd", os.getcwd())
-
-# Derive memory directory from project path
-encoded = project_path.replace("/", "-").lstrip("-")
-memory_dir = Path.home() / ".claude" / "projects" / encoded / "memory"
-memory_dir.mkdir(parents=True, exist_ok=True)
-
-daily_file = memory_dir / f"daily/{datetime.now().strftime('%Y-%m-%d')}.md"
-daily_file.parent.mkdir(parents=True, exist_ok=True)
-
-# Append session marker
-with open(daily_file, "a") as f:
-    f.write(f"\n## Session {session_id} — {datetime.now().isoformat()}\n")
-    f.write(f"- Working directory: {project_path}\n")
-
-    # Extract transcript path if available
-    transcript = input_data.get("transcript_path")
-    if transcript and os.path.exists(transcript):
-        with open(transcript) as t:
-            for line in t:
-                try:
-                    entry = json.loads(line)
-                    # Capture user corrections (messages starting with "no," "actually," "instead")
-                    if entry.get("role") == "user":
-                        text = entry.get("content", "")
-                        if re.match(r"^(no[,.]|actually|instead|wrong|fix)", text, re.I):
-                            f.write(f"- Correction: {text[:200]}\n")
-                except json.JSONDecodeError:
-                    continue
-
-print("Session knowledge captured", file=sys.stderr)
-sys.exit(0)
-```
-
-The `stop_hook_active` check prevents infinite loops. Without it, the hook fires, Claude processes the output, tries to stop again, and the hook fires again.
-
-### UserPromptSubmit Hook: Relevance-Based Pre-Loading
-
-A lightweight hook that greps the MEMORY.md index against the user's message and pre-loads matching topic files:
-
-```json
-{
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/preload-memory.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-```bash
-#!/bin/bash
-# ~/.claude/scripts/preload-memory.sh
-INPUT=$(cat)
-QUERY=$(echo "$INPUT" | jq -r '.prompt')
-CWD=$(echo "$INPUT" | jq -r '.cwd')
-
-# Derive memory directory from project path
-ENCODED=$(echo "$CWD" | tr '/' '-' | sed 's/^-//')
-MEMORY_DIR="$HOME/.claude/projects/$ENCODED/memory"
-
-[ -d "$MEMORY_DIR" ] || exit 0
-
-# Extract keywords (3+ char words, skip stop words)
-KEYWORDS=$(echo "$QUERY" | tr ' ' '\n' | grep -E '^.{3,}$' | \
-  grep -viE '^(the|and|for|that|this|with|from|have|are|was)$' | head -5)
-
-# Match index entries against query keywords
-for kw in $KEYWORDS; do
-  grep -il "$kw" "$MEMORY_DIR"/*.md 2>/dev/null
-done | sort -u | head -3 | while read -r file; do
-  echo "Relevant memory: $(basename "$file")" >&2
-done
-
-exit 0
-```
-
-This bridges the gap between MEMORY.md's passive index and active retrieval. Instead of waiting for Claude to decide a topic file is relevant, the hook pre-loads files whose descriptions match the prompt.
-
-### The Compounding Knowledge Loop
-
-The most powerful composition chains hooks into a continuous learning cycle:
-
-```
-Session -> Stop hook -> flush.py extracts knowledge ->
-daily/YYYY-MM-DD.md -> compile.py ->
-knowledge/concepts/, connections/, qa/ ->
-SessionStart hook injects index -> next session
-```
-
-Each session feeds knowledge into a structured repository. A compilation step organizes raw learnings into retrievable categories. The next session starts with an updated index. Over weeks, this builds a project knowledge base that no single developer could maintain manually.
+Hooks may capture candidate learnings or freshness signals. Keep model-written updates reviewable and prevent recursive or unbounded writes.
 
 ## Memory + MCP
 
-MCP servers provide real-time, task-specific data. Memory provides cross-session continuity. They are complementary, not competing.
+Use memory to remember stable identifiers and query routes. Ask the authoritative external system for current state; never store credentials.
 
-### When to Use Which
+## Memory + Knowledge Governance
 
-| Data Type | Use MCP | Use Memory |
-|-----------|---------|------------|
-| Current ticket status | Query Jira/Linear MCP | No — stale within hours |
-| Deploy status | Query deploy MCP | No — changes constantly |
-| API rate limit discovered | No — already known | Yes — persist the finding |
-| Team contact info | No — query HR system | Yes — stable reference |
-| Bug fix pattern | No — not queryable | Yes — reusable knowledge |
-
-**The rule:** Use MCP to fetch current state. Use memory to store what you learned from it. Never store volatile data (ticket status, deploy state) in memory — query it fresh via MCP each time.
-
-### MCP Servers That Enhance Memory
-
-| Server | How It Helps |
-|--------|-------------|
-| **Basic Memory** | Treats local filesystem as a queryable knowledge graph; Claude writes Markdown, future sessions query it |
-| **Knowledge Graph MCP** | Builds searchable knowledge graph from development history |
-| **Claude Knowledge Base MCP** | Persistent memory with structured command syntax, stored under `~/.claude-knowledge-base/` |
-
-### Pattern: MCP-Informed Memory Updates
-
-```
-1. MCP query reveals API has new rate limit (discovered via monitoring MCP)
-2. Claude updates memory/reference_external_apis.md with the new limit
-3. Future sessions know about the rate limit without querying MCP again
-4. MCP still used for current status; memory stores the stable finding
-```
-
-The memory file that accumulates these findings:
-
-```markdown
----
-name: external-apis
-description: Third-party API rate limits, quirks, retry configs, breaking change log
-type: reference
----
-
-## Stripe
-- Rate limit: 100 requests/sec in live mode, 25/sec in test mode
-- Webhook delivery: retries at 1h, 6h, 24h, 48h intervals
-- Idempotency keys expire after 24 hours (discovered 2026-04-08)
-- API version pinned to 2026-02-15 in dashboard
-
-## Twilio
-- Rate limit: 100 messages/sec per account (upgraded from default 1/sec)
-- Webhook retry: 5s, 30s, 300s — then gives up
-- Status callback URLs must be HTTPS in production (HTTP fails silently)
-
-## SendGrid
-- v3 API: 600 requests/min for free tier
-- Template rendering timeout: 10s — complex Handlebars templates fail silently
-- Event webhook delivers batched every 30s, not real-time
-```
-
-This avoids redundant MCP calls for information that doesn't change frequently while keeping volatile data fresh through live queries.
-
-## Memory as Project Documentation
-
-Memory files naturally capture decisions and rationale that traditional documentation misses. When stored in project-scoped subagent memory (committed to VCS), this becomes institutional knowledge that survives developer turnover.
-
-```markdown
----
-name: architecture-decisions
-description: Key technical decisions, rationale, and alternatives considered
-type: project
----
-
-## 2026-04-10: Switched from gray-matter to next-mdx-remote
-- Reason: gray-matter couldn't handle nested frontmatter in MDX 3.0
-- Alternative considered: mdx-bundler (rejected: too heavy for SSG)
-- Impact: Changed content pipeline in lib/posts.ts
-```
-
-Standard documentation captures *what*. Memory captures *why* and *what else was considered*. Both matter for long-term project health.
+For organizational use, add ownership, classification, retention, access control, correction history, and deletion policy. The result is not merely “better prompting”; it is a managed information system.

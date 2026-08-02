@@ -1,16 +1,23 @@
 ---
-title: "Claude Managed Agents: The End of DIY Agent Infrastructure"
-date: "2026-04-14"
-excerpt: "Discover how Claude Managed Agents replaces months of custom agent infrastructure with a decoupled architecture that cuts time-to-first-token 60%."
-slug: "claude-managed-agents-end-of-diy-infrastructure"
-tags: ["ai", "claude", "agents", "developer-tools"]
-thumbnail: "/images/posts/claude-managed-agents-end-of-diy-infrastructure/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAgQG/8QAHBAAAgICAwAAAAAAAAAAAAAAAAECERIiUYGR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDEuLV6MHQpSli9n6T2+Qj/2Q=="
-hero: "/images/posts/claude-managed-agents-end-of-diy-infrastructure/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAgQG/8QAGhAAAgMBAQAAAAAAAAAAAAAAAAECESKBkf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AxDi1eGDg5SlT0/Sewj//2Q=="
+title: 'Claude Managed Agents: The End of DIY Agent Infrastructure'
+date: '2026-04-14'
+excerpt: 'Discover how Claude Managed Agents replaces months of custom agent infrastructure with a decoupled architecture that cuts time-to-first-token 60%.'
+slug: 'claude-managed-agents-end-of-diy-infrastructure'
+tags: ['ai', 'claude', 'agents', 'developer-tools']
+thumbnail: '/images/posts/claude-managed-agents-end-of-diy-infrastructure/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAMG/8QAGBABAAMBAAAAAAAAAAAAAAAAAAISUQH/xAAVAQEBAAAAAAAAAAAAAAAAAAABAv/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/ANtaWF5Z1QSX/9k='
+hero: '/images/posts/claude-managed-agents-end-of-diy-infrastructure/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAMG/8QAFxABAAMAAAAAAAAAAAAAAAAAAAISUf/EABUBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A21pYWnigkv/Z'
 published: true
-author: "Dakota Smith"
-keywords: ["claude managed agents", "anthropic agents api", "ai agent infrastructure", "agent orchestration", "claude api"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'claude managed agents',
+    'anthropic agents api',
+    'ai agent infrastructure',
+    'agent orchestration',
+    'claude api',
+  ]
 ---
 
 Claude Managed Agents launched on April 8, 2026, and it solves the hardest part of building AI agents: everything that isn't the model itself. Sandboxing, state management, credential handling, crash recovery, context engineering — the managed platform handles all of it. Internal benchmarks show a 60% reduction in p50 time-to-first-token and up to 10-point improvements in task success rates compared to self-hosted agent loops.
@@ -23,11 +30,11 @@ Here's what the architecture looks like, when it makes sense to adopt, and where
 
 The core design decision behind Managed Agents is a three-way separation of concerns that treats each component as independently swappable:
 
-| Component | Responsibility | Key Property |
-|-----------|---------------|--------------|
-| **Session** | Append-only event log storing all interactions | Lives outside the harness — survives crashes |
-| **Harness** | Orchestration loop that calls Claude and routes tool outputs | Stateless — scales horizontally |
-| **Sandbox** | Container for code execution and file operations | Interchangeable — one brain, many hands |
+| Component   | Responsibility                                               | Key Property                                 |
+| ----------- | ------------------------------------------------------------ | -------------------------------------------- |
+| **Session** | Append-only event log storing all interactions               | Lives outside the harness — survives crashes |
+| **Harness** | Orchestration loop that calls Claude and routes tool outputs | Stateless — scales horizontally              |
+| **Sandbox** | Container for code execution and file operations             | Interchangeable — one brain, many hands      |
 
 This decoupling exists because Anthropic's earlier architecture coupled the harness directly inside containers. When containers failed, entire sessions were lost. The new design treats the harness as stateless. It calls sandboxes via a standard `execute(name, input) → string` interface. If a container dies, a new one initializes via `provision({resources})` without losing session history.
 
@@ -39,9 +46,9 @@ Because session logs live outside the harness, crash recovery becomes straightfo
 
 ```typescript
 // Harness recovery after failure
-const session = await getSession(sessionId);  // Retrieve full history
-const harness = await wake(sessionId);        // Reboot harness
-await emitEvent(sessionId, resumeEvent);      // Resume from last event
+const session = await getSession(sessionId); // Retrieve full history
+const harness = await wake(sessionId); // Reboot harness
+await emitEvent(sessionId, resumeEvent); // Resume from last event
 ```
 
 No complex recovery protocols. No lost context. The session is the source of truth, and harnesses are disposable workers that read from it.
@@ -70,21 +77,21 @@ The API surface centers on four concepts — **Agent** (model + system prompt + 
 Here's the minimal flow to get a session running:
 
 ```typescript
-import Anthropic from "@anthropic-ai/sdk";
+import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic();
 
 // 1. Create an agent
 const agent = await client.beta.agents.create({
-  model: "claude-sonnet-4-6-20260414",
-  system: "You are a code review assistant.",
-  tools: [{ type: "bash" }, { type: "file_editor" }],
+  model: 'claude-sonnet-4-6-20260414',
+  system: 'You are a code review assistant.',
+  tools: [{ type: 'bash' }, { type: 'file_editor' }],
 });
 
 // 2. Create an environment
 const env = await client.beta.environments.create({
-  packages: ["python3", "nodejs"],
-  network_access: { allowed_domains: ["github.com"] },
+  packages: ['python3', 'nodejs'],
+  network_access: { allowed_domains: ['github.com'] },
 });
 
 // 3. Start a session and stream events
@@ -94,8 +101,8 @@ const session = await client.beta.sessions.create({
 });
 
 await client.beta.sessions.events.create(session.id, {
-  type: "user",
-  content: "Review the PR at github.com/org/repo/pull/42",
+  type: 'user',
+  content: 'Review the PR at github.com/org/repo/pull/42',
 });
 ```
 
@@ -105,21 +112,23 @@ The SDK sets the required `managed-agents-2026-04-01` beta header automatically.
 
 This isn't a replacement for the Messages API. It's a higher-level abstraction for a specific class of workloads.
 
-| Factor | Messages API | Managed Agents |
-|--------|-------------|----------------|
-| **Control** | Full control over agent loop, tool execution, retries | Anthropic manages the loop |
-| **Infrastructure** | You build and maintain sandboxes, state, auth | Managed containers, persistent sessions |
-| **Latency** | Direct API calls, minimal overhead | Container provisioning adds startup time |
-| **Session duration** | Stateless (you manage context) | Hours-long stateful sessions with persistence |
-| **Tool execution** | You implement tool handlers | Built-in bash, file ops, web, MCP |
-| **Cost structure** | Pay per token | Pay per token + compute time |
+| Factor               | Messages API                                          | Managed Agents                                |
+| -------------------- | ----------------------------------------------------- | --------------------------------------------- |
+| **Control**          | Full control over agent loop, tool execution, retries | Anthropic manages the loop                    |
+| **Infrastructure**   | You build and maintain sandboxes, state, auth         | Managed containers, persistent sessions       |
+| **Latency**          | Direct API calls, minimal overhead                    | Container provisioning adds startup time      |
+| **Session duration** | Stateless (you manage context)                        | Hours-long stateful sessions with persistence |
+| **Tool execution**   | You implement tool handlers                           | Built-in bash, file ops, web, MCP             |
+| **Cost structure**   | Pay per token                                         | Pay per token + compute time                  |
 
 **Use Messages API when:**
+
 - You need sub-second response times for synchronous interactions
 - Your agent loop has custom logic that doesn't fit the managed model
 - You need fine-grained control over every tool call and retry
 
 **Use Managed Agents when:**
+
 - Tasks run for minutes or hours with dozens of tool calls
 - You need secure code execution without building your own sandbox
 - You want session persistence across disconnections
@@ -162,6 +171,7 @@ Managed Agents trades flexibility for operational convenience. Here's what you g
 **Research preview features are gated.** Multi-agent coordination, memory, and outcomes — three of the most compelling capabilities — require separate access approval and carry additional stability caveats.
 
 **When NOT to use Managed Agents:**
+
 - Single-turn Q&A or chatbot interfaces (overkill for the use case)
 - Latency-critical applications under 500ms response time requirements
 - Workloads requiring custom model routing or non-Claude models

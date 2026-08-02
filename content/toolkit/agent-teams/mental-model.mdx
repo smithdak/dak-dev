@@ -1,248 +1,37 @@
 ---
-title: "Agent Teams: Mental Model"
-topic: "agent-teams"
-subPage: "mental-model"
+title: 'Multi-Agent Coordination: Mental Model'
+topic: 'agent-teams'
+subPage: 'mental-model'
 order: 2
-description: "Architecture patterns for multi-agent systems — orchestrator/worker, fan-out, pipeline, hierarchy, and the distributed systems mental model."
-relatedPatterns: ["parallel-fan-out", "scope-fence"]
-relatedTopics: ["agents", "settings", "claude-md"]
+description: 'Compare coordinator-worker, peer-team, and external-orchestrator topologies without collapsing them into one multi-agent label.'
+relatedPatterns: ['parallel-fan-out', 'checkpoint-loop', 'scope-fence']
+relatedTopics: ['agents', 'settings', 'memory']
 published: true
-keywords: ["agent teams mental model", "orchestrator worker", "fan-out", "pipeline", "coordination models"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-agent-teams', 'codex-subagents', 'copilot-fleet', 'copilot-cli-reference']
+keywords:
+  ['multi-agent topology', 'agent teams mental model', 'coordinator worker', 'peer messaging']
 ---
 
 # Mental Model
 
-Agent teams are a distributed system. Every concept from distributed computing applies — independent processes, asynchronous messaging, shared-nothing isolation, coordination overhead. Treat them that way and team behavior becomes predictable.
+Multi-agent systems differ along four axes:
 
-## Two Primitives: Subagents vs. Teams
+1. **Decomposition authority** — who creates and assigns work.
+2. **Communication topology** — coordinator-only, peer-to-peer, or external bus.
+3. **Shared state** — none, a task ledger, shared files, or workflow state.
+4. **Completion authority** — who decides that the combined result is acceptable.
 
-Claude Code provides two multi-agent primitives. Choosing wrong wastes tokens and adds complexity.
+## Product Topologies
 
-**Subagents** operate within a single session. The main agent spawns a subagent that does work in its own context window and returns a summary. Subagents cannot talk to each other — they only report back to the caller. Think function calls with isolated context.
+Claude Code agent teams document independent sessions, a shared task list, mailboxes, and peer messaging, while remaining experimental. Codex documents parallel subagents whose results return through the primary coordinator. Copilot CLI Fleet documents orchestrated parallel work and sibling-agent coordination.
 
-**Agent teams** coordinate across separate Claude Code sessions. The lead spawns teammates, each a full Claude Code instance. Teammates message each other directly, share a task list, and coordinate through a mailbox system.
+These are not equivalent implementations. A design that depends on peer negotiation cannot be moved unchanged to a coordinator-only surface.
 
-| Criterion | Subagents | Agent Teams |
-|-----------|-----------|-------------|
-| Context | Own window; results summarized back to caller | Own window; fully independent |
-| Communication | Report to main agent only | Teammates message each other directly |
-| Coordination | Main agent manages everything | Shared task list with self-coordination |
-| Best for | Focused tasks where only the result matters | Complex work requiring discussion |
-| Token cost | Lower (summarized results) | Higher (each teammate is a full instance) |
-| Nesting | Cannot spawn sub-subagents | Cannot spawn sub-teams, but can use subagents |
+## Distributed-Systems Costs
 
-The decision is straightforward: if you only need results back, use subagents. If teammates need to discuss, debate, or hand off work to each other, use agent teams.
+Parallel agents introduce duplicated context, partial failure, stale state, conflicting writes, ordering problems, and reconciliation. The same design disciplines apply: idempotent tasks, explicit ownership, stable identifiers, timeouts, bounded retries, and a single source of completion truth.
 
-Here is a subagent definition that participates in a named team — note the `team_name` field that links it to the coordination group:
+## The Crux
 
-```yaml
-# .claude/agents/frontend-implementer.md
----
-name: frontend-implementer
-description: Implements frontend features as part of a coordinated team
-tools: Read, Grep, Glob, Bash, Edit, Write
-model: sonnet
-team_name: feature-team
-memory: project
----
-
-You are a frontend engineer working as part of a team. Claim tasks
-from the shared task list that involve src/components/, src/pages/,
-or src/styles/. Message the lead when you complete a task. If you
-discover work outside your domain, message the lead to create a
-new task rather than doing it yourself.
-```
-
-## Four Architecture Patterns
-
-### Orchestrator/Worker
-
-The lead analyzes the task, creates subtasks, and assigns them to teammates. This is the default agent teams pattern.
-
-```text
-Lead (orchestrator)
-  |-- Teammate A (worker: frontend)
-  |-- Teammate B (worker: backend)
-  |-- Teammate C (worker: tests)
-```
-
-The lead creates tasks, teammates self-claim them, and the lead synthesizes results. Best for tasks that decompose cleanly into independent units.
-
-### Fan-Out / Fan-In
-
-All subtasks are known upfront and dispatched simultaneously. Each worker processes its portion; results flow back to the orchestrator for aggregation.
-
-```text
-Lead: "Review PR #142 from 3 angles"
-  --> Security reviewer (fan-out)
-  --> Performance reviewer (fan-out)
-  --> Test coverage reviewer (fan-out)
-  <-- Lead synthesizes all findings (fan-in)
-```
-
-With subagents, fan-out is implicit — Claude spawns multiple subagents in parallel. With agent teams, you explicitly request parallel teammates. The difference: subagent results are summarized into the parent context, while team results stay in each teammate's context and the lead coordinates via messaging.
-
-### Pipeline
-
-Sequential stages where each stage's output feeds the next. Agent teams support this through task dependencies:
-
-```text
-Research task --> blocked: Design task --> blocked: Implementation --> blocked: Verification
-```
-
-When a teammate completes a task that others depend on, blocked tasks unblock automatically. The system manages dependencies without manual intervention. Use this for workflows like research-then-implement-then-verify.
-
-The task list for a pipeline looks like this:
-
-```json
-{
-  "tasks": [
-    {
-      "id": "research-caching",
-      "subject": "Research current data access patterns and recommend caching strategy",
-      "assignee": "researcher",
-      "status": "in-progress"
-    },
-    {
-      "id": "implement-cache",
-      "subject": "Implement caching layer per researcher recommendations",
-      "assignee": "implementer",
-      "status": "blocked",
-      "depends_on": ["research-caching"]
-    },
-    {
-      "id": "verify-cache",
-      "subject": "Run benchmarks and verify cache invalidation correctness",
-      "assignee": "verifier",
-      "status": "blocked",
-      "depends_on": ["implement-cache"]
-    }
-  ]
-}
-```
-
-### Hierarchy
-
-A lead coordinates teammates, and teammates use subagents within their own sessions. This creates a two-level hierarchy:
-
-```text
-Lead
-  |-- Teammate A
-  |     |-- Subagent (Explore)
-  |     |-- Subagent (general-purpose)
-  |-- Teammate B
-        |-- Subagent (Explore)
-```
-
-Hard constraint: **teammates cannot spawn their own teams**. No nested teams. But teammates using subagents for focused subtasks is both supported and effective.
-
-## The Distributed Systems Model
-
-Apply distributed systems thinking and team behavior becomes predictable:
-
-- **Each teammate is a separate process** with its own context window (memory space), tools (I/O capabilities), and execution timeline.
-- **Shared state is minimal.** The shared task list is the primary coordination mechanism, using file locking to prevent race conditions when multiple teammates claim the same task.
-- **Communication is asynchronous.** Messages are delivered automatically but there is no synchronous RPC between teammates. Do not assume delivery order.
-- **The lead is the single point of coordination** but not a single point of failure — teammates self-claim tasks and work independently.
-
-### Coordination Models
-
-| Model | Implementation | Tradeoffs |
-|-------|---------------|-----------|
-| **Shared Nothing** | Subagents with `isolation: worktree` | Maximum isolation, no conflicts, merge overhead |
-| **Shared State** | Agent teams with shared task list and filesystem | Higher throughput, risk of file conflicts |
-| **Message Passing** | Team mailbox: `message` (one-to-one), `broadcast` (one-to-all) | Flexible coordination, costs scale with team size |
-
-Shared-nothing is safest for implementation tasks. Shared state works for review and analysis where teammates read but don't write the same files. Message passing fits coordination-heavy workflows like debugging debates.
-
-## Enabling Agent Teams
-
-Agent teams require an experimental flag:
-
-```json
-{
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  }
-}
-```
-
-Set this in your project or user `settings.json`. Without it, team-related commands are unavailable.
-
-## Subagent Definitions
-
-Define reusable subagent types in `.claude/agents/` as Markdown files with YAML frontmatter:
-
-```yaml
-# .claude/agents/security-reviewer.md
----
-name: security-reviewer
-description: Reviews code for security vulnerabilities
-tools: Read, Grep, Glob, Bash
-model: opus
-memory: project
----
-
-You are a senior security engineer reviewing code for vulnerabilities.
-Focus on authentication, injection, token handling, input validation,
-and secrets exposure. Rate each finding as Critical, High, Medium, or Low.
-```
-
-Resolution priority for agent definitions:
-
-1. Managed settings (org-wide, highest priority)
-2. `--agents` CLI flag (session-only)
-3. `.claude/agents/` (project)
-4. `~/.claude/agents/` (user)
-5. Plugin `agents/` directory (lowest priority)
-
-## Team Storage
-
-Teams store state across several locations:
-
-| Data | Location |
-|------|----------|
-| Team config | `~/.claude/teams/{team-name}/config.json` |
-| Task list | `~/.claude/tasks/{team-name}/` |
-| Agent memory | `.claude/agent-memory/<agent-name>/` (project scope) |
-| Worktrees | `<repo>/.claude/worktrees/<name>/` |
-
-A team config file tracks active teammates and their assignments:
-
-```json
-{
-  "team_name": "auth-refactor",
-  "created": "2026-04-15T14:30:00Z",
-  "lead_session_id": "sess_abc123",
-  "teammates": [
-    {
-      "name": "security-reviewer",
-      "agent": "security-reviewer",
-      "model": "opus",
-      "status": "active",
-      "session_id": "sess_def456",
-      "worktree": null
-    },
-    {
-      "name": "implementer",
-      "agent": "test-fixer",
-      "model": "sonnet",
-      "status": "active",
-      "session_id": "sess_ghi789",
-      "worktree": ".claude/worktrees/implementer-auth"
-    }
-  ],
-  "settings": {
-    "max_teammates": 5,
-    "permission_mode": "default"
-  }
-}
-```
-
-## The Right Mental Model
-
-Think of agent teams as a small engineering team with a tech lead. The lead decomposes work, assigns tasks, and synthesizes results. Teammates are senior engineers — they self-organize, communicate directly, and flag blockers. The task list is the sprint board.
-
-The lead's context window is the bottleneck. Every teammate status update, every message, every synthesis step consumes lead context. Keep teams at 3-5 teammates. Use targeted messages instead of broadcasts. Have teammates summarize findings concisely.
-
-Three focused teammates outperform five scattered ones every time.
+Use a team only when the task graph contains enough independent work to repay coordination overhead. If most steps depend on the immediately previous result, a single well-instructed agent is the better architecture.

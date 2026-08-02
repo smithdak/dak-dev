@@ -1,401 +1,45 @@
 ---
-title: "Hooks: Playbook"
-topic: "hooks"
-subPage: "playbook"
+title: 'Lifecycle Hooks: Playbook'
+topic: 'hooks'
+subPage: 'playbook'
 order: 3
-description: "Production-ready hook configurations — auto-formatting, security gates, validation pipelines, and notification systems."
-relatedPatterns: ["safety-net", "checkpoint-loop", "test-first-steering"]
-relatedTopics: ["skills", "mcp", "settings"]
+description: 'Design, implement, and verify lifecycle hooks across Claude Code, Codex, and Copilot without assuming equivalent failure semantics.'
+relatedPatterns: ['safety-net', 'checkpoint-loop', 'scope-fence']
+relatedTopics: ['settings', 'mcp', 'commands']
 published: true
-keywords: ["hooks playbook", "auto-formatting", "security gates", "validation pipeline", "production hooks"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-hooks', 'codex-hooks', 'copilot-hooks']
+keywords: ['agent hooks playbook', 'pre tool hook', 'post tool validation', 'hook testing']
 ---
 
 # Playbook
 
-Every hook configuration here has been tested in production workflows. Copy them directly into your `.claude/settings.json` or adapt them to your stack. Each recipe includes the rationale behind design choices — not just the config.
+## 1. State the Control Objective
 
-## Auto-Formatting on File Save
+Name the unwanted outcome, not the desired script. “Prevent writes outside the assigned module” is testable. “Add a safety hook” is not.
 
-The most common hook. Run your formatter after every Edit or Write operation so Claude never commits unformatted code. All formatters use the same structure — a `PostToolUse` hook on `Edit|Write`:
+## 2. Select the Exact Event and Surface
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write",
-            "statusMessage": "Formatting..."
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+Use the current official event reference for the target product. Record whether the handler observes, blocks, or transforms. Do not assume a CLI event also exists in IDE or cloud execution.
 
-Swap the `command` for your language's formatter:
+## 3. Keep the Handler Deterministic
 
-| Language | Command |
-|----------|---------|
-| JS/TS (Prettier) | `jq -r '.tool_input.file_path' \| xargs npx prettier --write` |
-| Python (Black) | `FILE=$(jq -r '.tool_input.file_path'); [[ "$FILE" == *.py ]] && black "$FILE" \|\| true` |
-| Go (gofmt) | `FILE=$(jq -r '.tool_input.file_path'); [[ "$FILE" == *.go ]] && gofmt -w "$FILE" \|\| true` |
-| Rust (rustfmt) | `FILE=$(jq -r '.tool_input.file_path'); [[ "$FILE" == *.rs ]] && rustfmt "$FILE" \|\| true` |
+Parse structured input, validate only what the event can prove, bound execution time, and emit a documented result. Send expensive analysis to a later asynchronous path rather than delaying every tool call.
 
-The `|| true` at the end of language-filtered variants matters. Without it, a non-matching file extension causes the `[[` test to return exit code 1, which shows a warning in the transcript.
+## 4. Define Failure Policy
 
-## Security Gates
+Choose explicitly:
 
-Security hooks belong in PreToolUse because it fires before permissions and can hard-block operations. These are the safety-net pattern implemented as code.
+- Fail closed for a narrow, high-confidence local control.
+- Fail open with an auditable warning when availability matters more.
+- Escalate to an independent gate for release-critical policy.
 
-### Block Dangerous Git Operations
+If the product fixes timeout behavior, design around that behavior rather than the policy you wish it had.
 
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "if": "Bash(git *)",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/git-policy.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+## 5. Test Adversarial Cases
 
-The `if` field (available since v2.1.85) uses permission rule syntax to narrow which Bash calls trigger the hook. Without it, every Bash command spawns a process — wasteful when you only care about git.
+Exercise allowed input, denied input, malformed payload, handler crash, timeout, nested agents, alternate tools, disabled configuration, and cloud/local divergence.
 
-`.claude/hooks/git-policy.sh`:
+## 6. Duplicate the Load-Bearing Check
 
-```bash
-#!/bin/bash
-INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command')
-
-# Force pushes to protected branches
-if echo "$COMMAND" | grep -qE 'git push.*(--force|-f).*(main|master|release)'; then
-  echo "BLOCKED: Force push to protected branch" >&2
-  exit 2
-fi
-
-# Commits that skip pre-commit hooks
-if echo "$COMMAND" | grep -qE 'git commit.*--no-verify'; then
-  echo "BLOCKED: --no-verify bypasses pre-commit hooks" >&2
-  exit 2
-fi
-
-# Hard resets that destroy uncommitted work
-if echo "$COMMAND" | grep -qE 'git reset --hard'; then
-  echo "BLOCKED: git reset --hard destroys uncommitted changes" >&2
-  exit 2
-fi
-
-# Branch deletion of protected branches
-if echo "$COMMAND" | grep -qE 'git branch\s+-[dD]\s+(main|master|release)'; then
-  echo "BLOCKED: Cannot delete protected branch" >&2
-  exit 2
-fi
-
-exit 0
-```
-
-### Block Destructive Shell Commands
-
-```bash
-#!/bin/bash
-# .claude/hooks/bash-safety.sh
-INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command')
-
-# Recursive delete from root
-if echo "$COMMAND" | grep -qE 'rm\s+-rf\s+/'; then
-  echo "BLOCKED: Recursive delete from root" >&2
-  exit 2
-fi
-
-# Pipe-to-shell (supply chain attack vector)
-if echo "$COMMAND" | grep -qE 'curl.*\|\s*(bash|sh|zsh)'; then
-  echo "BLOCKED: Pipe-to-shell is a supply chain risk" >&2
-  exit 2
-fi
-
-# Credential exfiltration patterns
-if echo "$COMMAND" | grep -qE 'curl.*(AWS_SECRET|API_KEY|TOKEN|PASSWORD)'; then
-  echo "BLOCKED: Potential credential exfiltration" >&2
-  exit 2
-fi
-
-# Database destruction
-if echo "$COMMAND" | grep -qiE '(DROP\s+(TABLE|DATABASE)|TRUNCATE|DELETE\s+FROM\s+\w+\s*$)'; then
-  echo "BLOCKED: Destructive database operation" >&2
-  exit 2
-fi
-
-exit 0
-```
-
-Register it:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/bash-safety.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### Protect Sensitive Files
-
-Block edits to files that should never be modified by the agent:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-files.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-```bash
-#!/bin/bash
-# .claude/hooks/protect-files.sh — register with PreToolUse, matcher: Edit|Write
-INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
-
-PROTECTED=(".env" "package-lock.json" "yarn.lock" ".git/" "credentials" "secrets" ".ssh/")
-
-for pattern in "${PROTECTED[@]}"; do
-  if [[ "$FILE_PATH" == *"$pattern"* ]]; then
-    echo "BLOCKED: $FILE_PATH matches protected pattern '$pattern'" >&2
-    exit 2
-  fi
-done
-exit 0
-```
-
-## Validation Pipelines
-
-Post-edit validation catches type errors and lint violations before they compound across multiple files. These hooks implement the checkpoint-loop pattern — Claude gets immediate feedback and self-corrects.
-
-### Lint + Type-Check After TypeScript Edits
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "FILE=$(jq -r '.tool_input.file_path'); if [[ \"$FILE\" == *.ts || \"$FILE\" == *.tsx ]]; then npx eslint --fix \"$FILE\" 2>&1; npx tsc --noEmit 2>&1 | head -20; fi",
-            "timeout": 30,
-            "statusMessage": "Linting and type-checking..."
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-The `timeout: 30` is deliberate. Type-checking a large project can take 10+ seconds. Without a timeout, a broken `tsconfig.json` hangs your session for 600 seconds (the default). The `head -20` caps output — Claude doesn't need 200 lines of type errors to understand the problem.
-
-## Auto-Approve Specific Permissions
-
-Skip the approval dialog for operations you always want to allow:
-
-```json
-{
-  "hooks": {
-    "PermissionRequest": [
-      {
-        "matcher": "ExitPlanMode",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PermissionRequest\", \"decision\": {\"behavior\": \"allow\"}}}'"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-Keep auto-approve hooks narrowly scoped. An empty matcher here would auto-approve every permission prompt — effectively `--dangerously-skip-permissions` without the flag. Limit it to specific, safe operations like `ExitPlanMode`.
-
-## Notification Systems
-
-Desktop notifications use the `Notification` event with platform-specific commands:
-
-| Platform | Command |
-|----------|---------|
-| macOS | `osascript -e 'display notification "Claude Code needs attention" with title "Claude Code"'` |
-| Linux | `notify-send 'Claude Code' 'Needs attention'` |
-| Windows | `powershell -c "[System.Windows.Forms.MessageBox]::Show('Needs attention')"` |
-
-```json
-{
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "osascript -e 'display notification \"Claude Code needs attention\" with title \"Claude Code\"'"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### HTTP Webhooks and Audit Logging
-
-HTTP hooks send the full stdin JSON as the request body. Use `Stop` events for "task complete" notifications to Slack or Discord:
-
-```json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "http",
-            "url": "https://hooks.slack.com/services/T00/B00/xxx",
-            "headers": { "Content-Type": "application/json" }
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-For audit logging, log every Bash command asynchronously so it never blocks the agent:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -r '.tool_input.command' >> ~/.claude/command-log.txt",
-            "async": true
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-## Context Re-Injection After Compaction
-
-When Claude compacts its context window, instructions can get lost. SessionStart hooks with the `compact` matcher re-inject critical context. The stdin JSON for SessionStart includes the trigger type:
-
-```json
-{
-  "session_id": "abc123",
-  "hook_event_name": "SessionStart",
-  "cwd": "/home/user/project",
-  "permission_mode": "default",
-  "trigger": "compact"
-}
-```
-
-The dynamic approach pulls live project state rather than maintaining a static string:
-
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "compact",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '--- Post-compaction context ---'; echo 'Package manager: bun (not npm)'; git log --oneline -10; echo '--- Branch: '$(git branch --show-current)"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-## Hook Field Reference
-
-Every hook handler accepts these fields:
-
-| Field | Type | Default | Purpose |
-|-------|------|---------|---------|
-| `type` | string | required | `"command"`, `"http"`, `"prompt"`, or `"agent"` |
-| `command` | string | — | Shell command to execute |
-| `if` | string | — | Permission rule syntax filter (v2.1.85+) |
-| `shell` | string | `"bash"` | Shell to use. `"powershell"` on Windows. |
-| `timeout` | number | 600/30/60 | Seconds before kill. Varies by handler type. |
-| `statusMessage` | string | — | UI message shown while hook runs |
-| `async` | boolean | `false` | Non-blocking execution |
-| `asyncRewake` | boolean | `false` | Wake Claude from idle on exit 2 |
-| `once` | boolean | `false` | Fire only once per session |
-| `model` | string | Haiku | Model override for prompt-type hooks |
-
-Set `"disableAllHooks": true` at the top level of settings.json to disable all hooks without removing configurations — the emergency kill switch for debugging hook issues:
-
-```json
-{
-  "disableAllHooks": true,
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/git-policy.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-All hooks remain defined but none execute. Remove the flag to re-enable them.
+Run the authoritative check in CI or a policy service using independently controlled configuration. The hook shortens the correction loop; it should not become the only source of release truth.

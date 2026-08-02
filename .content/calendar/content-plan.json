@@ -236,7 +236,7 @@
       "priority": "high",
       "target_date": "2026-06-09",
       "tags": ["ai", "claude", "agents", "orchestration"],
-      "notes": "Part 3 of Managed Agents series. ANONYMIZED build write-up (internal source tool kept private — no employer/product names). Thesis: put fixed routing in durable Vercel Workflow steps, not a coordinator agent; treat each agent as a stateless worker. Covers 6-surface/4-agent pipeline, true-completion signal gotcha, Opus->Sonnet model reversal, validate+review safety gate, mock mode. Primary keyword: agent orchestration. Links to topics 014, 015, 005. Validation score 99/100. Published locally. NEEDS: hero+thumbnail images, then images:process for blur. Orphan until a published post links back. Added anonymized product entry 'Plain-Language Plugin Pipeline' in products.json.",
+      "notes": "Part 3 of Managed Agents series. ANONYMIZED build write-up (internal source tool kept private — no employer/product names). Thesis: put fixed routing in durable Vercel Workflow steps, not a coordinator agent; treat each agent as a stateless worker. Covers 6-surface/4-agent pipeline, true-completion signal gotcha, Opus->Sonnet model reversal, validate+review safety gate, mock mode. Primary keyword: agent orchestration. Links to topics 014, 015, 005. Validation score 99/100. Published locally. NEEDS: hero+thumbnail images, then images:generate for blur. Orphan until a published post links back. Added anonymized product entry 'Plain-Language Plugin Pipeline' in products.json.",
       "created_at": "2026-06-09",
       "updated_at": "2026-06-09"
     },
@@ -249,7 +249,7 @@
       "priority": "high",
       "target_date": "2026-06-09",
       "tags": ["ai", "claude", "agents", "research"],
-      "notes": "Companion to topic_017 (Managed Agents / agent-workflow series). ANONYMIZED. Thesis: match the research-workflow shape to the job. Centerpiece: the deep-research command (Claude Code Workflow) — Scope/Search/Fetch/3-vote adversarial Verify/Synthesize, ~97 model calls per question, structured output every hop. Contrast: anonymized single-call daily web-search scanner (claude-sonnet-4-6 + web_search_20250305 server tool, cron, materiality×relevance×recency scoring, sha1 fingerprint dedup, no verify). Neither uses Managed Agents — deliberate teaching point. Primary keyword: deep research. Links to topics 017, 014. Validation 99/100. NEEDS: hero+thumbnail images, then images:process. Orphan until a published post links back.",
+      "notes": "Companion to topic_017 (Managed Agents / agent-workflow series). ANONYMIZED. Thesis: match the research-workflow shape to the job. Centerpiece: the deep-research command (Claude Code Workflow) — Scope/Search/Fetch/3-vote adversarial Verify/Synthesize, ~97 model calls per question, structured output every hop. Contrast: anonymized single-call daily web-search scanner (claude-sonnet-4-6 + web_search_20250305 server tool, cron, materiality×relevance×recency scoring, sha1 fingerprint dedup, no verify). Neither uses Managed Agents — deliberate teaching point. Primary keyword: deep research. Links to topics 017, 014. Validation 99/100. NEEDS: hero+thumbnail images, then images:generate. Orphan until a published post links back.",
       "created_at": "2026-06-09",
       "updated_at": "2026-06-09"
     },

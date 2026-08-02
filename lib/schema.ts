@@ -7,8 +7,9 @@ import type { PostFrontmatter } from './posts';
 import type { PatternFrontmatter, ChapterMeta } from './patterns';
 import type { ToolkitFrontmatter, ToolkitTopicMeta } from './toolkit';
 import { SITE_URL } from './site';
+import { serializeJsonLd } from './json-ld';
 
-const SITE_NAME = 'Dakota Smith Blog';
+const SITE_NAME = 'Dakota Smith';
 const AUTHOR_NAME = 'Dakota Smith';
 // On-site author page — the canonical entity URL for "Dakota Smith". Off-site
 // profiles live in `sameAs` so knowledge graphs resolve them to this one node.
@@ -172,10 +173,7 @@ export function generateWebSiteSchema(): WebSiteSchema {
 /**
  * Generate BlogPosting schema for individual blog posts
  */
-export function generateBlogPostingSchema(
-  post: PostFrontmatter,
-  content?: string
-): BlogPostingSchema {
+export function generateBlogPostingSchema(post: PostFrontmatter): BlogPostingSchema {
   const postUrl = `${SITE_URL}/blog/${post.slug}`;
   const imageUrl = post.hero.startsWith('http') ? post.hero : `${SITE_URL}${post.hero}`;
 
@@ -229,7 +227,7 @@ export function generateResumeSchema(): ProfilePageSchema {
       jobTitle: 'Principal Architect | Agentic Systems & Enterprise Platforms',
       description:
         'Principal architect with 15 years in enterprise software, focused on Sitecore/.NET modernization, agentic systems, and governed delivery architecture.',
-      url: `${SITE_URL}/resume`,
+      url: `${SITE_URL}/about`,
       sameAs: ['https://linkedin.com/in/dakota-smith-a855b230', 'https://github.com/smithdak'],
       knowsAbout: [
         'Next.js',
@@ -333,7 +331,7 @@ export function generateToolkitTopicSchema(topic: ToolkitTopicMeta, page: Toolki
     },
     keywords: page.keywords || [],
     proficiencyLevel: 'Expert',
-    articleSection: 'Claude Code Toolkit',
+    articleSection: 'Agent Tooling',
   };
 }
 
@@ -344,8 +342,8 @@ export function generateToolkitCollectionSchema(topicCount: number) {
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: "Claude Code Toolkit — Expert's Guide to Agentic Engineering",
-    description: `${topicCount} expert deep-dives into Claude Code features for production agentic engineering.`,
+    name: 'Agent Tooling — Cross-Vendor Capability Guide',
+    description: `${topicCount} source-backed capability guides comparing Claude Code, OpenAI Codex, and GitHub Copilot.`,
     url: `${SITE_URL}/learn/toolkit`,
     author: generatePersonSchema(),
     mainEntity: {
@@ -371,10 +369,10 @@ export function generateLearnCollectionSchema() {
         'A structured reference of named patterns for working effectively with AI coding agents.',
     },
     {
-      name: 'Claude Code Toolkit',
+      name: 'Agent Tooling',
       url: `${SITE_URL}/learn/toolkit`,
       description:
-        "Expert deep-dives into Claude Code's features for production agentic engineering.",
+        'Source-backed capability guidance across Claude Code, OpenAI Codex, and GitHub Copilot.',
     },
     {
       name: 'The Harness',
@@ -416,5 +414,5 @@ export function generateLearnCollectionSchema() {
  * Render JSON-LD script tag
  */
 export function renderJsonLd(schema: object): string {
-  return JSON.stringify(schema, null, 2);
+  return serializeJsonLd(schema);
 }

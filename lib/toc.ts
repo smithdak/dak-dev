@@ -1,3 +1,7 @@
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import { createHeadingSlugger, getHeadingText } from './heading-ids';
+
 export interface TocItem {
   id: string;
   text: string;
@@ -6,30 +10,31 @@ export interface TocItem {
 
 /**
  * Extract table of contents from MDX content
- * Parses h2 and h3 headings, ignoring headings inside fenced code blocks
+ * Parses h2 and h3 headings through the Markdown AST. The same text extraction
+ * and slugger used by the rehype renderer keeps inline markup and duplicate
+ * headings aligned with their rendered anchor IDs.
  */
 export function extractTableOfContents(content: string): TocItem[] {
-  // Strip fenced code blocks so headings inside them aren't picked up
-  const stripped = content.replace(/^```[\s\S]*?^```/gm, '');
-
-  const headingRegex = /^(#{2,3})\s+(.+)$/gm;
+  const tree = unified().use(remarkParse).parse(content) as unknown;
+  const slugger = createHeadingSlugger();
   const toc: TocItem[] = [];
-  let match;
 
-  while ((match = headingRegex.exec(stripped)) !== null) {
-    const level = match[1].length;
-    const text = match[2].trim();
+  function visit(node: unknown): void {
+    if (!node || typeof node !== 'object') return;
+    const candidate = node as { type?: string; depth?: number; children?: unknown[] };
 
-    // Generate ID from heading text (slugify)
-    const id = text
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
+    if (candidate.type === 'heading' && candidate.depth) {
+      const text = getHeadingText(candidate).trim();
+      const id = slugger.slug(text);
+      if (candidate.depth === 2 || candidate.depth === 3) {
+        toc.push({ id, text, level: candidate.depth });
+      }
+    }
 
-    toc.push({ id, text, level });
+    if (Array.isArray(candidate.children)) candidate.children.forEach(visit);
   }
+
+  visit(tree);
 
   return toc;
 }

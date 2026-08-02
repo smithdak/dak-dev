@@ -1,16 +1,24 @@
 ---
-title: "Building Plugin Ops: A Claude Code Plugin for Plugin Maintenance"
-date: "2026-02-16"
-excerpt: "Explore how I built a 32-tool MCP server with health scanning, issue tracking, release management, and operational runbooks for Claude Code plugins."
-slug: "building-plugin-ops-maintenance-engine"
-tags: ["claude-code", "ai-tools", "open-source", "developer-tools"]
-thumbnail: "/images/posts/building-plugin-ops-maintenance-engine/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAIDBv/EABwQAAICAgMAAAAAAAAAAAAAAAECABEDIVGBkf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AxDAi7WL1DKzFdk+yNnmEf//Z"
-hero: "/images/posts/building-plugin-ops-maintenance-engine/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAIDBv/EABoQAQADAAMAAAAAAAAAAAAAAAEAAhEDIYH/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMPYTdrF8hy2U7WS2Ef/2Q=="
+title: 'Building Plugin Ops: A Claude Code Plugin for Plugin Maintenance'
+date: '2026-02-16'
+excerpt: 'Explore how I built a 32-tool MCP server with health scanning, issue tracking, release management, and operational runbooks for Claude Code plugins.'
+slug: 'building-plugin-ops-maintenance-engine'
+tags: ['claude-code', 'ai-tools', 'open-source', 'developer-tools']
+thumbnail: '/images/posts/building-plugin-ops-maintenance-engine/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAABgH/xAAfEAABBAAHAAAAAAAAAAAAAAACAAEDEQUSFVFSkZL/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAv/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AGEskgwm43bC9IzqeLbn5TClMo8W6Uj/2Q=='
+hero: '/images/posts/building-plugin-ops-maintenance-engine/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAABgH/xAAeEAACAQMFAAAAAAAAAAAAAAABAgADBRIRIkFSkf/EABUBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AZ5vC1e53Va9QKXxDEDbxrGEmC9R5JL//2Q=='
 published: true
-author: "Dakota Smith"
-keywords: ["claude code plugin", "plugin maintenance", "MCP server", "health scanning", "developer tools", "release management"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'claude code plugin',
+    'plugin maintenance',
+    'MCP server',
+    'health scanning',
+    'developer tools',
+    'release management',
+  ]
 ---
 
 I built a Claude Code plugin that maintains other Claude Code plugins. It runs health scans across ~25 checks, tracks issues with priority-based triage, and automates semver releases with changelog generation. 32 MCP tools. 5 skills. All backed by native Node.js SQLite.
@@ -29,26 +37,26 @@ Manual maintenance doesn't scale. Checking file structure validity, scanning for
 
 Plugin Ops provides five operational commands that cover the maintenance lifecycle:
 
-| Command | Purpose |
-|---------|---------|
-| `/ops` | Dashboard, project registration, routing |
-| `/ops-health` | Run ~25 health checks, export reports |
-| `/ops-issues` | File, triage, and track issues |
+| Command        | Purpose                                      |
+| -------------- | -------------------------------------------- |
+| `/ops`         | Dashboard, project registration, routing     |
+| `/ops-health`  | Run ~25 health checks, export reports        |
+| `/ops-issues`  | File, triage, and track issues               |
 | `/ops-release` | Semver bumps, changelog generation, git tags |
-| `/ops-runbook` | Execute guided operational procedures |
+| `/ops-runbook` | Execute guided operational procedures        |
 
 Register a plugin project once, then run health scans on demand. Issues discovered during scans feed directly into the tracker. Releases follow semver with auto-generated changelogs.
 
 ## Tech Stack
 
-| Category | Technology | Why |
-|----------|------------|-----|
-| Runtime | Node.js 22+ | Native `node:sqlite` (DatabaseSync) — zero external deps |
-| Protocol | MCP SDK (stdio) | 32 tools + 3 resources over Claude Code's tool system |
-| Validation | Zod | Runtime schema validation for all tool parameters |
-| Build | tsup (esbuild) | ESM output, `bundle: false` preserves file structure |
-| Persistence | SQLite (WAL mode) | 5 tables with foreign keys and cascading deletes |
-| CI | GitHub Actions | Parallel typecheck + build on every push |
+| Category    | Technology        | Why                                                      |
+| ----------- | ----------------- | -------------------------------------------------------- |
+| Runtime     | Node.js 22+       | Native `node:sqlite` (DatabaseSync) — zero external deps |
+| Protocol    | MCP SDK (stdio)   | 32 tools + 3 resources over Claude Code's tool system    |
+| Validation  | Zod               | Runtime schema validation for all tool parameters        |
+| Build       | tsup (esbuild)    | ESM output, `bundle: false` preserves file structure     |
+| Persistence | SQLite (WAL mode) | 5 tables with foreign keys and cascading deletes         |
+| CI          | GitHub Actions    | Parallel typecheck + build on every push                 |
 
 ## Architecture
 
@@ -85,16 +93,16 @@ export function detectProject(projectPath: string): {
   name: string | null;
 } {
   // Check for skills/ directory
-  if (existsSync(join(projectPath, "skills"))) has_skills = 1;
+  if (existsSync(join(projectPath, 'skills'))) has_skills = 1;
   // Check for .mcp.json or src/index.ts
-  if (existsSync(join(projectPath, ".mcp.json"))) has_mcp = 1;
+  if (existsSync(join(projectPath, '.mcp.json'))) has_mcp = 1;
   // Check for hooks in .claude/settings.json
   // Check for agents/ directory
 
   // Classify type
-  if (has_mcp && has_skills) type = "full";
-  else if (has_mcp) type = "mcp";
-  else type = "skill-only";
+  if (has_mcp && has_skills) type = 'full';
+  else if (has_mcp) type = 'mcp';
+  else type = 'skill-only';
 
   return { has_skills, has_mcp, has_hooks, has_agents, type, version, name };
 }
@@ -108,11 +116,11 @@ This detection maps directly to health check templates. A skill-only plugin gets
 
 Three templates scale checks based on project complexity:
 
-| Template | Checks | For |
-|----------|--------|-----|
-| `skill-only` | 8 | Skills-only plugins (Markdown files) |
-| `mcp-plugin` | 10 | MCP server plugins (TypeScript runtime) |
-| `full-plugin` | 15 | Full plugins with skills, MCP, hooks, and agents |
+| Template      | Checks | For                                              |
+| ------------- | ------ | ------------------------------------------------ |
+| `skill-only`  | 8      | Skills-only plugins (Markdown files)             |
+| `mcp-plugin`  | 10     | MCP server plugins (TypeScript runtime)          |
+| `full-plugin` | 15     | Full plugins with skills, MCP, hooks, and agents |
 
 Checks cover structure (directory layout, manifest validity), skills (frontmatter schema, file sizes), MCP (tool registration, transport config), and quality (README completeness, license presence).
 
@@ -124,22 +132,21 @@ Issues flow from health scans into a structured tracker with priority, category,
 
 ```typescript
 server.tool(
-  "ops_issue_create",
-  "File a new issue for a project",
+  'ops_issue_create',
+  'File a new issue for a project',
   {
     project_id: z.string(),
     title: z.string(),
-    priority: z.enum(["critical", "high", "medium", "low"]).optional(),
-    category: z.enum([
-      "bug", "dependency", "quality",
-      "structure", "feature", "tech-debt"
-    ]).optional(),
+    priority: z.enum(['critical', 'high', 'medium', 'low']).optional(),
+    category: z
+      .enum(['bug', 'dependency', 'quality', 'structure', 'feature', 'tech-debt'])
+      .optional(),
     health_check_id: z.string().optional(),
   },
   async (params) => {
     const issue = createIssue(params);
-    return { content: [{ type: "text", text: JSON.stringify(issue, null, 2) }] };
-  },
+    return { content: [{ type: 'text', text: JSON.stringify(issue, null, 2) }] };
+  }
 );
 ```
 
@@ -153,11 +160,15 @@ The release workflow handles semver versioning and generates changelogs from the
 // Changelog export renders Markdown from release + issue data
 export function exportChangelog(projectId: string): string {
   const releases = listReleases(projectId);
-  return releases.map(release => {
-    const issues = listIssuesByRelease(release.id);
-    return `## ${release.version} (${release.released_at})\n\n` +
-      issues.map(i => `- ${i.title}`).join("\n");
-  }).join("\n\n");
+  return releases
+    .map((release) => {
+      const issues = listIssuesByRelease(release.id);
+      return (
+        `## ${release.version} (${release.released_at})\n\n` +
+        issues.map((i) => `- ${i.title}`).join('\n')
+      );
+    })
+    .join('\n\n');
 }
 ```
 
@@ -165,12 +176,12 @@ Each release records the version, release date, notes, and associated file chang
 
 ## Performance Results
 
-| Metric | Manual Maintenance | With plugin-ops | Improvement |
-|--------|-------------------|-----------------|-------------|
-| Time to audit plugin health | 30-60 min | 2-5 min | 10x faster |
-| Issue tracking for plugins | Ad-hoc/none | Structured with triage | Full lifecycle |
-| Release changelog generation | Manual | Automatic from issues | Time saved |
-| Ops procedure consistency | Memory-dependent | Runbook-guided | Reproducible |
+| Metric                       | Manual Maintenance | With plugin-ops        | Improvement    |
+| ---------------------------- | ------------------ | ---------------------- | -------------- |
+| Time to audit plugin health  | 30-60 min          | 2-5 min                | 10x faster     |
+| Issue tracking for plugins   | Ad-hoc/none        | Structured with triage | Full lifecycle |
+| Release changelog generation | Manual             | Automatic from issues  | Time saved     |
+| Ops procedure consistency    | Memory-dependent   | Runbook-guided         | Reproducible   |
 
 ## The Tradeoffs
 

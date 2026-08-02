@@ -1,16 +1,24 @@
 ---
-title: "Building Plugin Architect: A Zero-Code Claude Code Plugin"
-date: "2026-02-16"
+title: 'Building Plugin Architect: A Zero-Code Claude Code Plugin'
+date: '2026-02-16'
 excerpt: "Discover how 30KB of prompt engineering replaced a SQLite-backed codebase to become a complete plugin design system for Claude Code's 6 extension points."
-slug: "building-plugin-architect-zero-code-claude-plugin"
-tags: ["claude-code", "ai-tools", "open-source", "prompt-engineering"]
-thumbnail: "/images/posts/building-plugin-architect-zero-code-claude-plugin/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQMEBv/EAB0QAAEEAgMAAAAAAAAAAAAAAAEAAhEiEiFRcZH/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMbjaSNdJdUHOdBsfVPJ5RH/2Q=="
-hero: "/images/posts/building-plugin-architect-zero-code-claude-plugin/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAgMG/8QAHBAAAQQDAQAAAAAAAAAAAAAAAAECESISIXGR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDGY2lU1wFQuc6FsvpCQj//2Q=="
+slug: 'building-plugin-architect-zero-code-claude-plugin'
+tags: ['claude-code', 'ai-tools', 'open-source', 'prompt-engineering']
+thumbnail: '/images/posts/building-plugin-architect-zero-code-claude-plugin/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAMEBv/EAB4QAAEEAgMBAAAAAAAAAAAAAAEAAwQRAgUSISIx/8QAFQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDUaiTIka5p2R07kPQqldyyTKA+AIUl/9k='
+hero: '/images/posts/building-plugin-architect-zero-code-claude-plugin/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIEBv/EAB0QAAEEAgMAAAAAAAAAAAAAAAEAAwQRBSECEjH/xAAVAQEBAAAAAAAAAAAAAAAAAAABAv/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/ANRiJMiTjWnZGneQ3qld2KegPAEaUl//2Q=='
 published: true
-author: "Dakota Smith"
-keywords: ["claude code plugin", "plugin architect", "prompt engineering", "zero code plugin", "MCP server", "claude code extensions"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'claude code plugin',
+    'plugin architect',
+    'prompt engineering',
+    'zero code plugin',
+    'MCP server',
+    'claude code extensions',
+  ]
 ---
 
 I shipped a Claude Code plugin with zero runtime code. No TypeScript. No build step. No dependencies. The entire product is 30KB of Markdown across three files — and it turns Claude into an expert architect for the full Claude Code plugin ecosystem. This is the story of building that plugin.
@@ -41,12 +49,12 @@ Plugin Architect encodes all of that knowledge into a single skill. When you run
 
 ## Tech Stack
 
-| Category | Technology | Why |
-|----------|------------|-----|
-| Knowledge Base | Markdown (SKILL.md) | Native Claude Code skill format, zero compilation |
-| Supporting Docs | Markdown (examples.md, integrations.md) | Context-injectable reference material |
-| Configuration | JSON (plugin.json, marketplace.json) | Required plugin manifest format |
-| Distribution | GitHub + Claude Marketplace | Direct install from repository URL |
+| Category        | Technology                              | Why                                               |
+| --------------- | --------------------------------------- | ------------------------------------------------- |
+| Knowledge Base  | Markdown (SKILL.md)                     | Native Claude Code skill format, zero compilation |
+| Supporting Docs | Markdown (examples.md, integrations.md) | Context-injectable reference material             |
+| Configuration   | JSON (plugin.json, marketplace.json)    | Required plugin manifest format                   |
+| Distribution    | GitHub + Claude Marketplace             | Direct install from repository URL                |
 
 ## Architecture
 
@@ -93,24 +101,28 @@ The 6-step workflow includes an explicit confirmation gate at step 4. After Disc
 Every extension point has a production-ready template. MCP Servers get a full TypeScript setup with the `@modelcontextprotocol/sdk`, Zod validation, and stdio transport:
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { z } from 'zod';
 
 const server = new McpServer({
-  name: "server-name",
-  version: "1.0.0",
+  name: 'server-name',
+  version: '1.0.0',
   capabilities: { tools: { listChanged: true } },
 });
 
-server.registerTool("tool-name", {
-  description: "What it does, what it returns, when to use it",
-  inputSchema: {
-    param: z.string().describe("What this param means"),
+server.registerTool(
+  'tool-name',
+  {
+    description: 'What it does, what it returns, when to use it',
+    inputSchema: {
+      param: z.string().describe('What this param means'),
+    },
   },
-}, async ({ param }) => {
-  return { content: [{ type: "text", text: "result" }] };
-});
+  async ({ param }) => {
+    return { content: [{ type: 'text', text: 'result' }] };
+  }
+);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
@@ -121,14 +133,18 @@ Hook configurations include complete bash scripts for common patterns like secre
 ```json
 {
   "hooks": {
-    "PreToolUse": [{
-      "matcher": "Edit|Write",
-      "hooks": [{
-        "type": "command",
-        "command": "./hooks/scripts/check-secrets.sh",
-        "timeout": 10
-      }]
-    }]
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/scripts/check-secrets.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }
 ```
@@ -166,7 +182,7 @@ Nine commits followed in a single day, restructuring the entire repo as a lightw
 
 ### Why the Pivot
 
-The code-heavy approach solved the wrong problem. Plugin Architect doesn't need to *run* anything. It needs to *know* things and *guide* decisions. Those are prompt engineering problems, not software engineering problems.
+The code-heavy approach solved the wrong problem. Plugin Architect doesn't need to _run_ anything. It needs to _know_ things and _guide_ decisions. Those are prompt engineering problems, not software engineering problems.
 
 SQLite added complexity without value. Tool categories and filtering required configuration that slowed down the user. The CI pipeline tested infrastructure that wasn't the product — the product was the knowledge encoded in the prompts.
 

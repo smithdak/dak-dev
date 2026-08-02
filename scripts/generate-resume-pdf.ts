@@ -4,14 +4,6 @@ import path from 'path';
 
 const OUTPUT_PATH = path.join(process.cwd(), 'public', 'dakota-smith-resume.pdf');
 
-const COLORS = {
-  background: '#0A0A0A',
-  text: '#F5F5F5',
-  muted: '#A9A9A9',
-  surface: '#333333',
-  accent: '#00D9FF', // Neo-brutalist accent color
-};
-
 // Resume Data
 const resumeData = {
   name: 'Dakota Smith',
@@ -24,31 +16,81 @@ const resumeData = {
     {
       title: 'Technical Strategy & Leadership',
       items: [
-        { name: 'Vision & Strategy', desc: 'Defining long-term technical roadmaps aligned with business ROI.' },
-        { name: 'Mentorship', desc: 'Cultivating talent through high-level code reviews and "player-coach" leadership.' },
+        {
+          name: 'Vision & Strategy',
+          desc: 'Defining long-term technical roadmaps aligned with business ROI.',
+        },
+        {
+          name: 'Mentorship',
+          desc: 'Cultivating talent through high-level code reviews and "player-coach" leadership.',
+        },
       ],
     },
     {
       title: 'Architecture & Innovation',
       items: [
-        { name: 'Fullstack Mastery', desc: 'Expert-level proficiency in NextJS, ReactJS, .NET, and C#.' },
-        { name: 'Enterprise CMS', desc: '14+ years architecting Sitecore (XM Cloud), Optimizely, and Umbraco solutions.' },
+        {
+          name: 'Fullstack Mastery',
+          desc: 'Expert-level proficiency in NextJS, ReactJS, .NET, and C#.',
+        },
+        {
+          name: 'Enterprise CMS',
+          desc: '14+ years architecting Sitecore (XM Cloud), Optimizely, and Umbraco solutions.',
+        },
       ],
     },
     {
       title: 'Operational Excellence',
       items: [
-        { name: 'RAID Management', desc: 'Expert at mitigating Risks, Assumptions, Issues, and Dependencies.' },
-        { name: 'Agile Orchestration', desc: '9+ years leading Scrum teams to deliver under tight deadlines.' },
+        {
+          name: 'RAID Management',
+          desc: 'Expert at mitigating Risks, Assumptions, Issues, and Dependencies.',
+        },
+        {
+          name: 'Agile Orchestration',
+          desc: '9+ years leading Scrum teams to deliver under tight deadlines.',
+        },
       ],
     },
   ],
 
   skills: {
-    'Frontend Mastery': ['NextJS', 'ReactJS', 'TypeScript', 'TailwindCSS', 'JavaScript', 'jQuery', 'SASS', 'Bootstrap'],
-    'Backend & Data': ['.NET Core', 'C#', 'GraphQL', 'SQL Server', 'MongoDB', 'Postgres', 'Prisma', 'Solr', 'Fabric'],
-    'Platform & DevOps': ['Sitecore XM Cloud', 'Umbraco', 'Optimizely', 'Shopify', 'GitHub Actions', 'Azure DevOps', 'Vercel', 'Docker'],
-    'AI & Innovation': ['AI-powered CMS analyzers', 'Automated security scanning', 'Performance scanning agents'],
+    'Frontend Mastery': [
+      'NextJS',
+      'ReactJS',
+      'TypeScript',
+      'TailwindCSS',
+      'JavaScript',
+      'jQuery',
+      'SASS',
+      'Bootstrap',
+    ],
+    'Backend & Data': [
+      '.NET Core',
+      'C#',
+      'GraphQL',
+      'SQL Server',
+      'MongoDB',
+      'Postgres',
+      'Prisma',
+      'Solr',
+      'Fabric',
+    ],
+    'Platform & DevOps': [
+      'Sitecore XM Cloud',
+      'Umbraco',
+      'Optimizely',
+      'Shopify',
+      'GitHub Actions',
+      'Azure DevOps',
+      'Vercel',
+      'Docker',
+    ],
+    'AI & Innovation': [
+      'AI-powered CMS analyzers',
+      'Automated security scanning',
+      'Performance scanning agents',
+    ],
   },
 
   experience: [
@@ -143,23 +185,13 @@ function generateResumePDF() {
   const stream = fs.createWriteStream(OUTPUT_PATH);
   doc.pipe(stream);
 
-  let yPos = doc.y;
-
   // Header
-  doc
-    .fontSize(24)
-    .font('Helvetica-Bold')
-    .text(resumeData.name, { align: 'left' });
+  doc.fontSize(24).font('Helvetica-Bold').text(resumeData.name, { align: 'left' });
 
-  doc
-    .fontSize(12)
-    .font('Helvetica')
-    .text(resumeData.title, { align: 'left' });
+  doc.fontSize(12).font('Helvetica').text(resumeData.title, { align: 'left' });
 
   doc.moveDown(0.5);
-  doc
-    .fontSize(10)
-    .text(`${resumeData.email} | ${resumeData.github}`, { align: 'left' });
+  doc.fontSize(10).text(`${resumeData.email} | ${resumeData.github}`, { align: 'left' });
 
   doc.moveDown(1);
   drawLine(doc);
@@ -205,7 +237,10 @@ function generateResumePDF() {
 
   resumeData.experience.forEach((exp) => {
     doc.fontSize(12).font('Helvetica-Bold').text(exp.company);
-    doc.fontSize(10).font('Helvetica-Oblique').text(`${exp.title} | ${exp.location} | ${exp.period}`);
+    doc
+      .fontSize(10)
+      .font('Helvetica-Oblique')
+      .text(`${exp.title} | ${exp.location} | ${exp.period}`);
     doc.moveDown(0.3);
 
     exp.highlights.forEach((highlight) => {
@@ -230,7 +265,11 @@ function generateResumePDF() {
   doc.fontSize(11).font('Helvetica-Bold').text('Education');
   doc.moveDown(0.3);
   doc.fontSize(10).font('Helvetica-Bold').text(resumeData.education.degree);
-  doc.font('Helvetica').text(`${resumeData.education.institution} | ${resumeData.education.location} | ${resumeData.education.period}`);
+  doc
+    .font('Helvetica')
+    .text(
+      `${resumeData.education.institution} | ${resumeData.education.location} | ${resumeData.education.period}`
+    );
 
   doc.end();
 

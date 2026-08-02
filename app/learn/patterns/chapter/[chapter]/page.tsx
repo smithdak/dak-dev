@@ -1,9 +1,5 @@
 import { notFound } from 'next/navigation';
-import {
-  CHAPTERS,
-  getChapterBySlug,
-  getPatternsByChapter,
-} from '@/lib/patterns';
+import { CHAPTERS, getChapterBySlug, getPatternsByChapter } from '@/lib/patterns';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { PatternCard } from '@/components/patterns/PatternCard';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -12,15 +8,13 @@ import Link from 'next/link';
 
 import { SITE_URL as siteUrl } from '@/lib/site';
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   return CHAPTERS.map((chapter) => ({ chapter: chapter.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ chapter: string }>;
-}) {
+export async function generateMetadata({ params }: { params: Promise<{ chapter: string }> }) {
   const { chapter: chapterSlug } = await params;
   const chapter = getChapterBySlug(chapterSlug);
 
@@ -28,9 +22,8 @@ export async function generateMetadata({
     return { title: 'Chapter Not Found' };
   }
 
-  const patterns = getPatternsByChapter(chapter.number);
-  const title = `Chapter ${chapter.number}: ${chapter.name} — Agent Patterns | Dakota Smith`;
-  const ogImage = `${siteUrl}/api/og?type=pattern&title=${encodeURIComponent(chapter.name)}&chapter=${chapter.number}`;
+  const title = `Chapter ${chapter.number}: ${chapter.name} — Agent Patterns`;
+  const ogImage = `${siteUrl}/og-default.png`;
 
   return {
     title,
@@ -57,15 +50,6 @@ export async function generateMetadata({
   };
 }
 
-const CHAPTER_BORDER_COLORS: Record<number, string> = {
-  1: 'border-chapter-1',
-  2: 'border-chapter-2',
-  3: 'border-chapter-3',
-  4: 'border-chapter-4',
-  5: 'border-chapter-5',
-  6: 'border-chapter-6',
-};
-
 const CHAPTER_TEXT_COLORS: Record<number, string> = {
   1: 'text-chapter-1',
   2: 'text-chapter-2',
@@ -75,11 +59,7 @@ const CHAPTER_TEXT_COLORS: Record<number, string> = {
   6: 'text-chapter-6',
 };
 
-export default async function ChapterPage({
-  params,
-}: {
-  params: Promise<{ chapter: string }>;
-}) {
+export default async function ChapterPage({ params }: { params: Promise<{ chapter: string }> }) {
   const { chapter: chapterSlug } = await params;
   const chapter = getChapterBySlug(chapterSlug);
 
@@ -89,12 +69,9 @@ export default async function ChapterPage({
 
   const patterns = getPatternsByChapter(chapter.number);
 
-  const chapterIndex = CHAPTERS.findIndex(
-    (c) => c.number === chapter.number
-  );
+  const chapterIndex = CHAPTERS.findIndex((c) => c.number === chapter.number);
   const prevChapter = chapterIndex > 0 ? CHAPTERS[chapterIndex - 1] : null;
-  const nextChapter =
-    chapterIndex < CHAPTERS.length - 1 ? CHAPTERS[chapterIndex + 1] : null;
+  const nextChapter = chapterIndex < CHAPTERS.length - 1 ? CHAPTERS[chapterIndex + 1] : null;
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: '/' },
@@ -137,23 +114,16 @@ export default async function ChapterPage({
           </ol>
         </nav>
 
-        {/* Chapter Header with grid bg */}
-        <header
-          className={`mb-10 border-b-4 border-text pb-8 border-l-4 ${CHAPTER_BORDER_COLORS[chapter.number]} pl-6 pt-8 -mx-4 sm:-mx-6 lg:-mx-0 px-6`}
-        >
+        <header className="mb-10 border-b border-text/20 pb-10 pt-8">
           <div className="flex items-baseline gap-3 mb-1">
             <span
-              className={`text-6xl font-bold opacity-15 ${CHAPTER_TEXT_COLORS[chapter.number]} leading-none`}
+              className={`font-display text-4xl ${CHAPTER_TEXT_COLORS[chapter.number]} leading-none`}
             >
               {chapter.number}
             </span>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-              {chapter.name}
-            </h1>
+            <h1 className="font-display text-5xl tracking-tight md:text-7xl">{chapter.name}</h1>
           </div>
-          <p className="text-lg text-muted max-w-3xl mt-3 leading-relaxed">
-            {chapter.description}
-          </p>
+          <p className="text-lg text-muted max-w-3xl mt-3 leading-relaxed">{chapter.description}</p>
           {patterns.length > 0 && (
             <p className="text-xs text-muted mt-4 font-mono tabular-nums">
               {patterns.length} pattern{patterns.length !== 1 ? 's' : ''}
@@ -163,31 +133,33 @@ export default async function ChapterPage({
 
         {/* Patterns */}
         {patterns.length > 0 ? (
-          <div className="space-y-4">
+          <div>
             {patterns.map((pattern) => (
-              <PatternCard
-                key={pattern.frontmatter.slug}
-                pattern={pattern}
-              />
+              <PatternCard key={pattern.frontmatter.slug} pattern={pattern} />
             ))}
           </div>
         ) : (
           <div className="border-2 border-dashed border-muted/40 p-12 text-center">
-            <p className="text-sm font-mono text-muted uppercase tracking-wider">Patterns coming soon</p>
+            <p className="text-sm font-mono text-muted uppercase tracking-wider">
+              Patterns coming soon
+            </p>
           </div>
         )}
 
         {/* Chapter Navigation */}
-        <div className="mt-16 pt-8 border-t-2 border-text/30 grid grid-cols-2 gap-4">
+        <nav
+          className="mt-16 grid border-y border-text/20 sm:grid-cols-2"
+          aria-label="Chapter navigation"
+        >
           {prevChapter ? (
             <Link
               href={`/learn/patterns/chapter/${prevChapter.slug}`}
-              className={`group border-2 border-text/60 hover:border-text p-4 border-l-4 ${CHAPTER_BORDER_COLORS[prevChapter.number]} transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_var(--color-text)] focus:outline-none focus:ring-2 focus:ring-accent`}
+              className="group min-h-28 px-1 py-6 transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent sm:border-r sm:border-text/20"
             >
               <span className="text-[10px] text-muted uppercase tracking-widest font-mono">
                 Prev Chapter
               </span>
-              <p className="font-bold mt-1 group-hover:underline decoration-2 underline-offset-4 text-sm">
+              <p className="mt-2 font-display text-xl group-hover:underline group-hover:underline-offset-4">
                 {prevChapter.number}. {prevChapter.name}
               </p>
             </Link>
@@ -197,19 +169,19 @@ export default async function ChapterPage({
           {nextChapter ? (
             <Link
               href={`/learn/patterns/chapter/${nextChapter.slug}`}
-              className={`group border-2 border-text/60 hover:border-text p-4 border-r-4 ${CHAPTER_BORDER_COLORS[nextChapter.number]} text-right transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_var(--color-text)] focus:outline-none focus:ring-2 focus:ring-accent`}
+              className="group min-h-28 px-1 py-6 text-right transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent"
             >
               <span className="text-[10px] text-muted uppercase tracking-widest font-mono">
                 Next Chapter
               </span>
-              <p className="font-bold mt-1 group-hover:underline decoration-2 underline-offset-4 text-sm">
+              <p className="mt-2 font-display text-xl group-hover:underline group-hover:underline-offset-4">
                 {nextChapter.number}. {nextChapter.name}
               </p>
             </Link>
           ) : (
             <div />
           )}
-        </div>
+        </nav>
       </div>
     </PageTransition>
   );

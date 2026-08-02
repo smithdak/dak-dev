@@ -1,10 +1,7 @@
-'use client';
-
-import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { staggerContainerVariants, staggerItemVariants } from '@/lib/animations';
+import Link from 'next/link';
 import { TagList } from './Tag';
+import { formatCalendarDate } from '@/lib/utils';
 
 interface CardProps {
   title: string;
@@ -17,10 +14,7 @@ interface CardProps {
   className?: string;
 }
 
-/**
- * Card component for blog post previews
- * Neo-brutalist styling with thick borders and hard shadows
- */
+/** Editorial article preview: image, record metadata, and one clear reading path. */
 export function Card({
   title,
   excerpt,
@@ -31,65 +25,43 @@ export function Card({
   tags = [],
   className = '',
 }: CardProps) {
-  const formattedDate = new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const formattedDate = formatCalendarDate(date);
 
   return (
-    <motion.article variants={staggerItemVariants} className={`group ${className}`}>
+    <article className={`group h-full border-t border-text/20 pt-5 ${className}`}>
       <Link
         href={`/blog/${slug}`}
-        className="block bg-surface border-4 border-text shadow-[8px_8px_0_0_var(--color-text)] hover:shadow-[12px_12px_0_0_var(--color-accent)] hover:border-accent transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+        className="grid h-full gap-5 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background sm:grid-cols-[minmax(10rem,0.8fr)_minmax(0,1.2fr)]"
       >
-        {/* Thumbnail */}
-        <div className="relative aspect-video overflow-hidden border-b-4 border-text">
+        <div className="relative aspect-[3/2] overflow-hidden bg-surface">
           <Image
             src={thumbnail}
-            alt={`Cover image for ${title}`}
+            alt=""
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            placeholder="blur"
-            blurDataURL="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 225'%3E%3Cfilter id='b' color-interpolation-filters='sRGB'%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3CfeColorMatrix values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 100 -1' result='s'/%3E%3CfeFlood x='0' y='0' width='100%25' height='100%25'/%3E%3CfeComposite operator='out' in='s'/%3E%3CfeComposite in2='SourceGraphic'/%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' fill='%230a0a0a'/%3E%3C/svg%3E"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+            sizes="(max-width: 640px) 100vw, (max-width: 1200px) 40vw, 28vw"
           />
         </div>
 
-        {/* Content */}
-        <div className="p-6">
-          {/* Metadata */}
-          <div className="flex items-center gap-3 text-sm text-muted mb-4">
-            <time dateTime={date} className="font-semibold">
-              {formattedDate}
-            </time>
-            {readingTime && (
-              <>
-                <span className="text-text" aria-hidden="true">
-                  •
-                </span>
-                <span className="text-accent">{readingTime}</span>
-              </>
-            )}
+        <div className="flex min-w-0 flex-col">
+          <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold uppercase tracking-[0.1em] text-muted">
+            <time dateTime={date}>{formattedDate}</time>
+            {readingTime ? <span>{readingTime}</span> : null}
           </div>
 
-          {/* Title */}
-          <h2 className="text-2xl font-bold text-text mb-3 group-hover:underline underline-offset-4 decoration-4">
+          <h2 className="font-display text-2xl leading-[1.08] tracking-tight text-text group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4 md:text-3xl">
             {title}
           </h2>
+          <p className="mt-3 line-clamp-3 leading-relaxed text-muted">{excerpt}</p>
 
-          {/* Excerpt */}
-          <p className="text-muted leading-relaxed mb-4 line-clamp-3">{excerpt}</p>
-
-          {/* Tags */}
-          {tags.length > 0 && (
-            <div className="mt-4">
+          {tags.length > 0 ? (
+            <div className="mt-auto pt-5">
               <TagList tags={tags} interactive={false} />
             </div>
-          )}
+          ) : null}
         </div>
       </Link>
-    </motion.article>
+    </article>
   );
 }
 
@@ -106,21 +78,12 @@ interface CardListProps {
   className?: string;
 }
 
-/**
- * CardList component for displaying multiple post cards in a grid
- */
 export function CardList({ posts, className = '' }: CardListProps) {
   return (
-    <motion.div
-      variants={staggerContainerVariants}
-      initial={false}
-      whileInView="visible"
-      viewport={{ once: true, margin: '-50px' }}
-      className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 ${className}`}
-    >
+    <div className={`grid gap-12 ${className}`}>
       {posts.map((post) => (
         <Card key={post.slug} {...post} />
       ))}
-    </motion.div>
+    </div>
   );
 }

@@ -1,16 +1,23 @@
 ---
-title: "My 2026 Dev Setup: Custom Claude Code Workflows"
-date: "2026-01-25"
-excerpt: "Triple-monitor hardware, 5 MCP servers, and custom Claude Code skills that cut feature delivery time from days to hours. The full 2026 developer setup."
-slug: "my-2026-dev-setup"
-tags: ["productivity", "claude-code", "tools", "setup"]
-thumbnail: "/images/posts/my-2026-dev-setup/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAEDBv/EABsQAQACAgMAAAAAAAAAAAAAAAEAAgMhEVGR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDDtUN1SKGW1mu19keXuEf/2Q=="
-hero: "/images/posts/my-2026-dev-setup/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAEDBv/EABkQAQADAQEAAAAAAAAAAAAAAAEAAhEhA//EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AwzVDtUiyHpZa9WS2Ef/Z"
+title: 'My 2026 Dev Setup: Custom Claude Code Workflows'
+date: '2026-01-25'
+excerpt: 'Triple-monitor hardware, 5 MCP servers, and custom Claude Code skills that cut feature delivery time from days to hours. The full 2026 developer setup.'
+slug: 'my-2026-dev-setup'
+tags: ['productivity', 'claude-code', 'tools', 'setup']
+thumbnail: '/images/posts/my-2026-dev-setup/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAIG/8QAFxABAAMAAAAAAAAAAAAAAAAAAAISUf/EABUBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A29pYWlixJf/Z'
+hero: '/images/posts/my-2026-dev-setup/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAECBv/EABgQAQADAQAAAAAAAAAAAAAAAAABElEC/8QAFQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDbW6w7Tiwkv//Z'
 published: true
-author: "Dakota Smith"
-keywords: ["developer setup 2026", "claude code setup", "dev environment", "MCP servers", "autonomous coding"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'developer setup 2026',
+    'claude code setup',
+    'dev environment',
+    'MCP servers',
+    'autonomous coding',
+  ]
 ---
 
 Build a custom skill: 30 minutes. Time saved per use: 5-10 minutes. Uses per week: 10+. Breakeven: one week.
@@ -19,11 +26,11 @@ That's the ROI math behind every Claude Code customization in this setup. Boris 
 
 ## The Multi-Machine Setup
 
-| Machine | Role | Primary Use |
-|---------|------|-------------|
-| Desktop PC | Primary workstation | Triple-monitor focused development |
-| Work Laptop + VM | Remote-capable | Environment isolation, client work |
-| M1 MacBook Pro | Mobile | Away-from-desk development |
+| Machine          | Role                | Primary Use                        |
+| ---------------- | ------------------- | ---------------------------------- |
+| Desktop PC       | Primary workstation | Triple-monitor focused development |
+| Work Laptop + VM | Remote-capable      | Environment isolation, client work |
+| M1 MacBook Pro   | Mobile              | Away-from-desk development         |
 
 The common thread: **Cursor runs on all three.** Having a consistent editor across machines reduces friction when switching contexts. Cursor handles inline completions while Claude Code tackles larger tasks—complementary tools, not competing ones.
 
@@ -54,12 +61,12 @@ Cursor started as a VS Code fork with AI features. It's matured into an editor d
 
 Cursor and Claude Code complement rather than compete:
 
-| Task | Tool |
-|------|------|
-| Line-level completions | Cursor |
-| Small refactors (single file) | Cursor Cmd+K |
-| Multi-file features | Claude Code |
-| Autonomous development | APL via Claude Code |
+| Task                          | Tool                |
+| ----------------------------- | ------------------- |
+| Line-level completions        | Cursor              |
+| Small refactors (single file) | Cursor Cmd+K        |
+| Multi-file features           | Claude Code         |
+| Autonomous development        | APL via Claude Code |
 
 The boundary isn't rigid. Match the tool to the task.
 
@@ -71,13 +78,13 @@ Here's where the setup diverges from vanilla.
 
 Five MCP servers extend Claude Code's capabilities:
 
-| MCP Server | Purpose |
-|-----------|---------|
-| **GitHub** | PRs, issues, repo management without leaving Claude Code |
-| **Filesystem/Memory** | Persistent context between sessions, project-specific memory |
-| **Database** | Direct query access during development, schema introspection |
-| **Context7** | Enhanced context management for large codebases |
-| **Pencil.dev** | Design-to-code workflow, visual verification of UI implementations |
+| MCP Server            | Purpose                                                            |
+| --------------------- | ------------------------------------------------------------------ |
+| **GitHub**            | PRs, issues, repo management without leaving Claude Code           |
+| **Filesystem/Memory** | Persistent context between sessions, project-specific memory       |
+| **Database**          | Direct query access during development, schema introspection       |
+| **Context7**          | Enhanced context management for large codebases                    |
+| **Pencil.dev**        | Design-to-code workflow, visual verification of UI implementations |
 
 Each server eliminates a context switch. Without GitHub MCP, every PR review requires switching to a browser. Without Database MCP, every schema question requires a separate terminal. Five servers, five fewer reasons to leave Claude Code.
 
@@ -87,12 +94,12 @@ Beyond MCPs, custom skills and hooks transform the workflow:
 
 **Skills (slash commands)**
 
-| Skill | Purpose | Time Saved |
-|-------|---------|-----------|
-| `/meta` | APL orchestrator—plan, execute, review | Hours per feature |
-| `/write-post` | Blog content creation with brand validation | 30 min per post |
-| `/review-post` | Content quality checks against [brand guidelines](/blog/claude-code-skills-agent-skills-standard) | 20 min per review |
-| `/content-strategist` | SEO and content planning | 45 min per analysis |
+| Skill                 | Purpose                                                                                           | Time Saved          |
+| --------------------- | ------------------------------------------------------------------------------------------------- | ------------------- |
+| `/meta`               | APL orchestrator—plan, execute, review                                                            | Hours per feature   |
+| `/write-post`         | Blog content creation with brand validation                                                       | 30 min per post     |
+| `/review-post`        | Content quality checks against [brand guidelines](/blog/claude-code-skills-agent-skills-standard) | 20 min per review   |
+| `/content-strategist` | SEO and content planning                                                                          | 45 min per analysis |
 
 The `/meta` command alone transformed my workflow. Instead of manually orchestrating Claude Code through 15+ subtasks, I describe the goal and watch the phases unfold:
 
@@ -110,6 +117,7 @@ The `/meta` command alone transformed my workflow. Instead of manually orchestra
 ```
 
 **Hooks** automate session boundaries:
+
 - Session end hooks trigger learning extraction to `.apl/patterns/`
 - Pre-commit hooks run validation
 - Context-gathering hooks populate project state on session start
@@ -127,14 +135,14 @@ Building skills follows the [Agent Skills Standard](/blog/claude-code-skills-age
 
 The workflow isn't "fire and forget." I monitor active sessions, answer escalation questions, and review decisions. The mechanical work—boilerplate, tests, lint fixes—happens autonomously. [APL built this entire blog](/blog/how-apl-built-this-blog) using that workflow: 47 stories, 6 sessions, 2 hours of human input.
 
-| Scenario | Approach |
-|----------|----------|
-| Quick bug fix | Vanilla Claude Code |
-| Single function | Cursor inline edit |
-| New feature with multiple files | APL |
-| Refactoring across codebase | APL |
-| Exploring unfamiliar code | Vanilla with questions |
-| Production deployment | Manual (never autonomous) |
+| Scenario                        | Approach                  |
+| ------------------------------- | ------------------------- |
+| Quick bug fix                   | Vanilla Claude Code       |
+| Single function                 | Cursor inline edit        |
+| New feature with multiple files | APL                       |
+| Refactoring across codebase     | APL                       |
+| Exploring unfamiliar code       | Vanilla with questions    |
+| Production deployment           | Manual (never autonomous) |
 
 ## Design Workflow with Pencil.dev
 
@@ -150,13 +158,13 @@ No more "it looks different than the mockup" conversations. The mockup and the c
 
 The setup evolved through subtraction:
 
-| Removed | Reason |
-|---------|--------|
-| Complex terminal prompt (Starship, Powerlevel10k) | Distracting. A prompt with git status suffices. |
-| Multiple browser profiles | One profile with containers for isolation. |
-| Elaborate git aliases | `gh` CLI handles most workflows better. |
-| Docker Desktop | CLI docker commands work. The GUI adds overhead. |
-| Note-taking apps for dev notes | Code comments and markdown files in the repo. |
+| Removed                                           | Reason                                           |
+| ------------------------------------------------- | ------------------------------------------------ |
+| Complex terminal prompt (Starship, Powerlevel10k) | Distracting. A prompt with git status suffices.  |
+| Multiple browser profiles                         | One profile with containers for isolation.       |
+| Elaborate git aliases                             | `gh` CLI handles most workflows better.          |
+| Docker Desktop                                    | CLI docker commands work. The GUI adds overhead. |
+| Note-taking apps for dev notes                    | Code comments and markdown files in the repo.    |
 
 Each removal reduced cognitive load. The best tools are invisible—they don't demand attention.
 

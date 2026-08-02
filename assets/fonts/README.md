@@ -1,15 +1,14 @@
-# Bundled fonts (OG image rendering only)
+# Bundled fonts
 
-These static TTFs are read at runtime by the OG image generator
-(`app/api/og/route.tsx` via `lib/og/template.tsx`) and by the image scripts.
-Satori cannot use `next/font` or system fonts — it needs raw font data — so the
-brand fonts are vendored here. Web pages load fonts through `next/font/google`
-as usual; nothing in this directory ships to the browser.
+These vendored TTFs keep the site deterministic and independent of remote font
+providers. Web pages load Space Grotesk from this directory through
+`next/font/local`; image scripts may embed the same files when Sharp needs raw
+font data.
 
-| Family | Source | License |
-|---|---|---|
+The default social image is the static `public/og-default.png`. Regenerate it
+with `pnpm generate:og`; there is no dynamic OG route or runtime font fetch.
+
+| Family                              | Source                                          | License     |
+| ----------------------------------- | ----------------------------------------------- | ----------- |
 | Space Grotesk (Regular/Medium/Bold) | https://github.com/floriankarsten/space-grotesk | SIL OFL 1.1 |
-| JetBrains Mono (Regular/Bold) | https://github.com/JetBrains/JetBrainsMono | SIL OFL 1.1 |
-
-`next.config.ts` `outputFileTracingIncludes` makes these files available to the
-`/api/og` serverless function on Vercel — keep it in sync if files are renamed.
+| JetBrains Mono (Regular/Bold)       | https://github.com/JetBrains/JetBrainsMono      | SIL OFL 1.1 |

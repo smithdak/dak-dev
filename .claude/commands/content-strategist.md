@@ -21,6 +21,7 @@ Main orchestrator for autonomous content creation and SEO strategy.
 The content strategist is the primary entry point for autonomous content creation. It accepts multiple ideas, validates them against SEO opportunities, and orchestrates the full workflow through specialized agents.
 
 **Key Features:**
+
 - Accepts multiple ideas for batch processing
 - Dedupes against existing content
 - Matches ideas to SEO gaps for maximum impact
@@ -30,6 +31,7 @@ The content strategist is the primary entry point for autonomous content creatio
 ## Primary Mode: Multi-Idea Processing
 
 ### Invocation
+
 ```
 /content-strategist "AI agents for code review" "Next.js caching deep dive" "Building CLI tools with Node.js"
 ```
@@ -129,6 +131,7 @@ Research keywords for a topic.
 ```
 
 **Output:**
+
 ```
 Keyword Research: Next.js Performance
 ============================================================
@@ -171,16 +174,17 @@ Find content opportunities based on SEO strategy.
 ```
 
 **Output:**
+
 ```
 Content Gap Analysis
 ============================================================
 
 --- High Priority Gaps ---
 
-1. Claude Code Plugin Development
-   Keywords: claude code plugin, build claude extension
-   Opportunity: Low competition, growing interest
-   Suggested: Tutorial series on MCP servers
+1. Cross-vendor agent configuration
+   Keywords: Claude Code vs Codex vs Copilot, agent instructions, agent skills
+   Opportunity: High-intent comparison grounded in official capability evidence
+   Suggested: Capability-by-capability guide with dated source citations
    Status: Partially covered by existing posts
 
 2. Autonomous AI Agent Patterns
@@ -212,6 +216,7 @@ Plan a topic cluster for authority building.
 ```
 
 **Output:**
+
 ```
 Topic Cluster: AI Development Tools
 ============================================================
@@ -224,11 +229,11 @@ Type: Comprehensive overview linking to all cluster posts
 
 --- Cluster Posts (800+ words each) ---
 
-1. "Building Autonomous Coding Agents with Claude"
+1. "Building Accountable Coding Agents Across Runtimes"
    → Links to pillar, post #2
    → Status: Published ✓
 
-2. "Creating Claude Code Plugins for Enterprise CMS"
+2. "Compiling Agent Configuration for Claude Code, Codex, and Copilot"
    → Links to pillar, posts #1, #3
    → Status: Published ✓
 
@@ -266,6 +271,7 @@ SEO audit of an existing post.
 ```
 
 **Output:**
+
 ```
 SEO Audit: how-apl-built-this-blog
 ============================================================
@@ -273,7 +279,7 @@ SEO Audit: how-apl-built-this-blog
 --- Keyword Analysis ---
 
 Primary: "autonomous AI agent" (density: 1.2% ✓)
-Secondary: "claude code", "automated development" ✓
+Secondary: "Claude Code", "OpenAI Codex", "GitHub Copilot" ✓
 Missing: None
 
 --- On-Page SEO ---
@@ -296,7 +302,7 @@ External Links: 2 ✓
 
 1. Add 1-2 more internal links to related posts
 2. Consider adding FAQ schema for featured snippets
-3. Update for any 2026 developments in Claude Code
+3. Re-verify all vendor capability claims against dated official sources
 
 Overall SEO Score: 88/100
 ```
@@ -306,30 +312,24 @@ Overall SEO Score: 88/100
 Analyze competitor content for a topic.
 
 ```
-/content-strategist compete "claude code tutorials"
+/content-strategist compete "coding agent configuration"
 ```
 
 **Output:**
+
 ```
-Competitor Analysis: Claude Code Tutorials
+Competitor Analysis: Coding Agent Configuration
 ============================================================
 
 --- Top Ranking Content ---
 
-1. alexop.dev/posts/building-my-first-claude-code-plugin
-   Word Count: ~1,500
-   Strengths: Personal narrative, code examples
-   Weaknesses: No metrics, dated (2025)
+1. [Live result verified during the run]
+   Strengths: Record the evidence observed
+   Weaknesses: Record only defensible gaps
 
-2. agnost.ai/blog/claude-code-plugins-guide
-   Word Count: ~2,200
-   Strengths: Comprehensive, well-structured
-   Weaknesses: Generic examples, corporate tone
-
-3. docs.anthropic.com/claude-code
-   Word Count: ~3,000
-   Strengths: Authoritative, complete
-   Weaknesses: Reference docs, not tutorial
+2. [Current official vendor documentation]
+   Strengths: Authoritative capability reference
+   Weaknesses: Usually organized by product rather than operating problem
 
 --- Content Gap Opportunities ---
 
@@ -340,7 +340,7 @@ Competitor Analysis: Claude Code Tutorials
 
 --- Differentiation Strategy ---
 
-Our Angle: Technical depth + real metrics + neo-brutalist authenticity
+Our Angle: Principal-level judgment + source-backed capability evidence + accountable delivery
 
 Winning approach:
 - Include specific performance metrics (X% improvement)
@@ -360,6 +360,7 @@ Full content scan across posts and components. Validates all content against bra
 ```
 
 **Output:**
+
 ```
 Full Content Scan
 ============================================================
@@ -409,7 +410,7 @@ By Severity:
 === RECOMMENDATIONS ===
 
 Priority 1 - Quick Fixes:
-  • Run `npm run images:process` for blur placeholders
+  • Run `pnpm images:generate` for deterministic post art and blur placeholders
 
 Priority 2 - Content Updates:
   • Add conclusion section to how-apl-built-this-blog
@@ -421,15 +422,16 @@ Posts: 90 avg | Components: 98 avg | Overall Health: Good
 
 **What Gets Scanned:**
 
-| Category | Files | Content Checked |
-|----------|-------|-----------------|
-| Blog Posts | `content/posts/*.mdx` | Full articles, frontmatter, SEO |
-| Pages | `app/**/page.tsx` | Metadata, headings, descriptions |
-| Layout | `components/layout/*.tsx` | Navigation, footer text |
-| Section | `components/home/*.tsx`, `components/blog/*.tsx` | Headlines, CTAs |
-| UI | `components/ui/*.tsx` | Button labels, card text |
+| Category   | Files                                            | Content Checked                  |
+| ---------- | ------------------------------------------------ | -------------------------------- |
+| Blog Posts | `content/posts/*.mdx`                            | Full articles, frontmatter, SEO  |
+| Pages      | `app/**/page.tsx`                                | Metadata, headings, descriptions |
+| Layout     | `components/layout/*.tsx`                        | Navigation, footer text          |
+| Section    | `components/home/*.tsx`, `components/blog/*.tsx` | Headlines, CTAs                  |
+| UI         | `components/ui/*.tsx`                            | Button labels, card text         |
 
 **Validation Rules Applied:**
+
 - Forbidden phrases (hedging, filler words, corporate jargon)
 - Passive voice detection
 - Sentence length analysis
@@ -438,22 +440,22 @@ Posts: 90 avg | Components: 98 avg | Overall Health: Good
 
 ## Integration Points
 
-| File | Purpose |
-|------|---------|
-| `.content/calendar/content-plan.json` | Pipeline tracking |
-| `.content/seo/strategy.json` | Keywords, gaps, clusters |
-| `.content/brand/guidelines.json` | Voice validation rules |
-| `.content/templates/*.template` | Content structures |
-| `lib/content-validation.ts` | Validation logic |
+| File                                  | Purpose                  |
+| ------------------------------------- | ------------------------ |
+| `.content/calendar/content-plan.json` | Pipeline tracking        |
+| `.content/seo/strategy.json`          | Keywords, gaps, clusters |
+| `.content/brand/guidelines.json`      | Voice validation rules   |
+| `.content/templates/*.template`       | Content structures       |
+| `lib/content-validation.ts`           | Validation logic         |
 
 ## Agent Coordination
 
-| Agent | Invoked By | Purpose |
-|-------|------------|---------|
-| Researcher | Multi-idea mode | Gather metrics and examples |
-| Writer | After research | Generate content |
-| Editor | If score < 80 | Fix validation issues |
-| Orchestrator | Internally | Coordinate flow |
+| Agent        | Invoked By      | Purpose                     |
+| ------------ | --------------- | --------------------------- |
+| Researcher   | Multi-idea mode | Gather metrics and examples |
+| Writer       | After research  | Generate content            |
+| Editor       | If score < 80   | Fix validation issues       |
+| Orchestrator | Internally      | Coordinate flow             |
 
 ## Anti-AI-Slop Enforcement
 

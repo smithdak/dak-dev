@@ -1,16 +1,24 @@
 ---
-title: "Building a Deep Research Agent That Verifies Its Sources"
-date: "2026-06-09"
-excerpt: "Learn how I built a deep research agent that fans out across sources, then refutes its own findings with three skeptics before reporting a single cited claim."
-slug: "deep-research-agent-fan-out-adversarial-verification"
-tags: ["ai", "claude", "agents", "research"]
-thumbnail: "/images/posts/deep-research-agent-fan-out-adversarial-verification/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAIDBv/EABwQAAICAgMAAAAAAAAAAAAAAAECABEDIVFhkf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AxNEbKmLfUMjMVNsfZCzzCP/Z"
-hero: "/images/posts/deep-research-agent-fan-out-adversarial-verification/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAIDBv/EABoQAQADAAMAAAAAAAAAAAAAAAEAAhEDIZH/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMRidtWLsOS1mrq+yOwj/9k="
+title: 'Building a Deep Research Agent That Verifies Its Sources'
+date: '2026-06-09'
+excerpt: 'Learn how I built a deep research agent that fans out across sources, then refutes its own findings with three skeptics before reporting a single cited claim.'
+slug: 'deep-research-agent-fan-out-adversarial-verification'
+tags: ['ai', 'claude', 'agents', 'research']
+thumbnail: '/images/posts/deep-research-agent-fan-out-adversarial-verification/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAEDBv/EABsQAAICAwEAAAAAAAAAAAAAAAABAlEDERIi/8QAFQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDauc1lUefNlNuhgSX/2Q=='
+hero: '/images/posts/deep-research-agent-fan-out-adversarial-verification/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAMG/8QAGRAAAwADAAAAAAAAAAAAAAAAAAECAyJR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDa1drIkp16VAJL/9k='
 published: true
-author: "Dakota Smith"
-keywords: ["deep research", "deep research agent", "claude agent workflow", "adversarial verification", "ai research agent", "web search agent"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'deep research',
+    'deep research agent',
+    'claude agent workflow',
+    'adversarial verification',
+    'ai research agent',
+    'web search agent',
+  ]
 ---
 
 Most "research agents" report whatever they find. They search, they summarize, and they hand you a confident paragraph that launders a forum guess into a fact. My deep research agent does the opposite: before any claim reaches the report, three independent skeptics try to refute it, and two of three votes against kill it. What survives is what could not be argued down.
@@ -23,13 +31,13 @@ Here's the architecture of the heavy one, the verification mechanism that makes 
 
 The harness runs as a Claude Code workflow — a script that fans work out to subagents and collects structured results. The question moves through five phases:
 
-| Phase | What it does | Fan-out |
-|---|---|---|
-| **Scope** | Decompose the question into five complementary search angles | 1 agent |
-| **Search** | One web searcher per angle, ranking results against the original question | 5 in parallel |
-| **Fetch** | Deduplicate URLs, fetch the top sources, extract falsifiable claims with quotes | up to 15 in parallel |
-| **Verify** | Adversarially test each claim with a panel of skeptics | 3 votes × up to 25 claims |
-| **Synthesize** | Merge duplicate claims, rank by confidence, write a cited report | 1 agent |
+| Phase          | What it does                                                                    | Fan-out                   |
+| -------------- | ------------------------------------------------------------------------------- | ------------------------- |
+| **Scope**      | Decompose the question into five complementary search angles                    | 1 agent                   |
+| **Search**     | One web searcher per angle, ranking results against the original question       | 5 in parallel             |
+| **Fetch**      | Deduplicate URLs, fetch the top sources, extract falsifiable claims with quotes | up to 15 in parallel      |
+| **Verify**     | Adversarially test each claim with a panel of skeptics                          | 3 votes × up to 25 claims |
+| **Synthesize** | Merge duplicate claims, rank by confidence, write a cited report                | 1 agent                   |
 
 The first decision is the fan-out. A single agent searching one query sees one slice of the topic. Five agents searching five angles — broad, technical, recent, contrarian, practitioner — surface evidence no single query would. Search and fetch run as a pipeline with no barrier between them, so a source found by the fast "recent news" angle starts extracting while the "academic" angle is still searching:
 
@@ -44,37 +52,39 @@ const sources = await pipeline(
   (found) =>
     parallel(
       capToFetchBudget(dedupeByUrl(found), MAX_FETCH).map(
-        (src) => () => agent(fetchPrompt(src), { phase: 'Fetch', schema: EXTRACT_SCHEMA }),
-      ),
-    ),
+        (src) => () => agent(fetchPrompt(src), { phase: 'Fetch', schema: EXTRACT_SCHEMA })
+      )
+    )
 );
 ```
 
-Each fetched source returns two to five *falsifiable* claims — concrete, checkable statements — each carrying a direct quote and a rating of central, supporting, or tangential. Vague generalities are rejected at extraction. A claim with no quote behind it never enters the pool.
+Each fetched source returns two to five _falsifiable_ claims — concrete, checkable statements — each carrying a direct quote and a rating of central, supporting, or tangential. Vague generalities are rejected at extraction. A claim with no quote behind it never enters the pool.
 
 ## Adversarial Verification: Make the Agent Argue With Itself
 
-This is the part that separates a research agent from a summarizer. Every claim that matters is handed to three skeptics, each told to *refute* it. Their job is not neutral assessment. They hunt for the source that contradicts it, the overreach past the quote, the stale benchmark, the marketing copy dressed as a finding. A claim survives only if fewer than two of three votes refute it, and only if enough valid votes came back to adjudicate it at all:
+This is the part that separates a research agent from a summarizer. Every claim that matters is handed to three skeptics, each told to _refute_ it. Their job is not neutral assessment. They hunt for the source that contradicts it, the overreach past the quote, the stale benchmark, the marketing copy dressed as a finding. A claim survives only if fewer than two of three votes refute it, and only if enough valid votes came back to adjudicate it at all:
 
 ```javascript
 const VOTES_PER_CLAIM = 3;
 const REFUTATIONS_REQUIRED = 2;
 
 const voted = await parallel(
-  rankedClaims.map((claim) => () =>
-    parallel(
-      Array.from({ length: VOTES_PER_CLAIM }, (_, v) => () =>
-        agent(refutePrompt(claim, v), { phase: 'Verify', schema: VERDICT_SCHEMA }),
-      ),
-    ).then((verdicts) => {
-      const valid = verdicts.filter(Boolean); // a vote can abstain (null) on error or skip
-      const refuted = valid.filter((v) => v.refuted).length;
-      // Survive only if a quorum actually adjudicated AND fewer than 2 refuted.
-      // All-abstain must not pass: refuted=0 would otherwise look like a clean win.
-      const survives = valid.length >= REFUTATIONS_REQUIRED && refuted < REFUTATIONS_REQUIRED;
-      return { ...claim, survives };
-    }),
-  ),
+  rankedClaims.map(
+    (claim) => () =>
+      parallel(
+        Array.from(
+          { length: VOTES_PER_CLAIM },
+          (_, v) => () => agent(refutePrompt(claim, v), { phase: 'Verify', schema: VERDICT_SCHEMA })
+        )
+      ).then((verdicts) => {
+        const valid = verdicts.filter(Boolean); // a vote can abstain (null) on error or skip
+        const refuted = valid.filter((v) => v.refuted).length;
+        // Survive only if a quorum actually adjudicated AND fewer than 2 refuted.
+        // All-abstain must not pass: refuted=0 would otherwise look like a clean win.
+        const survives = valid.length >= REFUTATIONS_REQUIRED && refuted < REFUTATIONS_REQUIRED;
+        return { ...claim, survives };
+      })
+  )
 );
 const confirmed = voted.filter((c) => c.survives);
 ```
@@ -139,13 +149,13 @@ The honest limitation: there is no adversarial verification here. The system pro
 
 The two workflows are the same idea tuned to opposite constraints. Neither uses Claude Managed Agents, which I reached for in the [durable build pipeline](/blog/claude-managed-agents-end-of-diy-infrastructure) — a reminder that the heavy infrastructure is a choice, not a default. A research workflow needs web access and structured output, not a persistent sandbox.
 
-| Dimension | Deep research agent | Daily scanner |
-|---|---|---|
-| **Trigger** | One-off question | Cron, every watch, every day |
-| **Search** | Fan-out: 5 angles, parallel | Single call, ≤8 server-side searches |
-| **Verification** | 3-vote adversarial, kill on 2 | Grounding instruction only |
-| **Model calls** | ~100 per question | 1 per scan |
-| **Right when** | High-stakes, must be correct | High-volume, human reviews output |
+| Dimension        | Deep research agent           | Daily scanner                        |
+| ---------------- | ----------------------------- | ------------------------------------ |
+| **Trigger**      | One-off question              | Cron, every watch, every day         |
+| **Search**       | Fan-out: 5 angles, parallel   | Single call, ≤8 server-side searches |
+| **Verification** | 3-vote adversarial, kill on 2 | Grounding instruction only           |
+| **Model calls**  | ~100 per question             | 1 per scan                           |
+| **Right when**   | High-stakes, must be correct  | High-volume, human reviews output    |
 
 **Use the deep research agent when** being wrong is expensive and the question is worth a hundred calls: a one-time investigation, a claim headed into a deliverable, a decision that is hard to reverse. **Skip it when** you need an answer in seconds, the stakes are low, or you are running the same query on a schedule — the verification overhead buys nothing there.
 
@@ -163,4 +173,4 @@ A deep research agent is not a smarter summarizer. It is a workflow that assumes
 - Adversarial rigor costs ~100 model calls per question — worth it for high-stakes one-offs, wrong for anything you run at volume
 - Match the workflow to the job: a single grounded call with web search for continuous monitoring, a fan-out-and-verify harness for decisions you cannot take back
 
-This is the companion to [durable agent orchestration](/blog/durable-agent-orchestration-claude-managed-agents). That post fixed the routing in code; this one shows what to do when the routing is fixed but the *evidence* cannot be trusted — verify it, adversarially, before it counts.
+This is the companion to [durable agent orchestration](/blog/durable-agent-orchestration-claude-managed-agents). That post fixed the routing in code; this one shows what to do when the routing is fixed but the _evidence_ cannot be trusted — verify it, adversarially, before it counts.

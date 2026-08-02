@@ -8,6 +8,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Dynamically import Giscus to avoid loading it in the initial bundle
 const Giscus = dynamic(() => import('@giscus/react'), {
@@ -22,6 +23,7 @@ interface CommentsProps {
 export function Comments({ className = '' }: CommentsProps) {
   const [isVisible, setIsVisible] = useState(false);
   const commentRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     // Create IntersectionObserver to lazy-load comments
@@ -49,15 +51,11 @@ export function Comments({ className = '' }: CommentsProps) {
   }, [isVisible]);
 
   return (
-    <div
-      ref={commentRef}
-      className={`border-t-4 border-text pt-12 ${className}`}
-      id="comments"
-    >
-      <h2 className="text-3xl font-bold mb-8">Comments</h2>
+    <div ref={commentRef} className={`border-t border-text/20 pt-12 ${className}`} id="comments">
+      <h2 className="mb-8 font-display text-4xl tracking-[-0.025em]">Discussion</h2>
 
       {isVisible ? (
-        <div className="border-4 border-text bg-surface p-6">
+        <div className="border-y border-text/20 py-6">
           <Giscus
             id="comments"
             repo={process.env.NEXT_PUBLIC_GISCUS_REPO as `${string}/${string}`}
@@ -69,14 +67,14 @@ export function Comments({ className = '' }: CommentsProps) {
             reactionsEnabled="1"
             emitMetadata="0"
             inputPosition="top"
-            theme="dark"
+            theme={resolvedTheme}
             lang="en"
             loading="lazy"
           />
         </div>
       ) : (
         // Placeholder while comments are loading
-        <div className="border-4 border-text bg-surface p-12 text-center">
+        <div className="border-y border-text/20 py-12 text-center">
           <p className="text-muted">Loading comments...</p>
         </div>
       )}

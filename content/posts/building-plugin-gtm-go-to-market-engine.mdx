@@ -1,16 +1,24 @@
 ---
-title: "Building Plugin GTM: A Go-To-Market Engine Inside Claude Code"
-date: "2026-02-16"
-excerpt: "Learn how I built a 29-tool MCP server that handles product analysis, GTM strategy, content generation, and launch tracking without leaving the terminal."
-slug: "building-plugin-gtm-go-to-market-engine"
-tags: ["claude-code", "ai-tools", "open-source", "developer-tools"]
-thumbnail: "/images/posts/building-plugin-gtm-go-to-market-engine/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAwAG/8QAHRAAAgEEAwAAAAAAAAAAAAAAAQIAAxESITFRkf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AxmKLsqYJ5lUZiuyfYNz3CP/Z"
-hero: "/images/posts/building-plugin-gtm-go-to-market-engine/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAwAG/8QAHBAAAwABBQAAAAAAAAAAAAAAAAECIQMREjGR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDGcYnLlgvstSqc5b9B3CP/2Q=="
+title: 'Building Plugin GTM: A Go-To-Market Engine Inside Claude Code'
+date: '2026-02-16'
+excerpt: 'Learn how I built a 29-tool MCP server that handles product analysis, GTM strategy, content generation, and launch tracking without leaving the terminal.'
+slug: 'building-plugin-gtm-go-to-market-engine'
+tags: ['claude-code', 'ai-tools', 'open-source', 'developer-tools']
+thumbnail: '/images/posts/building-plugin-gtm-go-to-market-engine/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABQAG/8QAHRAAAgIBBQAAAAAAAAAAAAAAAAIBAwUSFSFRVP/EABUBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A2lzulTMi6miOI7C9xyXjGiJL/9k='
+hero: '/images/posts/building-plugin-gtm-go-to-market-engine/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABQEG/8QAGhABAAIDAQAAAAAAAAAAAAAAAQACBAURIf/EABUBAQEAAAAAAAAAAAAAAAAAAAAC/8QAFREBAQAAAAAAAAAAAAAAAAAAAAH/2gAMAwEAAhEDEQA/ANs2sDw6we2y2ZZDC87HJJJY/9k='
 published: true
-author: "Dakota Smith"
-keywords: ["claude code plugin", "go-to-market", "MCP server", "developer tools", "launch strategy", "content generation"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'claude code plugin',
+    'go-to-market',
+    'MCP server',
+    'developer tools',
+    'launch strategy',
+    'content generation',
+  ]
 ---
 
 I built a go-to-market engine as a Claude Code plugin. It scans a codebase, builds positioning and messaging, generates launch content, and tracks execution — all from the terminal. 29 MCP tools. 7 skills. 106 tests. Zero context-switching to marketing tools.
@@ -29,26 +37,26 @@ The typical workflow: finish coding, open a Google Doc, stare at a blank page, c
 
 Plugin GTM keeps the entire GTM workflow inside Claude Code. Seven slash commands cover the full lifecycle:
 
-| Command | Purpose |
-|---------|---------|
-| `/gtm-analyze` | Scan a codebase or describe an idea to build a product profile |
-| `/gtm-plan` | Create positioning, messaging, ICP, channels, pricing, timeline |
-| `/gtm-content` | Generate launch content across 9 content types |
-| `/gtm-research` | Competitive analysis, market sizing, channel research |
-| `/gtm-publish` | Export content from database to project files |
-| `/gtm-refine` | Iterate on content with feedback and version tracking |
-| `/gtm` | Dashboard, status, project list |
+| Command         | Purpose                                                         |
+| --------------- | --------------------------------------------------------------- |
+| `/gtm-analyze`  | Scan a codebase or describe an idea to build a product profile  |
+| `/gtm-plan`     | Create positioning, messaging, ICP, channels, pricing, timeline |
+| `/gtm-content`  | Generate launch content across 9 content types                  |
+| `/gtm-research` | Competitive analysis, market sizing, channel research           |
+| `/gtm-publish`  | Export content from database to project files                   |
+| `/gtm-refine`   | Iterate on content with feedback and version tracking           |
+| `/gtm`          | Dashboard, status, project list                                 |
 
 ## Tech Stack
 
-| Category | Technology | Why |
-|----------|------------|-----|
-| Runtime | Node.js 22+ | Native `node:sqlite` — zero external database dependencies |
-| Protocol | MCP SDK (stdio) | Direct integration with Claude Code's tool system |
-| Validation | Zod | Runtime type checking for all 29 tool parameters |
-| Build | tsup (esbuild) | ESM output with sourcemaps and declaration files |
-| Testing | Vitest | 106 tests with process isolation for SQLite |
-| Persistence | SQLite (WAL mode) | Structured data with relational integrity |
+| Category    | Technology        | Why                                                        |
+| ----------- | ----------------- | ---------------------------------------------------------- |
+| Runtime     | Node.js 22+       | Native `node:sqlite` — zero external database dependencies |
+| Protocol    | MCP SDK (stdio)   | Direct integration with Claude Code's tool system          |
+| Validation  | Zod               | Runtime type checking for all 29 tool parameters           |
+| Build       | tsup (esbuild)    | ESM output with sourcemaps and declaration files           |
+| Testing     | Vitest            | 106 tests with process isolation for SQLite                |
+| Persistence | SQLite (WAL mode) | Structured data with relational integrity                  |
 
 ## Architecture
 
@@ -97,7 +105,7 @@ Every content update triggers an automatic snapshot of the previous version befo
 ```typescript
 export function updateContent(id: string, updates: Partial<Content>) {
   const existing = getContent(id);
-  if (!existing) throw new Error("Content not found");
+  if (!existing) throw new Error('Content not found');
 
   // Auto-snapshot before change
   if (updates.body !== undefined && updates.body !== existing.body) {
@@ -116,11 +124,11 @@ Generated content lives in the SQLite database until exported to files. The expo
 
 ```typescript
 export type DiffStatus =
-  | "not_exported"    // Never exported
-  | "in_sync"         // File matches database
-  | "file_modified"   // Someone edited the file
-  | "db_modified"     // Content updated in database
-  | "both_modified";  // Both changed independently
+  | 'not_exported' // Never exported
+  | 'in_sync' // File matches database
+  | 'file_modified' // Someone edited the file
+  | 'db_modified' // Content updated in database
+  | 'both_modified'; // Both changed independently
 ```
 
 This prevents a common problem: generating content, editing it manually, then overwriting with a stale database version. The `/gtm-publish` skill surfaces conflicts and lets you choose which version to keep.
@@ -129,24 +137,24 @@ This prevents a common problem: generating content, editing it manually, then ov
 
 Five category-specific templates provide starting points with pre-configured positioning, messaging, ICP profiles, and launch checklists:
 
-| Template | Target | Key Channels |
-|----------|--------|-------------|
-| `developer-tool` | Developers building tools | GitHub, HN, Twitter, Dev.to |
-| `saas` | SaaS products | ProductHunt, blogs, email, SEO |
-| `open-source` | OSS projects | GitHub, Reddit, Discord, conferences |
-| `cli-tool` | CLI applications | GitHub, package registries, tutorials |
-| `api-service` | API products | Docs site, integrations, developer relations |
+| Template         | Target                    | Key Channels                                 |
+| ---------------- | ------------------------- | -------------------------------------------- |
+| `developer-tool` | Developers building tools | GitHub, HN, Twitter, Dev.to                  |
+| `saas`           | SaaS products             | ProductHunt, blogs, email, SEO               |
+| `open-source`    | OSS projects              | GitHub, Reddit, Discord, conferences         |
+| `cli-tool`       | CLI applications          | GitHub, package registries, tutorials        |
+| `api-service`    | API products              | Docs site, integrations, developer relations |
 
 Each template is a ~6KB TypeScript object with real positioning frameworks, not generic placeholder text. The `developer-tool` template includes positioning for both individual developers and team leads — different audiences with different buying criteria.
 
 ## Performance Results
 
-| Metric | Manual GTM | With plugin-gtm | Improvement |
-|--------|-----------|-----------------|-------------|
-| Time from code-complete to launch content | 2-3 days | 30-60 minutes | 3-6x faster |
-| Content types generated per session | 1-2 | 5-9 | 4x coverage |
-| Context switches to external tools | 5-8 | 0 | Eliminated |
-| Version tracking of content iterations | Manual/none | Automatic | Full history |
+| Metric                                    | Manual GTM  | With plugin-gtm | Improvement  |
+| ----------------------------------------- | ----------- | --------------- | ------------ |
+| Time from code-complete to launch content | 2-3 days    | 30-60 minutes   | 3-6x faster  |
+| Content types generated per session       | 1-2         | 5-9             | 4x coverage  |
+| Context switches to external tools        | 5-8         | 0               | Eliminated   |
+| Version tracking of content iterations    | Manual/none | Automatic       | Full history |
 
 ## The Tradeoffs
 
@@ -173,7 +181,7 @@ Plugin GTM works for developer-focused products where the builder is also the ma
 
 ### What Worked Well
 
-**Codebase analysis as the entry point.** Starting with `/gtm-analyze` — which reads README, `package.json`, source files, and git history — produces strong product profiles. Technical capability extraction maps directly to feature-benefit messaging. This approach works because the codebase *is* the product.
+**Codebase analysis as the entry point.** Starting with `/gtm-analyze` — which reads README, `package.json`, source files, and git history — produces strong product profiles. Technical capability extraction maps directly to feature-benefit messaging. This approach works because the codebase _is_ the product.
 
 **Separation of storage and generation.** Keeping the MCP server as a pure CRUD layer and the skills as the intelligence layer made both easier to build and test. The 106 tests cover the data layer exhaustively without needing to test LLM output.
 

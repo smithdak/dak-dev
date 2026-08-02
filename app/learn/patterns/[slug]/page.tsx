@@ -3,7 +3,7 @@ import { MDXRemote } from 'next-mdx-remote/rsc';
 import {
   getPatternBySlug,
   getAllPatterns,
-  getAllPatternSlugs,
+  getPublishedPatternSlugs,
   getRelatedPatterns,
   extractSignals,
   getToolExamples,
@@ -19,47 +19,41 @@ import { QuickReferenceCard } from '@/components/patterns/QuickReferenceCard';
 import { ToolExamples } from '@/components/patterns/ToolExamples';
 import { patternMdxComponents } from '@/components/patterns/PatternMdxComponents';
 import { RelatedToolkitPanel } from '@/components/learn/RelatedToolkitPanel';
+import { MobileTableOfContents } from '@/components/learn/MobileTableOfContents';
 import { JsonLd } from '@/components/seo/JsonLd';
-import {
-  generateBreadcrumbSchema,
-  generatePatternSchema,
-} from '@/lib/schema';
+import { generateBreadcrumbSchema, generatePatternSchema } from '@/lib/schema';
 import { SITE_URL as baseUrl } from '@/lib/site';
 import { getMdxOptions } from '@/lib/mdx-options';
 import Link from 'next/link';
 
+export const dynamicParams = false;
+
 const PATTERN_TO_TOOLKIT: Record<string, string[]> = {
-  'convention-file': ['claude-md'],
+  'convention-file': ['project-instructions'],
   'safety-net': ['hooks'],
   'memory-layer': ['memory'],
   'parallel-fan-out': ['agents', 'agent-teams'],
   'progressive-disclosure': ['skills'],
   'agent-friendly-architecture': ['mcp'],
-  'context-priming': ['claude-md'],
+  'context-priming': ['project-instructions'],
   'scope-fence': ['hooks', 'settings'],
 };
 
 export async function generateStaticParams() {
-  const slugs = getAllPatternSlugs();
+  const slugs = getPublishedPatternSlugs();
   return slugs.map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const pattern = getPatternBySlug(slug);
 
-  if (!pattern) {
+  if (!pattern || !pattern.frontmatter.published) {
     return { title: 'Pattern Not Found' };
   }
 
-  const chapter = CHAPTERS.find(
-    (c) => c.number === pattern.frontmatter.chapter
-  );
-  const ogImageUrl = `${baseUrl}/api/og?type=pattern&title=${encodeURIComponent(pattern.frontmatter.name)}&chapter=${pattern.frontmatter.chapter}&number=${encodeURIComponent(pattern.frontmatter.number)}`;
+  const chapter = CHAPTERS.find((c) => c.number === pattern.frontmatter.chapter);
+  const ogImageUrl = `${baseUrl}/og-default.png`;
 
   return {
     title: `${pattern.frontmatter.name} — Pattern ${pattern.frontmatter.number}`,
@@ -97,11 +91,7 @@ const CHAPTER_TEXT_COLORS: Record<number, string> = {
   6: 'text-chapter-6',
 };
 
-export default async function PatternPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function PatternPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const pattern = getPatternBySlug(slug);
 
@@ -109,9 +99,7 @@ export default async function PatternPage({
     notFound();
   }
 
-  const chapter = CHAPTERS.find(
-    (c) => c.number === pattern.frontmatter.chapter
-  );
+  const chapter = CHAPTERS.find((c) => c.number === pattern.frontmatter.chapter);
   const toc = extractTableOfContents(pattern.content);
   const signals = extractSignals(pattern.content);
   const relatedPatterns = getRelatedPatterns(pattern);
@@ -119,16 +107,11 @@ export default async function PatternPage({
 
   // Compute prev/next pattern navigation
   const allPatterns = getAllPatterns();
-  const currentIndex = allPatterns.findIndex(
-    (p) => p.frontmatter.slug === slug
-  );
+  const currentIndex = allPatterns.findIndex((p) => p.frontmatter.slug === slug);
   const prevPattern = currentIndex > 0 ? allPatterns[currentIndex - 1] : null;
-  const nextPattern =
-    currentIndex < allPatterns.length - 1
-      ? allPatterns[currentIndex + 1]
-      : null;
+  const nextPattern = currentIndex < allPatterns.length - 1 ? allPatterns[currentIndex + 1] : null;
 
-  const mdxOptions: any = await getMdxOptions();
+  const mdxOptions = await getMdxOptions();
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: '/' },
@@ -138,9 +121,7 @@ export default async function PatternPage({
     { name: pattern.frontmatter.name },
   ]);
 
-  const patternSchema = chapter
-    ? generatePatternSchema(pattern.frontmatter, chapter)
-    : null;
+  const patternSchema = chapter ? generatePatternSchema(pattern.frontmatter, chapter) : null;
 
   return (
     <article className="min-h-screen pb-16">
@@ -148,10 +129,10 @@ export default async function PatternPage({
       {patternSchema && <JsonLd data={patternSchema} />}
 
       {/* Hero */}
-      <header className="pt-2 pb-8 -mx-4 sm:-mx-6 lg:-mx-0 px-4 sm:px-6 lg:px-0">
+      <header className="px-4 pb-8 pt-2 sm:px-6 lg:px-0">
         {/* Breadcrumb */}
         <nav className="mb-5" aria-label="Breadcrumb">
-          <ol className="flex flex-wrap items-center gap-2 text-xs text-muted font-mono">
+          <ol className="flex flex-wrap items-center gap-2 text-sm text-muted">
             <li>
               <Link
                 href="/learn"
@@ -180,15 +161,15 @@ export default async function PatternPage({
             </li>
             <li aria-hidden="true">/</li>
             <li aria-current="page">
-              <span className="text-text font-semibold">
-                {pattern.frontmatter.name}
-              </span>
+              <span className="text-text font-semibold">{pattern.frontmatter.name}</span>
             </li>
           </ol>
         </nav>
 
         {/* Hero: Card + Relationship Graph side by side */}
-        <div className={`grid grid-cols-1 ${relatedPatterns.length > 0 ? 'lg:grid-cols-[1fr_380px]' : ''} gap-6 items-stretch`}>
+        <div
+          className={`grid grid-cols-1 ${relatedPatterns.length > 0 ? 'lg:grid-cols-[1fr_380px]' : ''} gap-6 items-stretch`}
+        >
           <QuickReferenceCard
             frontmatter={pattern.frontmatter}
             signals={signals}
@@ -198,10 +179,7 @@ export default async function PatternPage({
 
           {relatedPatterns.length > 0 && (
             <div className="hidden lg:block">
-              <RelatedPatternsGraph
-                currentPattern={pattern}
-                relatedPatterns={relatedPatterns}
-              />
+              <RelatedPatternsGraph currentPattern={pattern} relatedPatterns={relatedPatterns} />
             </div>
           )}
         </div>
@@ -209,30 +187,25 @@ export default async function PatternPage({
         {/* Relationship graph on mobile (stacked below card) */}
         {relatedPatterns.length > 0 && (
           <div className="mt-6 lg:hidden">
-            <RelatedPatternsGraph
-              currentPattern={pattern}
-              relatedPatterns={relatedPatterns}
-            />
+            <RelatedPatternsGraph currentPattern={pattern} relatedPatterns={relatedPatterns} />
           </div>
         )}
       </header>
 
       {/* Divider */}
-      <div className="border-b-2 border-text/30" />
+      <div className="border-b border-text/20" />
 
       {/* Two-Column Grid */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 py-10">
         <div className="grid lg:grid-cols-[1fr_280px] gap-12">
           {/* Main Content */}
           <div className="min-w-0">
-            <div
-              className="prose prose-invert prose-lg max-w-[65ch] mdx-content"
-              style={{ maxWidth: '65ch' }}
-            >
+            <MobileTableOfContents items={toc} />
+            <div className="mdx-content max-w-[65ch] text-lg" style={{ maxWidth: '65ch' }}>
               <CodeBlockWrapper>
                 <MDXRemote
                   source={pattern.content}
-                  options={mdxOptions}
+                  options={mdxOptions as Parameters<typeof MDXRemote>[0]['options']}
                   components={patternMdxComponents}
                 />
               </CodeBlockWrapper>
@@ -260,7 +233,7 @@ export default async function PatternPage({
         </div>
 
         {/* Pattern Navigation */}
-        <div className="mt-16 pt-8 border-t-2 border-text/30">
+        <div className="mt-16 pt-8">
           <PatternNavigation previous={prevPattern} next={nextPattern} />
         </div>
       </div>

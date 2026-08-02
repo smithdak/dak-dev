@@ -14,7 +14,7 @@ export interface CodeBlockProps {
 }
 
 /**
- * Advanced code block component with neo-brutalist styling
+ * Advanced code block component with the editorial code-plate styling.
  * Features: line numbers, copy button, diff support, line highlighting
  */
 export function CodeBlock({
@@ -40,7 +40,7 @@ export function CodeBlock({
       // Remove diff markers and get clean code
       const cleanCode = codeContent
         .split('\n')
-        .map(line => {
+        .map((line) => {
           // Remove leading +/- if in diff mode
           if (isDiff && (line.startsWith('+') || line.startsWith('-'))) {
             return line.slice(1);
@@ -73,7 +73,9 @@ export function CodeBlock({
           className={`px-3 py-1 text-xs font-semibold border-2 border-background
                      focus:outline-none focus:ring-2 focus:ring-text focus:ring-offset-2
                      focus:ring-offset-surface transition-colors ${
-                       copied ? 'bg-accent text-background' : 'bg-text text-background hover:bg-muted'
+                       copied
+                         ? 'bg-accent text-background'
+                         : 'bg-text text-background hover:bg-muted'
                      }`}
           animate={copied ? { scale: [1, 1.15, 1] } : {}}
           transition={{ duration: 0.2 }}
@@ -83,21 +85,18 @@ export function CodeBlock({
       </div>
 
       {/* Code container */}
-      <div className="relative bg-background border-2 border-text overflow-hidden">
+      <div className="relative overflow-hidden border border-code-rule bg-code-canvas text-code-foreground">
         <div className="overflow-x-auto">
           {highlightedHtml ? (
             // Use pre-highlighted HTML from Shiki
-            <div
-              dangerouslySetInnerHTML={{ __html: highlightedHtml }}
-              className="shiki-wrapper"
-            />
+            <div dangerouslySetInnerHTML={{ __html: highlightedHtml }} className="shiki-wrapper" />
           ) : (
             // Fallback rendering
             <div className="flex">
               {/* Line numbers gutter */}
               {showLineNumbers && (
                 <div
-                  className="flex-shrink-0 px-4 py-4 text-right border-r-2 border-surface select-none"
+                  className="flex-shrink-0 select-none border-r border-code-rule px-4 py-4 text-right"
                   aria-hidden="true"
                 >
                   {lines.map((_, i) => {
@@ -107,7 +106,7 @@ export function CodeBlock({
                       <div
                         key={lineNum}
                         className={`font-mono text-xs leading-6 ${
-                          isHighlighted ? 'text-text font-bold' : 'text-muted'
+                          isHighlighted ? 'font-bold text-code-foreground' : 'text-code-muted'
                         }`}
                       >
                         {lineNum}
@@ -120,32 +119,30 @@ export function CodeBlock({
               {/* Code content */}
               <div className="flex-1 px-4 py-4">
                 <pre className="font-mono text-sm leading-6">
-                  <code className="text-text">
+                  <code className="text-code-foreground">
                     {lines.map((line, i) => {
                       const lineNum = i + 1;
                       const isHighlighted = highlightLines.includes(lineNum);
                       const isDiffLine = isDiff && (line.startsWith('+') || line.startsWith('-'));
                       const isAddition = line.startsWith('+');
-                      const isRemoval = line.startsWith('-');
-
                       return (
                         <div
                           key={i}
                           className={`${
-                            isHighlighted ? 'bg-[#1A1A1A] border-l-4 border-[#FFB86C] pl-2 -ml-2' : ''
+                            isHighlighted
+                              ? 'bg-code-highlight/10 border-l-2 border-code-highlight pl-2 -ml-2'
+                              : ''
                           } ${
                             isDiffLine
                               ? isAddition
-                                ? 'bg-[#0A3A0A] border-l-4 border-[#A8E6A3] pl-2 -ml-2'
-                                : 'bg-[#3A0A0A] border-l-4 border-[#FF5555] pl-2 -ml-2'
+                                ? 'bg-code-add/10 border-l-2 border-code-add pl-2 -ml-2'
+                                : 'bg-code-remove/10 border-l-2 border-code-remove pl-2 -ml-2'
                               : ''
                           }`}
                         >
                           {isDiffLine && (
                             <span
-                              className={`inline-block w-4 ${
-                                isAddition ? 'text-[#A8E6A3]' : 'text-[#FF5555]'
-                              }`}
+                              className={`inline-block w-4 ${isAddition ? 'text-code-add' : 'text-code-remove'}`}
                               aria-label={isAddition ? 'Added line' : 'Removed line'}
                             >
                               {isAddition ? '+' : '-'}

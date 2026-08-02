@@ -1,16 +1,23 @@
 ---
-title: "Building a Claude Code Plugin Marketplace for CMS Analysis"
-date: "2026-01-24"
-excerpt: "Replace generic linters with 50 platform-specific rules per CMS. Specialized Claude Code plugins outperform general agents for Sitecore and Umbraco analysis."
-slug: "building-claude-marketplace-cms-analyzers"
-tags: ["ai", "claude-code", "cms", "enterprise"]
-thumbnail: "/images/posts/building-claude-marketplace-cms-analyzers/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAgQG/8QAHBAAAgICAwAAAAAAAAAAAAAAAQIAERIiMVGR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDEYMOVMNRMzYnY+yez3CP/2Q=="
-hero: "/images/posts/building-claude-marketplace-cms-analyzers/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAgQG/8QAGxAAAwACAwAAAAAAAAAAAAAAAAECERIiMZH/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMPpS7lhwOqrV8n6T5CP/9k="
+title: 'Building a Claude Code Plugin Marketplace for CMS Analysis'
+date: '2026-01-24'
+excerpt: 'Replace generic linters with 50 platform-specific rules per CMS. Specialized Claude Code plugins outperform general agents for Sitecore and Umbraco analysis.'
+slug: 'building-claude-marketplace-cms-analyzers'
+tags: ['ai', 'claude-code', 'cms', 'enterprise']
+thumbnail: '/images/posts/building-claude-marketplace-cms-analyzers/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAIDBv/EABsQAAICAwEAAAAAAAAAAAAAAAABAgMREiEi/8QAFQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDZyssVqio+cdY+zKASX//Z'
+hero: '/images/posts/building-claude-marketplace-cms-analyzers/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIDBv/EABsQAAEFAQEAAAAAAAAAAAAAAAIAAQMRURMx/8QAFQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDZHJIMoCI2L+viboSrSNNikv/Z'
 published: true
-author: "Dakota Smith"
-keywords: ["claude code plugin", "cms code analysis", "sitecore analyzer", "enterprise dev tools", "plugin marketplace"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'claude code plugin',
+    'cms code analysis',
+    'sitecore analyzer',
+    'enterprise dev tools',
+    'plugin marketplace',
+  ]
 ---
 
 A specialized agent with 50 platform-specific rules outperforms a general agent with 500 generic rules. That's the core lesson from building a marketplace of Claude Code plugins for enterprise CMS analysis.
@@ -82,12 +89,14 @@ Each analyzer includes a specialized agent with deep platform knowledge. The Sit
 You are a Sitecore 10.x architecture specialist with expertise in:
 
 ## Helix Principles
+
 - Foundation, Feature, Project layer separation
 - Dependency direction (Project → Feature → Foundation)
 - Module boundary enforcement
 - Serialization patterns (Unicorn, TDS, SCS)
 
 ## Common Anti-Patterns
+
 - Cross-layer dependencies (Feature referencing Project)
 - Business logic in renderings
 - Hardcoded item paths instead of queries
@@ -152,7 +161,7 @@ The report includes severity breakdown, critical issues with exact file location
 ## Summary
 
 | Severity | Count |
-|----------|-------|
+| -------- | ----- |
 | Critical | 2     |
 | Error    | 7     |
 | Warning  | 14    |
@@ -160,11 +169,13 @@ The report includes severity breakdown, critical issues with exact file location
 ## Critical Issues
 
 ### SC-SEC-001: Hardcoded Connection String
+
 **Location:** src/Foundation/Database/App_Config/ConnectionStrings.config:12
 **Details:** Production database credentials in source control
 **Remediation:** Move to environment variables or Azure Key Vault
 
 ### SC-SEC-003: Exposed Admin Endpoint
+
 **Location:** src/Project/Website/Controllers/AdminController.cs:1
 **Details:** /api/admin/* endpoints lack authorization attributes
 **Remediation:** Add [Authorize(Roles = "sitecore\\Admin")] attribute
@@ -191,15 +202,18 @@ In safe mode, the analyzer:
 **Note:** Content analysis disabled. Structural findings only.
 
 ### Project Structure
+
 - 3 Project layer modules detected
 - 12 Feature layer modules detected
 - 4 Foundation layer modules detected
 
 ### Dependency Graph Issues
+
 - Feature.Navigation references Project.Website (Helix violation)
 - Missing Foundation.DependencyInjection reference in 3 Features
 
 ### Configuration Concerns
+
 - ConnectionStrings.config present in source (verify secrets handling)
 - 2 modules missing Unicorn serialization configuration
 ```
@@ -232,13 +246,13 @@ Pull requests get automated analysis comments. Critical issues block merges. Thi
 
 The marketplace currently includes five analyzers:
 
-| Platform | Version | Status | Focus Areas |
-|----------|---------|--------|-------------|
-| Sitecore Classic | 10.x | Stable | Helix, pipelines, serialization |
-| XM Cloud | Current | Stable | Headless patterns, Edge, JSS |
-| Umbraco | 14-16 | Stable | Composition, content apps, packages |
-| Optimizely CMS | 12 | Stable | Content areas, blocks, scheduling |
-| Optimizely Experimentation | Current | Beta | A/B tests, feature flags, metrics |
+| Platform                   | Version | Status | Focus Areas                         |
+| -------------------------- | ------- | ------ | ----------------------------------- |
+| Sitecore Classic           | 10.x    | Stable | Helix, pipelines, serialization     |
+| XM Cloud                   | Current | Stable | Headless patterns, Edge, JSS        |
+| Umbraco                    | 14-16   | Stable | Composition, content apps, packages |
+| Optimizely CMS             | 12      | Stable | Content areas, blocks, scheduling   |
+| Optimizely Experimentation | Current | Beta   | A/B tests, feature flags, metrics   |
 
 Each analyzer averages 50 platform-specific rules across architecture, security, performance, and maintainability categories. The shared rule sets add cross-platform security checks and common performance patterns.
 

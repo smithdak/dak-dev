@@ -1,18 +1,28 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { searchPosts, SearchIndexItem } from '@/lib/search';
+import { formatCalendarDate } from '@/lib/utils';
 
 interface SearchProps {
   className?: string;
 }
 
+const CURATED_ROUTES = [
+  { label: 'Structure the work', destination: 'Patterns', href: '/learn/patterns' },
+  { label: 'Choose a capability', destination: 'Toolkit', href: '/learn/toolkit' },
+  { label: 'Control delivery', destination: 'Harness', href: '/learn/harness' },
+  { label: 'Bound trust', destination: 'Security', href: '/learn/security' },
+  { label: 'Inspect public systems', destination: 'Work', href: '/work' },
+] as const;
+
 /**
  * Search component with keyboard shortcut (Cmd/Ctrl+K)
  * Displays live search results with debouncing
- * Neo-brutalist styling with thick borders and hard shadows
+ * Editorial command palette for the static search index.
  */
 // Module-level cache — fetched once per session, shared across mounts
 let cachedIndex: SearchIndexItem[] | null = null;
@@ -44,6 +54,7 @@ export function Search({ className = '' }: SearchProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   const closeSearch = useCallback((restoreFocus = true) => {
@@ -57,9 +68,11 @@ export function Search({ className = '' }: SearchProps) {
     }
   }, []);
 
-  // Fetch search index once — uses module-level cache
+  // Fetch the 100KB+ publication index only when search is opened. The
+  // module-level cache keeps subsequent opens instant without charging every
+  // page view for a capability the reader may never use.
   useEffect(() => {
-    if (cachedIndex) return;
+    if (!isOpen || cachedIndex) return;
 
     let active = true;
     fetchSearchIndex().then((index) => {
@@ -69,7 +82,7 @@ export function Search({ className = '' }: SearchProps) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [isOpen]);
 
   // Keyboard shortcut handler
   useEffect(() => {
@@ -82,12 +95,45 @@ export function Search({ className = '' }: SearchProps) {
 
       // Escape to close
       if (e.key === 'Escape' && isOpen) {
+        e.preventDefault();
         closeSearch();
+      }
+
+      // Keep keyboard focus inside the modal while it is open.
+      if (e.key === 'Tab' && isOpen && modalRef.current) {
+        const focusableElements = Array.from(
+          modalRef.current.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter(
+          (element) =>
+            !element.hasAttribute('hidden') && element.getAttribute('aria-hidden') !== 'true'
+        );
+
+        const firstFocusable = focusableElements[0];
+        const lastFocusable = focusableElements.at(-1);
+
+        if (!firstFocusable || !lastFocusable) {
+          e.preventDefault();
+          modalRef.current.focus();
+          return;
+        }
+
+        const focusIsOutsideModal = !modalRef.current.contains(document.activeElement);
+        if (focusIsOutsideModal || (!e.shiftKey && document.activeElement === lastFocusable)) {
+          e.preventDefault();
+          firstFocusable.focus();
+        } else if (e.shiftKey && document.activeElement === firstFocusable) {
+          e.preventDefault();
+          lastFocusable.focus();
+        }
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    // Capture Escape before parent navigation listeners so closing search does
+    // not also collapse the mobile menu that owns the trigger.
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => document.removeEventListener('keydown', handleKeyDown, true);
   }, [closeSearch, isOpen]);
 
   // Focus input when opened
@@ -115,8 +161,14 @@ export function Search({ className = '' }: SearchProps) {
 
   const navigateToResult = useCallback(
     (result: SearchIndexItem) => {
-      router.push(result.href);
       closeSearch(false);
+
+      if (/^https?:\/\//.test(result.href)) {
+        window.location.assign(result.href);
+        return;
+      }
+
+      router.push(result.href);
     },
     [closeSearch, router]
   );
@@ -149,7 +201,9 @@ export function Search({ className = '' }: SearchProps) {
   // Scroll selected item into view
   useEffect(() => {
     if (resultsRef.current) {
-      const selectedElement = resultsRef.current.children[selectedIndex] as HTMLElement;
+      const selectedElement = resultsRef.current.querySelector<HTMLElement>(
+        `#search-result-${selectedIndex}`
+      );
       if (selectedElement) {
         selectedElement.scrollIntoView({
           block: 'nearest',
@@ -165,26 +219,12 @@ export function Search({ className = '' }: SearchProps) {
       <button
         ref={triggerRef}
         onClick={() => setIsOpen(true)}
-        className={`group inline-flex min-h-11 min-w-11 items-center justify-center gap-2 px-3 py-2 bg-surface border-2 border-text text-text font-semibold hover:bg-text hover:text-background transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background ${className}`}
+        className={`group inline-flex min-h-11 items-center justify-center gap-3 border-b border-transparent px-2 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-text transition-colors hover:border-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background ${className}`}
         aria-label="Search the site"
       >
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-        <span className="hidden lg:inline">Search</span>
-        <kbd className="hidden xl:inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-background border border-text group-hover:text-accent">
-          <span className="text-[10px]">⌘</span>K
+        <span>Search</span>
+        <kbd className="hidden border border-text/20 px-2 py-0.5 font-mono text-[10px] tracking-normal text-muted xl:inline-flex">
+          Ctrl K
         </kbd>
       </button>
 
@@ -198,13 +238,14 @@ export function Search({ className = '' }: SearchProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-50 bg-background/90 backdrop-blur-sm"
+              className="fixed inset-0 z-50 bg-text/20 backdrop-blur-sm"
               onClick={() => closeSearch()}
               aria-hidden="true"
             />
 
             {/* Modal */}
             <motion.div
+              ref={modalRef}
               initial={{ opacity: 0, scale: 0.95, y: -20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -20 }}
@@ -213,44 +254,34 @@ export function Search({ className = '' }: SearchProps) {
               role="dialog"
               aria-modal="true"
               aria-label="Search the site"
+              tabIndex={-1}
             >
-              <div className="bg-surface border-4 border-text shadow-[12px_12px_0_0_var(--color-text)]">
+              <div className="border border-text/25 bg-background shadow-2xl">
                 {/* Search Input */}
-                <div className="flex items-center gap-3 px-4 py-4 border-b-4 border-text">
-                  <svg
-                    className="w-6 h-6 text-muted flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
+                <div className="flex items-center gap-3 border-b border-text/20 px-5 py-5">
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                    Find
+                  </span>
                   <input
                     ref={inputRef}
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Search articles, patterns, and guides..."
-                    className="flex-1 bg-transparent text-text text-lg font-semibold placeholder:text-muted focus:outline-none"
+                    placeholder="Search articles, patterns, guides, and work..."
+                    className="flex-1 bg-transparent font-display text-xl text-text placeholder:text-muted focus:outline-none"
                     role="combobox"
                     aria-label="Search query"
-                    aria-expanded={results.length > 0}
+                    aria-expanded={query.trim().length > 0}
                     aria-autocomplete="list"
-                    aria-controls="search-results"
+                    aria-controls={query.trim().length > 0 ? 'search-results' : undefined}
                     aria-activedescendant={
                       results[selectedIndex] ? `search-result-${selectedIndex}` : undefined
                     }
                   />
                   <button
                     onClick={() => closeSearch()}
-                    className="flex min-h-11 min-w-11 flex-shrink-0 items-center justify-center px-3 py-1 text-sm font-semibold text-muted hover:text-text border-2 border-text hover:bg-text hover:text-background transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="flex min-h-11 flex-shrink-0 items-center justify-center border-b border-text/30 px-2 py-1 text-xs font-semibold uppercase tracking-wider text-muted transition-colors hover:border-text hover:text-text focus:outline-none focus:ring-2 focus:ring-accent"
                     aria-label="Close search"
                   >
                     ESC
@@ -262,18 +293,43 @@ export function Search({ className = '' }: SearchProps) {
                   ref={resultsRef}
                   id="search-results"
                   className="max-h-[60vh] overflow-y-auto"
-                  role="listbox"
+                  role={query.trim().length > 0 ? 'listbox' : undefined}
                 >
                   {query.trim().length === 0 ? (
-                    <div className="px-6 py-12 text-center text-muted">
-                      <p className="text-lg font-semibold mb-2">Start typing to search</p>
-                      <p className="text-sm">Search across titles, content, tags, and keywords</p>
+                    <div className="px-5 py-7 sm:px-6">
+                      <p className="text-lg font-semibold text-text">
+                        Start with the decision in front of you.
+                      </p>
+                      <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
+                        Search the full publication, or choose a direct route into the field guide
+                        and public work.
+                      </p>
+                      <nav aria-label="Suggested destinations" className="mt-6">
+                        <ul className="border-t border-rule">
+                          {CURATED_ROUTES.map((route) => (
+                            <li key={route.href} className="border-b border-rule">
+                              <Link
+                                href={route.href}
+                                onClick={() => closeSearch(false)}
+                                className="group flex min-h-14 items-center justify-between gap-6 py-3 text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent"
+                              >
+                                <span className="font-semibold text-text transition-colors group-hover:text-accent">
+                                  {route.label}
+                                </span>
+                                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+                                  {route.destination}
+                                </span>
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </nav>
                     </div>
                   ) : results.length > 0 ? (
                     <div className="py-2">
                       {results.map((result, index) => {
                         const formattedDate = result.date
-                          ? new Date(result.date).toLocaleDateString('en-US', {
+                          ? formatCalendarDate(result.date, {
                               year: 'numeric',
                               month: 'short',
                               day: 'numeric',
@@ -285,7 +341,7 @@ export function Search({ className = '' }: SearchProps) {
                             key={result.href}
                             id={`search-result-${index}`}
                             onClick={() => navigateToResult(result)}
-                            className={`w-full text-left px-6 py-4 border-l-4 transition-colors focus:outline-none ${
+                            className={`w-full border-l px-6 py-4 text-left transition-colors focus:outline-none ${
                               index === selectedIndex
                                 ? 'bg-background border-accent'
                                 : 'border-transparent hover:bg-background hover:border-accent'
@@ -294,7 +350,7 @@ export function Search({ className = '' }: SearchProps) {
                             aria-selected={index === selectedIndex}
                           >
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="text-[10px] font-mono font-bold uppercase tracking-wider border px-1.5 py-0.5 border-accent text-accent">
+                              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-accent">
                                 {result.label}
                               </span>
                               <h3 className="text-lg font-bold text-text">{result.title}</h3>
@@ -316,10 +372,7 @@ export function Search({ className = '' }: SearchProps) {
                                   </span>
                                   <div className="flex flex-wrap gap-1">
                                     {result.tags.map((tag) => (
-                                      <span
-                                        key={tag}
-                                        className="px-2 py-0.5 bg-background border border-text text-text font-semibold"
-                                      >
+                                      <span key={tag} className="font-semibold text-text">
                                         #{tag}
                                       </span>
                                     ))}
@@ -341,16 +394,15 @@ export function Search({ className = '' }: SearchProps) {
 
                 {/* Footer */}
                 {results.length > 0 && (
-                  <div className="px-6 py-3 border-t-4 border-text bg-background">
+                  <div className="border-t border-text/20 bg-surface px-6 py-3">
                     <div className="flex items-center justify-between text-xs text-muted">
                       <p>
-                        <kbd className="px-2 py-1 border border-text mr-1">↑</kbd>
-                        <kbd className="px-2 py-1 border border-text mr-1">↓</kbd>
-                        Navigate
+                        <kbd className="mr-1 border border-text/20 px-2 py-1">Up / Down</kbd>
+                        navigate
                       </p>
                       <p>
-                        <kbd className="px-2 py-1 border border-text mr-1">↵</kbd>
-                        Select
+                        <kbd className="mr-1 border border-text/20 px-2 py-1">Enter</kbd>
+                        select
                       </p>
                     </div>
                   </div>

@@ -38,15 +38,97 @@ export interface ChapterMeta {
 }
 
 export const CHAPTERS: ChapterMeta[] = [
-  { number: 1, name: 'Foundation', slug: 'foundation', description: 'Setting up your environment, codebase, and tools for agent success.' },
-  { number: 2, name: 'Context', slug: 'context', description: 'Managing what the agent knows — and doesn\'t know.' },
-  { number: 3, name: 'Task', slug: 'task', description: 'Breaking work into units that agents handle well.' },
-  { number: 4, name: 'Steering', slug: 'steering', description: 'Guiding agent behavior toward the output you actually want.' },
-  { number: 5, name: 'Verification', slug: 'verification', description: 'Ensuring the agent\'s output is correct, complete, and safe.' },
-  { number: 6, name: 'Recovery', slug: 'recovery', description: 'What to do when things go wrong.' },
+  {
+    number: 1,
+    name: 'Foundation',
+    slug: 'foundation',
+    description: 'Setting up your environment, codebase, and tools for agent success.',
+  },
+  {
+    number: 2,
+    name: 'Context',
+    slug: 'context',
+    description: "Managing what the agent knows — and doesn't know.",
+  },
+  {
+    number: 3,
+    name: 'Task',
+    slug: 'task',
+    description: 'Breaking work into units that agents handle well.',
+  },
+  {
+    number: 4,
+    name: 'Steering',
+    slug: 'steering',
+    description: 'Guiding agent behavior toward the output you actually want.',
+  },
+  {
+    number: 5,
+    name: 'Verification',
+    slug: 'verification',
+    description: "Ensuring the agent's output is correct, complete, and safe.",
+  },
+  {
+    number: 6,
+    name: 'Recovery',
+    slug: 'recovery',
+    description: 'What to do when things go wrong.',
+  },
 ];
 
 const patternsDirectory = path.join(process.cwd(), 'content/patterns');
+
+function assertRecord(value: unknown, label: string): asserts value is Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new TypeError(`${label} must be an object`);
+  }
+}
+
+function requireString(data: Record<string, unknown>, key: string): string {
+  const value = data[key];
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new TypeError(`frontmatter.${key} must be a non-empty string`);
+  }
+  return value;
+}
+
+/** Parse and validate pattern frontmatter before published content is routed. */
+export function parsePatternFrontmatter(data: unknown, slug: string): PatternFrontmatter {
+  assertRecord(data, `Pattern "${slug}" frontmatter`);
+
+  const chapter = data.chapter;
+  if (!Number.isInteger(chapter) || (chapter as number) < 1) {
+    throw new TypeError('frontmatter.chapter must be a positive integer');
+  }
+
+  const difficulty = data.difficulty;
+  if (!['beginner', 'intermediate', 'advanced'].includes(String(difficulty))) {
+    throw new TypeError('frontmatter.difficulty must be beginner, intermediate, or advanced');
+  }
+
+  if (typeof data.published !== 'boolean') {
+    throw new TypeError('frontmatter.published must be a boolean');
+  }
+
+  if (
+    data.keywords !== undefined &&
+    (!Array.isArray(data.keywords) || !data.keywords.every((item) => typeof item === 'string'))
+  ) {
+    throw new TypeError('frontmatter.keywords must be an array of strings when present');
+  }
+
+  return {
+    name: requireString(data, 'name'),
+    slug,
+    chapter: chapter as number,
+    number: requireString(data, 'number'),
+    intent: requireString(data, 'intent'),
+    difficulty: difficulty as PatternDifficulty,
+    published: data.published,
+    keywords: data.keywords as string[] | undefined,
+    relatedPatterns: data.relatedPatterns as PatternRelationship[] | undefined,
+  };
+}
 
 export function getAllPatterns(): Pattern[] {
   if (!fs.existsSync(patternsDirectory)) {
@@ -71,28 +153,23 @@ export function getAllPatterns(): Pattern[] {
 }
 
 export function getPatternBySlug(slug: string): Pattern | null {
+  const fullPath = path.join(patternsDirectory, `${slug}.mdx`);
+  if (!fs.existsSync(fullPath)) return null;
+
   try {
-    const fullPath = path.join(patternsDirectory, `${slug}.mdx`);
-    if (!fs.existsSync(fullPath)) return null;
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data, content } = matter(fileContents);
-
-    const frontmatter = data as PatternFrontmatter;
+    const frontmatter = parsePatternFrontmatter(data, slug);
     const stats = readingTime(content);
 
     return {
-      frontmatter: {
-        ...frontmatter,
-        slug,
-      },
+      frontmatter,
       content,
       readingTime: stats.text,
     };
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error(`[patterns] Failed to load pattern: ${slug}`, error);
-    }
-    return null;
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`[patterns] Invalid pattern "${slug}": ${message}`);
   }
 }
 
@@ -105,6 +182,13 @@ export function getAllPatternSlugs(): string[] {
   return fileNames
     .filter((fileName) => fileName.endsWith('.mdx'))
     .map((fileName) => fileName.replace(/\.mdx$/, ''));
+}
+
+/** Static route candidates must never include unpublished patterns. */
+export function getPublishedPatternSlugs(): string[] {
+  return getAllPatternSlugs().filter(
+    (slug) => getPatternBySlug(slug)?.frontmatter.published === true
+  );
 }
 
 export function getPatternsByChapter(chapterNumber: number): Pattern[] {
@@ -156,7 +240,9 @@ export function getToolExamples(slug: string): Record<ToolName, ToolExample> | n
   }
 }
 
-export function getRelatedPatterns(pattern: Pattern): (Pattern & { relationship: PatternRelationship })[] {
+export function getRelatedPatterns(
+  pattern: Pattern
+): (Pattern & { relationship: PatternRelationship })[] {
   const related = pattern.frontmatter.relatedPatterns || [];
   return related
     .map((rel) => {
