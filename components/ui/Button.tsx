@@ -1,5 +1,6 @@
-import { ReactNode } from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import type { HTMLMotionProps } from 'framer-motion';
+import * as m from 'framer-motion/m';
+import type { ReactNode } from 'react';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'accent';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -51,7 +52,7 @@ export function Button({
   ].join(' ');
 
   return (
-    <motion.button
+    <m.button
       type={type}
       className={classNames}
       disabled={disabled}
@@ -61,6 +62,6 @@ export function Button({
       {icon && iconPosition === 'left' && <span className="flex-shrink-0">{icon}</span>}
       {children}
       {icon && iconPosition === 'right' && <span className="flex-shrink-0">{icon}</span>}
-    </motion.button>
+    </m.button>
   );
 }

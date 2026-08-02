@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import * as m from 'framer-motion/m';
 import { staggerContainerVariants, slideUpVariants, drawLineVariants } from '@/lib/animations';
 
 import { TextDecode } from '@/components/ui/TextDecode';
@@ -71,32 +71,32 @@ export function Hero() {
       />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <motion.div
+        <m.div
           className="max-w-4xl"
           variants={staggerContainerVariants}
           initial={false}
           animate="visible"
         >
           {/* Greeting */}
-          <motion.div
+          <m.div
             variants={slideUpVariants}
             className="mb-6 inline-block border-4 border-accent bg-surface px-6 py-2"
           >
             <p className="text-sm font-bold uppercase tracking-wider text-accent">
               AI Systems Architect &amp; Full-Stack Engineer
             </p>
-          </motion.div>
+          </m.div>
 
           {/* Main Heading */}
-          <motion.h1
+          <m.h1
             variants={slideUpVariants}
             className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight"
           >
             <TextDecode text="Dakota Smith" delay={400} />
-          </motion.h1>
+          </m.h1>
 
           {/* Decorative accent line */}
-          <motion.div
+          <m.div
             className="h-1 bg-accent mb-8 origin-left"
             style={{ maxWidth: '200px' }}
             aria-hidden="true"
@@ -104,16 +104,16 @@ export function Hero() {
           />
 
           {/* Bio */}
-          <motion.p
+          <m.p
             variants={slideUpVariants}
             className="text-xl md:text-2xl text-muted mb-8 leading-relaxed max-w-3xl"
           >
             I build things that build things: agentic systems, delivery harnesses, and enterprise
             platforms designed for accountable change.
-          </motion.p>
+          </m.p>
 
           {/* Social Links */}
-          <motion.div variants={slideUpVariants} className="flex flex-wrap gap-4 mb-8">
+          <m.div variants={slideUpVariants} className="flex flex-wrap gap-4 mb-8">
             <a
               href="https://github.com/smithdak"
               target="_blank"
@@ -129,10 +129,10 @@ export function Hero() {
               </svg>
               GitHub
             </a>
-          </motion.div>
+          </m.div>
 
           {/* CTA Link */}
-          <motion.div variants={slideUpVariants} className="flex flex-wrap gap-4">
+          <m.div variants={slideUpVariants} className="flex flex-wrap gap-4">
             <Link
               href="/learn"
               className="group inline-flex items-center justify-center font-semibold px-8 py-4 text-lg gap-3 bg-transparent text-accent border-4 border-accent hover:bg-accent hover:text-background shadow-[4px_4px_0_0_var(--color-accent)] hover:shadow-[6px_6px_0_0_var(--color-accent)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
@@ -159,8 +159,8 @@ export function Hero() {
             >
               Read the Blog
             </Link>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       </div>
     </section>
   );

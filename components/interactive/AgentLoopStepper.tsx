@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import * as m from 'framer-motion/m';
 
 /**
  * AgentLoopStepper — an "explorable explanation" of the agentic ReAct loop.
@@ -138,7 +139,7 @@ export function AgentLoopStepper() {
               const meta = PHASE_META[turn.phase];
               const isCurrent = i === step - 1;
               return (
-                <motion.li
+                <m.li
                   key={i}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -164,7 +165,7 @@ export function AgentLoopStepper() {
                       <p className="mt-1 text-sm leading-relaxed text-muted">{turn.detail}</p>
                     )}
                   </div>
-                </motion.li>
+                </m.li>
               );
             })}
           </AnimatePresence>
@@ -177,7 +178,7 @@ export function AgentLoopStepper() {
           )}
 
           {done && (
-            <motion.li
+            <m.li
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="px-4 py-3"
@@ -186,7 +187,7 @@ export function AgentLoopStepper() {
               <p className="text-xs font-bold uppercase tracking-widest">
                 Loop terminated — goal condition met
               </p>
-            </motion.li>
+            </m.li>
           )}
         </ol>
 
@@ -203,7 +204,7 @@ export function AgentLoopStepper() {
             aria-valuemax={100}
             aria-label="Context window usage"
           >
-            <motion.div
+            <m.div
               className="h-full"
               style={{ backgroundColor: 'var(--color-accent)' }}
               animate={{ width: `${pct}%` }}

@@ -1,22 +1,19 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import { MotionConfig } from 'framer-motion';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
+import { MotionProvider } from '@/components/motion/MotionProvider';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { SITE_URL as siteUrl } from '@/lib/site';
 import './globals.css';
 
 const editorialSans = localFont({
-  src: [
-    { path: '../assets/fonts/SpaceGrotesk-Regular.ttf', weight: '400', style: 'normal' },
-    { path: '../assets/fonts/SpaceGrotesk-Medium.ttf', weight: '500', style: 'normal' },
-    { path: '../assets/fonts/SpaceGrotesk-Medium.ttf', weight: '600', style: 'normal' },
-    { path: '../assets/fonts/SpaceGrotesk-Bold.ttf', weight: '700', style: 'normal' },
-  ],
+  src: '../assets/fonts/SpaceGrotesk-Variable.woff2',
+  weight: '300 700',
+  style: 'normal',
   variable: '--font-editorial-sans',
   display: 'swap',
 });
@@ -136,14 +133,14 @@ export default function RootLayout({
           Skip to main content
         </a>
         <ThemeProvider>
-          <MotionConfig reducedMotion="user">
+          <MotionProvider>
             <Header />
             <main id="main-content" className="flex-grow">
               {children}
             </main>
             <Footer />
             <ScrollToTop />
-          </MotionConfig>
+          </MotionProvider>
         </ThemeProvider>
         {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}
         {process.env.NEXT_PUBLIC_VERCEL_ENV && <SpeedInsights />}

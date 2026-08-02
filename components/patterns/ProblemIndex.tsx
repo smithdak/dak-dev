@@ -107,7 +107,7 @@ export function ProblemIndex({ className = '', publishedSlugs }: ProblemIndexPro
                   <Link
                     key={pattern.slug}
                     href={`/learn/patterns/${pattern.slug}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted underline decoration-text/20 underline-offset-4 transition-colors hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="inline-flex min-h-8 items-center gap-1.5 text-xs font-semibold text-muted underline decoration-text/20 underline-offset-4 transition-colors hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent"
                   >
                     <span className="font-mono text-[10px] text-accent">{pattern.number}</span>
                     {pattern.name}

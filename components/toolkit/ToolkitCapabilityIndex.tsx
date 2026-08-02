@@ -17,15 +17,12 @@ interface ToolkitCapabilityIndexProps {
   products: AgentToolMeta[];
 }
 
-function primaryStatus(claims: ToolkitCoverage[]): ToolkitCoverage['status'] {
-  if (claims.some((claim) => claim.status === 'partial')) return 'partial';
-  if (claims.some((claim) => claim.status === 'unknown')) return 'unknown';
-  if (claims.some((claim) => claim.status === 'no-documented-equivalent')) {
-    return 'no-documented-equivalent';
-  }
-  if (claims.some((claim) => claim.status === 'external')) return 'external';
-  return 'native';
-}
+const SURFACE_LABELS = {
+  cli: 'CLI',
+  ide: 'IDE',
+  web: 'Web',
+  cloud: 'Cloud',
+} as const;
 
 export function ToolkitCapabilityIndex({ topics, products }: ToolkitCapabilityIndexProps) {
   return (
@@ -48,26 +45,40 @@ export function ToolkitCapabilityIndex({ topics, products }: ToolkitCapabilityIn
                 {topic.description}
               </span>
             </span>
-            <span className="flex w-full shrink-0 flex-col gap-2 md:w-[22rem]">
-              {products.map((product) => {
-                const claims = topic.coverage.filter((claim) => claim.tool === product.id);
-                const status = primaryStatus(claims);
-                return (
-                  <span
-                    key={product.id}
-                    className="flex items-baseline justify-between gap-3 text-xs"
-                  >
-                    <span className="text-muted">{product.shortName}</span>
-                    <span className="font-semibold uppercase tracking-[0.1em] text-text">
-                      {COVERAGE_STATUS_META[status].label}
-                    </span>
-                  </span>
-                );
-              })}
+            <div className="flex w-full shrink-0 flex-col gap-3 md:w-[22rem]">
+              <dl className="flex flex-col gap-3">
+                {products.map((product) => {
+                  const claims = topic.coverage.filter((claim) => claim.tool === product.id);
+                  return (
+                    <div
+                      key={product.id}
+                      className="grid grid-cols-[3.75rem_minmax(0,1fr)] items-start gap-x-3 text-xs"
+                    >
+                      <dt className="pt-0.5 text-muted">{product.shortName}</dt>
+                      <dd className="flex flex-wrap gap-x-3 gap-y-1 md:justify-end">
+                        {claims.map((claim) => (
+                          <span
+                            key={`${product.id}-${claim.surfaces.join('-')}`}
+                            className="whitespace-nowrap"
+                          >
+                            <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
+                              {claim.surfaces.map((surface) => SURFACE_LABELS[surface]).join(' · ')}
+                            </span>
+                            <span className="mx-1 text-muted/50">/</span>
+                            <span className="font-semibold uppercase tracking-[0.08em] text-text">
+                              {COVERAGE_STATUS_META[claim.status].label}
+                            </span>
+                          </span>
+                        ))}
+                      </dd>
+                    </div>
+                  );
+                })}
+              </dl>
               <span className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
                 {topic.lensCount} implementation lenses
               </span>
-            </span>
+            </div>
           </Link>
         </li>
       ))}

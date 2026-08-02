@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, useReducedMotion } from 'framer-motion';
+import * as m from 'framer-motion/m';
 
 /**
  * Floating scroll-to-top button
@@ -43,7 +44,7 @@ export function ScrollToTop() {
   return (
     <AnimatePresence>
       {visible && (
-        <motion.button
+        <m.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
@@ -53,7 +54,7 @@ export function ScrollToTop() {
           className="fixed bottom-6 right-6 z-40 flex min-h-11 min-w-11 items-center justify-center border border-text/25 bg-background px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-text shadow-lg transition-colors hover:border-text hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
         >
           Top
-        </motion.button>
+        </m.button>
       )}
     </AnimatePresence>
   );

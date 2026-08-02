@@ -1,9 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { ReactNode } from 'react';
-import { AgentLoopStepper } from '@/components/interactive/AgentLoopStepper';
-import { ScrollStory } from '@/components/interactive/ScrollStory';
-import { RunnableSnippet } from '@/components/interactive/RunnableSnippet';
 import { GlossaryTerm } from '@/components/learn/GlossaryTerm';
 
 /**
@@ -265,11 +262,6 @@ export const mdxComponents = {
   tr: Tr,
   th: Th,
   td: Td,
-  // Interactive "explorable explanation" components (client islands).
-  // Available to blog, harness, and pattern MDX via this shared map.
-  AgentLoopStepper,
-  ScrollStory,
-  RunnableSnippet,
   // Auto-glossary "define on first use" toggletip. lib/rehype-glossary wraps the
   // first occurrence of each Decoder term in a <glossaryterm> element; this maps
   // that element to the accessible toggletip component. Site-wide via this map.

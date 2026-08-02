@@ -1,17 +1,14 @@
-'use client';
-
-import { useId, useRef, useState, useEffect, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { GLOSSARY_TERMS } from '@/lib/onramp-types';
 import { slugify } from '@/lib/utils';
 
 interface GlossaryTermProps {
-  /** Canonical term for lookup; set by the rehype auto-glossary plugin. */
+  /** Canonical entry data injected at build time by rehype-glossary. */
   term?: string;
+  analogy?: string;
+  definition?: string;
   children?: ReactNode;
 }
-
-type PanelPlacement = 'left-below' | 'right-below' | 'left-above' | 'right-above' | 'viewport';
 
 function childText(node: ReactNode): string {
   if (typeof node === 'string') return node;
@@ -21,131 +18,63 @@ function childText(node: ReactNode): string {
 }
 
 /**
- * GlossaryTerm — an accessible "define on first use" toggletip.
+ * GlossaryTerm — an accessible "define on first use" popover.
  *
  * Rendered for first-use jargon (auto-wrapped by lib/rehype-glossary, or used
- * directly in MDX). It is a click-activated toggletip, not a hover tooltip:
- * a real <button aria-expanded aria-controls> reveals a panel with the plain-
- * English definition and a deep link into the Decoder. Dismissed by Escape,
- * an outside click, or toggling the button — the WCAG-1.4.13-safe pattern that
- * also works on touch. The canonical term is looked up from the children text,
- * so it works even if the `term` prop does not survive the MDX pipeline; if no
- * glossary entry matches, the children render untouched. Colours are tokens.
+ * directly in MDX). A real button targets a native HTML popover containing the
+ * plain-English definition and a deep link into the Decoder. The browser owns
+ * focus, Escape, and light-dismiss behavior without a hydrated state machine.
+ * The build-time rehype pass sends only the matched entry instead of shipping
+ * the full glossary registry to every MDX route. If entry data is missing, the
+ * children render untouched. Colours are tokens.
  */
-export function GlossaryTerm({ term, children }: GlossaryTermProps) {
-  const key = (term || childText(children)).trim().toLowerCase();
-  const entry = GLOSSARY_TERMS.find((t) => t.term.toLowerCase() === key);
+export function GlossaryTerm({ term, analogy, definition, children }: GlossaryTermProps) {
+  const canonicalTerm = (term || childText(children)).trim();
 
-  const [open, setOpen] = useState(false);
-  const [panelPlacement, setPanelPlacement] = useState<PanelPlacement>('left-below');
-  const wrapRef = useRef<HTMLSpanElement>(null);
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const panelId = useId();
+  // No injected glossary entry — leave the text exactly as it was.
+  if (!canonicalTerm || !analogy || !definition) return <>{children}</>;
 
-  useEffect(() => {
-    if (!open) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        setOpen(false);
-        btnRef.current?.focus();
-      }
-    }
-    function onPointer(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    function onResize() {
-      setOpen(false);
-    }
-    document.addEventListener('keydown', onKey);
-    document.addEventListener('mousedown', onPointer);
-    window.addEventListener('resize', onResize);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.removeEventListener('mousedown', onPointer);
-      window.removeEventListener('resize', onResize);
-    };
-  }, [open]);
-
-  // No matching glossary entry — leave the text exactly as it was.
-  if (!entry) return <>{children}</>;
-
-  const anchor = `/learn/start/decoder#term-${slugify(entry.term)}`;
-
-  function handleToggle() {
-    if (open) {
-      setOpen(false);
-      return;
-    }
-
-    const button = btnRef.current;
-    if (!button) return;
-
-    const rect = button.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const panelWidth = Math.min(288, Math.max(0, viewportWidth - 32));
-    const panelHeight = Math.min(280, Math.max(0, viewportHeight - 32));
-    const canAlignLeft = viewportWidth - rect.left >= panelWidth + 16;
-    const canAlignRight = rect.right >= panelWidth + 16;
-    const canOpenBelow = viewportHeight - rect.bottom >= panelHeight + 8;
-    const canOpenAbove = rect.top >= panelHeight + 8;
-
-    if (viewportWidth < 640 || viewportHeight < 480 || (!canAlignLeft && !canAlignRight)) {
-      setPanelPlacement('viewport');
-    } else if (canOpenBelow) {
-      setPanelPlacement(canAlignLeft ? 'left-below' : 'right-below');
-    } else if (canOpenAbove) {
-      setPanelPlacement(canAlignLeft ? 'left-above' : 'right-above');
-    } else {
-      setPanelPlacement('viewport');
-    }
-
-    setOpen(true);
-  }
+  const slug = slugify(canonicalTerm);
+  const anchor = `/learn/start/decoder#term-${slug}`;
+  const panelId = `glossary-${slug}`;
 
   return (
-    <span ref={wrapRef} className="relative inline-block">
+    <span className="relative inline-block">
       <button
-        ref={btnRef}
         type="button"
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={handleToggle}
+        popoverTarget={panelId}
         className="inline cursor-help border-0 bg-transparent p-0 font-[inherit] text-[length:inherit] leading-[inherit] text-text underline decoration-dotted decoration-chapter-5 decoration-2 underline-offset-4 hover:decoration-solid focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
       >
         {children}
       </button>
-      {open && (
-        <span
-          id={panelId}
-          role="note"
-          className={`not-prose z-50 block max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain border border-text/20 bg-background p-4 text-left shadow-xl ${
-            panelPlacement === 'viewport'
-              ? 'fixed inset-x-4 bottom-4 top-auto w-auto max-w-none'
-              : panelPlacement === 'right-above'
-                ? 'absolute bottom-full right-0 mb-2 w-72 max-w-[calc(100vw-2rem)]'
-                : panelPlacement === 'left-above'
-                  ? 'absolute bottom-full left-0 mb-2 w-72 max-w-[calc(100vw-2rem)]'
-                  : panelPlacement === 'right-below'
-                    ? 'absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-2rem)]'
-                    : 'absolute left-0 top-full mt-2 w-72 max-w-[calc(100vw-2rem)]'
-          }`}
-        >
-          <span className="mb-1 block font-mono text-sm font-bold text-chapter-5">
-            {entry.term}
-          </span>
-          <span className="mb-2 block text-xs leading-relaxed text-muted">{entry.analogy}</span>
-          <span className="mb-3 block text-xs leading-relaxed text-text">{entry.definition}</span>
+      <span
+        id={panelId}
+        popover="auto"
+        role="note"
+        className="not-prose fixed inset-x-4 bottom-4 top-auto z-50 m-0 max-h-[calc(100dvh-2rem)] w-auto max-w-none overflow-y-auto overscroll-contain border border-text/20 bg-background p-5 text-left text-text shadow-2xl backdrop:bg-background/70 sm:bottom-auto sm:left-1/2 sm:right-auto sm:top-1/2 sm:w-80 sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2"
+      >
+        <span className="mb-1 block font-mono text-sm font-bold text-chapter-5">
+          {canonicalTerm}
+        </span>
+        <span className="mb-2 block text-xs leading-relaxed text-muted">{analogy}</span>
+        <span className="mb-4 block text-xs leading-relaxed text-text">{definition}</span>
+        <span className="flex flex-wrap items-center gap-x-5 gap-y-2">
           <Link
             href={anchor}
             className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-chapter-5 underline decoration-2 underline-offset-2 hover:decoration-4 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
           >
             Full definition
           </Link>
+          <button
+            type="button"
+            popoverTarget={panelId}
+            popoverTargetAction="hide"
+            className="text-[11px] font-bold uppercase tracking-wider text-muted underline underline-offset-2 hover:text-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
+          >
+            Close
+          </button>
         </span>
-      )}
+      </span>
     </span>
   );
 }

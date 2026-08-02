@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import * as m from 'framer-motion/m';
 import { Search } from '@/components/ui/Search';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
@@ -14,31 +16,90 @@ const navigation = [
   { name: 'About', href: '/about', match: '/about' },
 ] as const;
 
+const SearchDialog = dynamic(
+  () => import('@/components/ui/SearchDialog').then((module) => module.SearchDialog),
+  { ssr: false }
+);
+
+function isVisible(element: HTMLElement | null): element is HTMLElement {
+  return element !== null && element.isConnected && element.getClientRects().length > 0;
+}
+
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchActivated, setSearchActivated] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const desktopSearchRef = useRef<HTMLButtonElement>(null);
+  const mobileSearchRef = useRef<HTMLButtonElement>(null);
+  const searchOpenRef = useRef(false);
+  const searchReturnTargetRef = useRef<HTMLElement | null>(null);
   const pathname = usePathname();
 
+  const visibleSearchControl = useCallback(
+    () =>
+      [desktopSearchRef.current, mobileSearchRef.current, mobileMenuButtonRef.current].find(
+        isVisible
+      ) ?? null,
+    []
+  );
+
+  const openSearch = useCallback(
+    (trigger: HTMLElement | null = null) => {
+      searchReturnTargetRef.current = isVisible(trigger) ? trigger : visibleSearchControl();
+      searchOpenRef.current = true;
+      setSearchActivated(true);
+      setSearchOpen(true);
+    },
+    [visibleSearchControl]
+  );
+
+  const closeSearch = useCallback((restoreFocus = true) => {
+    searchOpenRef.current = false;
+    setSearchOpen(false);
+
+    if (!restoreFocus) return;
+
+    requestAnimationFrame(() => {
+      const returnTarget = [
+        searchReturnTargetRef.current,
+        desktopSearchRef.current,
+        mobileSearchRef.current,
+        mobileMenuButtonRef.current,
+      ].find(isVisible);
+      returnTarget?.focus();
+    });
+  }, []);
+
   useEffect(() => {
-    if (!mobileMenuOpen) return;
-
     function handleKeyDown(event: KeyboardEvent) {
-      // A nested dialog owns Escape while it is open. Closing the menu at the
-      // same time would unmount its search trigger before focus can return.
-      if (
-        event.defaultPrevented ||
-        event.key !== 'Escape' ||
-        document.querySelector('[role="dialog"]')
-      )
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        openSearch(visibleSearchControl());
         return;
+      }
 
+      if (event.key !== 'Escape') return;
+
+      // Header owns Escape synchronously, including while the lazy dialog
+      // chunk is loading and while its exit animation is in progress.
+      if (searchOpenRef.current) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeSearch();
+        return;
+      }
+
+      if (!mobileMenuOpen || event.defaultPrevented) return;
+
+      event.preventDefault();
       setMobileMenuOpen(false);
       requestAnimationFrame(() => mobileMenuButtonRef.current?.focus());
     }
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [mobileMenuOpen]);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [closeSearch, mobileMenuOpen, openSearch, visibleSearchControl]);
 
   const isActive = (match: string | null) =>
     match ? pathname === match || pathname.startsWith(`${match}/`) : false;
@@ -70,10 +131,8 @@ export function Header() {
                   >
                     {item.name}
                     {active && (
-                      <motion.span
-                        layoutId="active-nav"
+                      <span
                         className="absolute inset-x-3 bottom-1 h-px bg-accent"
-                        transition={{ type: 'spring', stiffness: 420, damping: 36 }}
                         aria-hidden="true"
                       />
                     )}
@@ -83,7 +142,12 @@ export function Header() {
             </div>
 
             <div className="ml-5 flex items-center gap-1 border-l border-rule pl-5">
-              <Search className="editorial-search-trigger !border-0 !bg-transparent !px-2 !font-normal !shadow-none hover:!bg-surface hover:!text-text" />
+              <Search
+                ref={desktopSearchRef}
+                expanded={searchOpen}
+                onOpen={openSearch}
+                className="editorial-search-trigger !border-0 !bg-transparent !px-2 !font-normal !shadow-none hover:!bg-surface hover:!text-text"
+              />
               <ThemeToggle className="!border-0 !bg-transparent !shadow-none hover:!bg-surface hover:!shadow-none" />
             </div>
           </div>
@@ -105,7 +169,7 @@ export function Header() {
 
         <AnimatePresence initial={false}>
           {mobileMenuOpen && (
-            <motion.div
+            <m.div
               id="mobile-navigation"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
@@ -132,13 +196,20 @@ export function Header() {
                   );
                 })}
                 <div className="py-3">
-                  <Search className="w-full !justify-start !border-0 !bg-transparent !px-1 !font-semibold !shadow-none hover:!text-accent" />
+                  <Search
+                    ref={mobileSearchRef}
+                    expanded={searchOpen}
+                    onOpen={openSearch}
+                    className="w-full !justify-start !border-0 !bg-transparent !px-1 !font-semibold !shadow-none hover:!text-accent"
+                  />
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </nav>
+
+      {searchActivated && <SearchDialog open={searchOpen} onClose={closeSearch} />}
     </header>
   );
 }

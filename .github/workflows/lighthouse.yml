@@ -167,6 +167,7 @@ jobs:
           for target in \
             "home:/" \
             "blog:/blog" \
+            "patterns:/learn/patterns" \
             "toolkit:/learn/toolkit" \
             "work:/work"
           do

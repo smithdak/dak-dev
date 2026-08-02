@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { getExplainer, getAllExplainerSlugs, getExplainerMeta } from '@/lib/onramp';
-import { mdxComponents } from '@/components/blog/MdxComponents';
+import { interactiveMdxComponents } from '@/components/blog/InteractiveMdxComponents';
 import { Callout } from '@/components/patterns/Callout';
 import { Annotation } from '@/components/learn/Annotation';
 import { getMdxOptions } from '@/lib/mdx-options';
@@ -19,9 +19,9 @@ import { StickyTableOfContents } from '@/components/learn/StickyTableOfContents'
 import { SITE_URL as siteUrl } from '@/lib/site';
 
 // Explainer MDX may use the shared interactive islands plus Callout/Annotation.
-// First-use jargon is auto-decoded via the <glossaryterm> toggletip already in
-// mdxComponents (lib/rehype-glossary).
-const explainerComponents = { ...mdxComponents, Callout, Annotation };
+// First-use jargon is auto-decoded via the <glossaryterm> native popover in
+// interactiveMdxComponents (lib/rehype-glossary).
+const explainerComponents = { ...interactiveMdxComponents, Callout, Annotation };
 
 export const dynamicParams = false;
 

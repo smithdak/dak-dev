@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { getDemo, getAllDemoSlugs, getDemoMeta } from '@/lib/onramp';
-import { mdxComponents } from '@/components/blog/MdxComponents';
+import { interactiveMdxComponents } from '@/components/blog/InteractiveMdxComponents';
 import { Callout } from '@/components/patterns/Callout';
 import { Annotation } from '@/components/learn/Annotation';
 import { getMdxOptions } from '@/lib/mdx-options';
@@ -21,7 +21,7 @@ import { SITE_URL as siteUrl } from '@/lib/site';
 // The on-ramp demo MDX may use the shared interactive islands (AgentLoopStepper,
 // etc.) plus two annotation primitives unique to "Demo, Decoded": Callout for
 // "what's happening" notes and Annotation for inline jargon decoding.
-const demoComponents = { ...mdxComponents, Callout, Annotation };
+const demoComponents = { ...interactiveMdxComponents, Callout, Annotation };
 
 export const dynamicParams = false;
 
