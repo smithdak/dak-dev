@@ -451,14 +451,16 @@ language, theme, line-number, and highlight attributes. CSS still reasserts the
 fenced-code foreground as the development and unscoped-token fallback.
 
 Motion is governed globally by `<MotionConfig reducedMotion="user">`
-(`app/layout.tsx:133`). This is the _mechanism_ behind every "respects
+(`app/layout.tsx:139`). This is the _mechanism_ behind every "respects
 `prefers-reduced-motion`" claim — Framer Motion reads the OS setting at the
 provider, so individual components do not each re-implement the check. New
 animation goes through Framer Motion so it inherits this for free; bespoke CSS
 keyframe animation must add its own `@media (prefers-reduced-motion)` guard.
-Primary content renders in its visible state (`initial={false}`); reveal and
-page motion are progressive enhancement, never a prerequisite for reading SSG
-HTML when hydration or an intersection observer fails.
+Primary content stays server-rendered and visible. `PageTransition` is a plain
+server compatibility wrapper; route-level motion belongs at a real transition
+boundary, not around the SSG document body. Reveal and interaction motion are
+progressive enhancement, never a prerequisite for reading HTML when hydration
+or an intersection observer fails.
 
 ---
 

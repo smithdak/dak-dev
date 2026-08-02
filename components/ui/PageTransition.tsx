@@ -1,8 +1,4 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
-import { pageTransitionVariants } from '@/lib/animations';
 
 interface PageTransitionProps {
   children: ReactNode;
@@ -10,20 +6,9 @@ interface PageTransitionProps {
 }
 
 /**
- * PageTransition wrapper component
- * Applies smooth fade-in animations to page content
- * Respects prefers-reduced-motion via MotionConfig
+ * Server-rendered compatibility wrapper for page content.
+ * Route motion belongs at an actual transition boundary, not around the SSG body.
  */
 export function PageTransition({ children, className = '' }: PageTransitionProps) {
-  return (
-    <motion.div
-      initial={false}
-      animate="animate"
-      exit="exit"
-      variants={pageTransitionVariants}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }
