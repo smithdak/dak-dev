@@ -2,8 +2,9 @@
 
 These vendored TTFs keep the site deterministic and independent of remote font
 providers. Web pages load Space Grotesk from this directory through
-`next/font/local`; image scripts may embed the same files when Sharp needs raw
-font data.
+`next/font/local`; image scripts embed the same files for downloadable SVGs and
+load `fonts.conf` before Sharp so librsvg cannot substitute host-installed
+fonts while rasterizing PNGs.
 
 The default social image and downloadable identity kit are static generated
 assets. Regenerate all of them with `pnpm brand:generate`, or only the default

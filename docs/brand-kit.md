@@ -92,5 +92,8 @@ pnpm build
 
 `brand:generate` writes every declared SVG and PNG plus the public manifest.
 `brand:check` re-renders in memory and fails on palette drift, font hash drift,
-renderer-version drift, missing or extra kit files, or any byte difference.
+Fontconfig contract drift, renderer-version drift, missing or extra kit files,
+or any byte difference. The checked-in Fontconfig sandbox limits raster text to
+the verified Space Grotesk files, so local and Linux CI renders use the same
+font inputs.
 The default Open Graph image and site icons are outputs of the same pipeline.

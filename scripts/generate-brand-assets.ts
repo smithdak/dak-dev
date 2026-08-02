@@ -3,9 +3,9 @@
  * Deterministic brand-asset generator.
  *
  * All identity copy, palette values, font provenance, output geometry, and
- * renderer versions live in `.content/brand/brand-kit.v1.json`. Fonts are
- * embedded into each SVG before Sharp renders it, so raster output never
- * depends on host fonts or network access.
+ * renderer inputs live in `.content/brand/brand-kit.v1.json`. A checked-in
+ * Fontconfig sandbox is loaded before Sharp so raster output never depends on
+ * host-installed fonts or network access.
  *
  * Usage:
  *   pnpm brand:generate
@@ -16,12 +16,13 @@
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import sharp from 'sharp';
 
 const ROOT = process.cwd();
 const MANIFEST_PATH = path.join(ROOT, '.content', 'brand', 'brand-kit.v1.json');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const PUBLIC_MANIFEST_PATH = path.join(PUBLIC_DIR, 'brand', 'manifest.json');
+
+let sharp: typeof import('sharp').default;
 
 type Theme = 'light' | 'dark';
 type AssetFormat = 'png' | 'svg';
@@ -52,8 +53,16 @@ interface BrandManifest {
   renderer: {
     sharp: string;
     vips: string;
+    cairo: string;
+    fontconfigVersion: string;
+    freetype: string;
+    harfbuzz: string;
+    pango: string;
+    rsvg: string;
+    png: string;
     simd: false;
     pngCompressionLevel: number;
+    fontconfig: FontSpec;
   };
   identity: {
     name: string;
@@ -146,6 +155,7 @@ function parseManifest(): BrandManifest {
   const raw = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8')) as unknown;
   const root = requireRecord(raw, 'manifest');
   const renderer = requireRecord(root.renderer, 'manifest.renderer');
+  const fontconfig = requireRecord(renderer.fontconfig, 'manifest.renderer.fontconfig');
   const identity = requireRecord(root.identity, 'manifest.identity');
   const palette = requireRecord(root.palette, 'manifest.palette');
   const fonts = requireRecord(root.fonts, 'manifest.fonts');
@@ -215,11 +225,28 @@ function parseManifest(): BrandManifest {
     renderer: {
       sharp: requireString(renderer.sharp, 'manifest.renderer.sharp'),
       vips: requireString(renderer.vips, 'manifest.renderer.vips'),
+      cairo: requireString(renderer.cairo, 'manifest.renderer.cairo'),
+      fontconfigVersion: requireString(
+        renderer.fontconfigVersion,
+        'manifest.renderer.fontconfigVersion'
+      ),
+      freetype: requireString(renderer.freetype, 'manifest.renderer.freetype'),
+      harfbuzz: requireString(renderer.harfbuzz, 'manifest.renderer.harfbuzz'),
+      pango: requireString(renderer.pango, 'manifest.renderer.pango'),
+      rsvg: requireString(renderer.rsvg, 'manifest.renderer.rsvg'),
+      png: requireString(renderer.png, 'manifest.renderer.png'),
       simd: renderer.simd === false ? false : fail('manifest.renderer.simd must be false'),
       pngCompressionLevel: requireInteger(
         renderer.pngCompressionLevel,
         'manifest.renderer.pngCompressionLevel'
       ),
+      fontconfig: {
+        path: requireString(fontconfig.path, 'manifest.renderer.fontconfig.path'),
+        sha256: requireString(
+          fontconfig.sha256,
+          'manifest.renderer.fontconfig.sha256'
+        ).toLowerCase(),
+      },
     },
     identity: {
       name: requireString(identity.name, 'manifest.identity.name'),
@@ -246,7 +273,7 @@ function parseManifest(): BrandManifest {
     assets: parsedAssets,
   };
 
-  if (manifest.schemaVersion !== 1 || manifest.generatorVersion !== '1.0.0') {
+  if (manifest.schemaVersion !== 1 || manifest.generatorVersion !== '1.1.0') {
     fail(`Unsupported brand-kit contract ${manifest.schemaVersion}/${manifest.generatorVersion}`);
   }
   if (manifest.renderer.pngCompressionLevel < 1 || manifest.renderer.pngCompressionLevel > 9) {
@@ -272,22 +299,56 @@ function parseManifest(): BrandManifest {
   return manifest;
 }
 
+function readVerifiedInput(spec: FontSpec, label: string): { data: Buffer; filePath: string } {
+  const filePath = path.resolve(ROOT, spec.path);
+  const relativePath = path.relative(ROOT, filePath);
+  if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+    fail(`${label}.path must stay within the repository: ${spec.path}`);
+  }
+
+  const data = fs.readFileSync(filePath);
+  const digest = createHash('sha256').update(data).digest('hex');
+  if (digest !== spec.sha256) {
+    fail(`${label} hash mismatch: expected ${spec.sha256}, found ${digest}`);
+  }
+  return { data, filePath };
+}
+
+async function loadRenderer(manifest: BrandManifest): Promise<void> {
+  const { filePath } = readVerifiedInput(
+    manifest.renderer.fontconfig,
+    'manifest.renderer.fontconfig'
+  );
+
+  // Sharp loads Fontconfig through librsvg at module initialization. Set this
+  // first or text silently falls back to a host-dependent sans-serif font.
+  process.env.FONTCONFIG_FILE = filePath;
+  sharp = (await import('sharp')).default;
+}
+
 function verifyInputs(manifest: BrandManifest): void {
-  for (const key of ['sharp', 'vips'] as const) {
-    if (sharp.versions[key] !== manifest.renderer[key]) {
+  const rendererVersions = {
+    sharp: manifest.renderer.sharp,
+    vips: manifest.renderer.vips,
+    cairo: manifest.renderer.cairo,
+    fontconfig: manifest.renderer.fontconfigVersion,
+    freetype: manifest.renderer.freetype,
+    harfbuzz: manifest.renderer.harfbuzz,
+    pango: manifest.renderer.pango,
+    rsvg: manifest.renderer.rsvg,
+    png: manifest.renderer.png,
+  };
+  const installedVersions = sharp.versions as Readonly<Record<string, string | undefined>>;
+  for (const [key, expected] of Object.entries(rendererVersions)) {
+    if (installedVersions[key] !== expected) {
       fail(
-        `Renderer version mismatch for ${key}: expected ${manifest.renderer[key]}, found ${sharp.versions[key] ?? 'unknown'}`
+        `Renderer version mismatch for ${key}: expected ${expected}, found ${installedVersions[key] ?? 'unknown'}`
       );
     }
   }
 
   for (const [weight, spec] of Object.entries(manifest.fonts) as Array<[FontWeight, FontSpec]>) {
-    const fontPath = path.join(ROOT, spec.path);
-    const data = fs.readFileSync(fontPath);
-    const digest = createHash('sha256').update(data).digest('hex');
-    if (digest !== spec.sha256) {
-      fail(`Font hash mismatch for ${weight}: expected ${spec.sha256}, found ${digest}`);
-    }
+    const { data } = readVerifiedInput(spec, `manifest.fonts.${weight}`);
     fontData.set(weight, data.toString('base64'));
   }
 
@@ -608,6 +669,7 @@ function publicManifestBuffer(manifest: BrandManifest): Buffer {
     schemaVersion: manifest.schemaVersion,
     generatorVersion: manifest.generatorVersion,
     reviewedAt: manifest.reviewedAt,
+    renderer: manifest.renderer,
     identity: manifest.identity,
     palette: manifest.palette,
     assets: manifest.assets.map((asset) => ({
@@ -688,6 +750,7 @@ Usage:
 async function main(): Promise<void> {
   const options = parseCli();
   const manifest = parseManifest();
+  await loadRenderer(manifest);
   verifyInputs(manifest);
 
   sharp.cache(false);
