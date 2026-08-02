@@ -92,8 +92,11 @@ pnpm build
 
 `brand:generate` writes every declared SVG and PNG plus the public manifest.
 `brand:check` re-renders in memory and fails on palette drift, font hash drift,
-fontkit or raster-renderer version drift, missing or extra kit files, or any
-byte difference. Downloadable SVG masters keep editable Space Grotesk text with
+fontkit, Sharp, or libvips version drift, missing or extra kit files, or any
+byte difference. Native transitive libraries are intentionally not pinned
+because Sharp packages platform-specific builds; cross-platform determinism is
+proven by exact output-byte comparison in CI. Downloadable SVG masters keep
+editable Space Grotesk text with
 embedded font data. PNG inputs convert every text node to glyph paths from the
 verified Space Grotesk files and remove embedded font definitions before Sharp
 rasterizes them, removing host Pango and Fontconfig from the reproducibility

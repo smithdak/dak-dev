@@ -85,9 +85,6 @@ interface BrandManifest {
     sharp: string;
     fontkit: string;
     vips: string;
-    cairo: string;
-    rsvg: string;
-    png: string;
     simd: false;
     pngCompressionLevel: number;
   };
@@ -253,9 +250,6 @@ function parseManifest(): BrandManifest {
       sharp: requireString(renderer.sharp, 'manifest.renderer.sharp'),
       fontkit: requireString(renderer.fontkit, 'manifest.renderer.fontkit'),
       vips: requireString(renderer.vips, 'manifest.renderer.vips'),
-      cairo: requireString(renderer.cairo, 'manifest.renderer.cairo'),
-      rsvg: requireString(renderer.rsvg, 'manifest.renderer.rsvg'),
-      png: requireString(renderer.png, 'manifest.renderer.png'),
       simd: renderer.simd === false ? false : fail('manifest.renderer.simd must be false'),
       pngCompressionLevel: requireInteger(
         renderer.pngCompressionLevel,
@@ -287,7 +281,7 @@ function parseManifest(): BrandManifest {
     assets: parsedAssets,
   };
 
-  if (manifest.schemaVersion !== 1 || manifest.generatorVersion !== '1.2.0') {
+  if (manifest.schemaVersion !== 1 || manifest.generatorVersion !== '1.2.1') {
     fail(`Unsupported brand-kit contract ${manifest.schemaVersion}/${manifest.generatorVersion}`);
   }
   if (manifest.renderer.pngCompressionLevel < 1 || manifest.renderer.pngCompressionLevel > 9) {
@@ -346,9 +340,6 @@ function verifyInputs(manifest: BrandManifest): void {
   const rendererVersions = {
     sharp: manifest.renderer.sharp,
     vips: manifest.renderer.vips,
-    cairo: manifest.renderer.cairo,
-    rsvg: manifest.renderer.rsvg,
-    png: manifest.renderer.png,
   };
   const installedVersions = sharp.versions as Readonly<Record<string, string | undefined>>;
   for (const [key, expected] of Object.entries(rendererVersions)) {

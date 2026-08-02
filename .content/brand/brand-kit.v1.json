@@ -1,14 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatorVersion": "1.2.0",
+  "generatorVersion": "1.2.1",
   "reviewedAt": "2026-08-02",
   "renderer": {
     "sharp": "0.35.3",
     "fontkit": "2.0.4",
     "vips": "8.18.3",
-    "cairo": "1.18.4",
-    "rsvg": "2.62.3",
-    "png": "1.6.58",
     "simd": false,
     "pngCompressionLevel": 9
   },
