@@ -450,12 +450,17 @@ code renderer distinguishes fenced code from inline prose and forwards Shiki's
 language, theme, line-number, and highlight attributes. CSS still reasserts the
 fenced-code foreground as the development and unscoped-token fallback.
 
-Motion is governed globally by `<MotionConfig reducedMotion="user">`
-(`app/layout.tsx:139`). This is the _mechanism_ behind every "respects
-`prefers-reduced-motion`" claim — Framer Motion reads the OS setting at the
-provider, so individual components do not each re-implement the check. New
-animation goes through Framer Motion so it inherits this for free; bespoke CSS
-keyframe animation must add its own `@media (prefers-reduced-motion)` guard.
+Motion is governed globally by `MotionProvider`
+(`components/motion/MotionProvider.tsx:13`), which composes
+`<MotionConfig reducedMotion="user">` with strict `LazyMotion`. This is the
+_mechanism_ behind every "respects `prefers-reduced-motion`" claim — Framer
+Motion reads the OS setting at the provider, so individual components do not
+each re-implement the check. The provider defers the `domAnimation` feature
+bundle and animated elements use the lightweight `framer-motion/m` entrypoint;
+the header's one-pixel active rule is static rather than paying for `domMax`
+layout animation on every route. New animation goes through this boundary so it
+inherits the policy; bespoke CSS keyframe animation must add its own
+`@media (prefers-reduced-motion)` guard.
 Primary content stays server-rendered and visible. `PageTransition` is a plain
 server compatibility wrapper; route-level motion belongs at a real transition
 boundary, not around the SSG document body. Reveal and interaction motion are

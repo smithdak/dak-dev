@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import * as m from 'framer-motion/m';
 
 interface TagProps {
   tag: string;
@@ -30,12 +30,12 @@ export function Tag({ tag, interactive = true, className = '', count }: TagProps
 
   if (interactive) {
     return (
-      <motion.span whileTap={{ scale: 0.98 }}>
+      <m.span whileTap={{ scale: 0.98 }}>
         <Link href={`/blog/tags/${tagSlug}`} className={classNames}>
           #{tag}
           {count !== undefined && ` (${count})`}
         </Link>
-      </motion.span>
+      </m.span>
     );
   }
 

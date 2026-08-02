@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import * as m from 'framer-motion/m';
 import { staggerContainerVariants, staggerItemVariants } from '@/lib/animations';
 import type { Product } from '@/lib/products';
 
@@ -120,7 +120,7 @@ interface ProductCardProps {
  */
 export function ProductCard({ product, className = '' }: ProductCardProps) {
   return (
-    <motion.article variants={staggerItemVariants} className={`group ${className}`}>
+    <m.article variants={staggerItemVariants} className={`group ${className}`}>
       <a
         href={product.url}
         target="_blank"
@@ -161,7 +161,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
           </div>
         </div>
       </a>
-    </motion.article>
+    </m.article>
   );
 }
 
@@ -175,7 +175,7 @@ interface ProductCardListProps {
  */
 export function ProductCardList({ products, className = '' }: ProductCardListProps) {
   return (
-    <motion.div
+    <m.div
       variants={staggerContainerVariants}
       initial={false}
       whileInView="visible"
@@ -185,6 +185,6 @@ export function ProductCardList({ products, className = '' }: ProductCardListPro
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
-    </motion.div>
+    </m.div>
   );
 }

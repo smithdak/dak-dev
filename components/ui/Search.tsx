@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import * as m from 'framer-motion/m';
 import { searchPosts, SearchIndexItem } from '@/lib/search';
 import { formatCalendarDate } from '@/lib/utils';
 
@@ -233,7 +234,7 @@ export function Search({ className = '' }: SearchProps) {
         {isOpen && (
           <>
             {/* Backdrop */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -244,7 +245,7 @@ export function Search({ className = '' }: SearchProps) {
             />
 
             {/* Modal */}
-            <motion.div
+            <m.div
               ref={modalRef}
               initial={{ opacity: 0, scale: 0.95, y: -20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -408,7 +409,7 @@ export function Search({ className = '' }: SearchProps) {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>

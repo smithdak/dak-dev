@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, useReducedMotion } from 'framer-motion';
+import * as m from 'framer-motion/m';
 import { Tag } from '@/components/ui/Tag';
 import { staggerItemVariants } from '@/lib/animations';
 
@@ -50,26 +51,26 @@ export function BlogFilters({ tagCounts, className = '' }: BlogFiltersProps) {
         <div id="blog-filters-panel">
           <AnimatePresence>
             {isOpen && (
-              <motion.div
+              <m.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration }}
                 className="overflow-hidden"
               >
-                <motion.div
+                <m.div
                   variants={fastStaggerContainer}
                   initial={false}
                   animate="visible"
                   className="flex flex-wrap gap-x-4 gap-y-2 pb-5 pt-2"
                 >
                   {tags.map((tag) => (
-                    <motion.div key={tag} variants={staggerItemVariants}>
+                    <m.div key={tag} variants={staggerItemVariants}>
                       <Tag tag={tag} interactive count={tagCounts[tag]} />
-                    </motion.div>
+                    </m.div>
                   ))}
-                </motion.div>
-              </motion.div>
+                </m.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>
@@ -78,7 +79,7 @@ export function BlogFilters({ tagCounts, className = '' }: BlogFiltersProps) {
       {/* Desktop: always visible with scroll entrance */}
       <nav aria-label="Filter by tag" className="hidden border-y border-text/20 py-4 md:block">
         <p className="text-sm font-semibold text-muted mb-3">Filter by tag</p>
-        <motion.div
+        <m.div
           variants={fastStaggerContainer}
           initial={false}
           whileInView="visible"
@@ -86,11 +87,11 @@ export function BlogFilters({ tagCounts, className = '' }: BlogFiltersProps) {
           className="flex flex-wrap gap-x-5 gap-y-2"
         >
           {tags.map((tag) => (
-            <motion.div key={tag} variants={staggerItemVariants}>
+            <m.div key={tag} variants={staggerItemVariants}>
               <Tag tag={tag} interactive count={tagCounts[tag]} />
-            </motion.div>
+            </m.div>
           ))}
-        </motion.div>
+        </m.div>
       </nav>
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
-import { motion, type Variants } from 'framer-motion';
+import type { Variants } from 'framer-motion';
+import * as m from 'framer-motion/m';
 import type { ReactNode } from 'react';
 import { staggerContainerVariants, staggerItemVariants } from '@/lib/animations';
 
@@ -21,7 +22,7 @@ interface ScrollRevealProps {
 
 export function ScrollReveal({ children, stagger = false, className }: ScrollRevealProps) {
   return (
-    <motion.div
+    <m.div
       variants={stagger ? staggerContainerVariants : singleVariants}
       initial={false}
       whileInView="visible"
@@ -29,7 +30,7 @@ export function ScrollReveal({ children, stagger = false, className }: ScrollRev
       className={className}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -40,8 +41,8 @@ interface ScrollRevealItemProps {
 
 export function ScrollRevealItem({ children, className }: ScrollRevealItemProps) {
   return (
-    <motion.div variants={staggerItemVariants} className={className}>
+    <m.div variants={staggerItemVariants} className={className}>
       {children}
-    </motion.div>
+    </m.div>
   );
 }

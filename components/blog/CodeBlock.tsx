@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import * as m from 'framer-motion/m';
 
 export interface CodeBlockProps {
   children: string;
@@ -67,7 +67,7 @@ export function CodeBlock({
         <span className="text-xs font-semibold text-text uppercase tracking-wider">
           {displayLang}
         </span>
-        <motion.button
+        <m.button
           onClick={handleCopy}
           aria-label={copied ? 'Code copied' : 'Copy code to clipboard'}
           className={`px-3 py-1 text-xs font-semibold border-2 border-background
@@ -81,7 +81,7 @@ export function CodeBlock({
           transition={{ duration: 0.2 }}
         >
           {copied ? 'COPIED!' : 'COPY'}
-        </motion.button>
+        </m.button>
       </div>
 
       {/* Code container */}

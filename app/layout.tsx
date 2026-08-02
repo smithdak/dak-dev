@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import { MotionConfig } from 'framer-motion';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
+import { MotionProvider } from '@/components/motion/MotionProvider';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { SITE_URL as siteUrl } from '@/lib/site';
 import './globals.css';
@@ -136,14 +136,14 @@ export default function RootLayout({
           Skip to main content
         </a>
         <ThemeProvider>
-          <MotionConfig reducedMotion="user">
+          <MotionProvider>
             <Header />
             <main id="main-content" className="flex-grow">
               {children}
             </main>
             <Footer />
             <ScrollToTop />
-          </MotionConfig>
+          </MotionProvider>
         </ThemeProvider>
         {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}
         {process.env.NEXT_PUBLIC_VERCEL_ENV && <SpeedInsights />}

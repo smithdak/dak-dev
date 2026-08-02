@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import * as m from 'framer-motion/m';
 import { Search } from '@/components/ui/Search';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
@@ -70,10 +71,8 @@ export function Header() {
                   >
                     {item.name}
                     {active && (
-                      <motion.span
-                        layoutId="active-nav"
+                      <span
                         className="absolute inset-x-3 bottom-1 h-px bg-accent"
-                        transition={{ type: 'spring', stiffness: 420, damping: 36 }}
                         aria-hidden="true"
                       />
                     )}
@@ -105,7 +104,7 @@ export function Header() {
 
         <AnimatePresence initial={false}>
           {mobileMenuOpen && (
-            <motion.div
+            <m.div
               id="mobile-navigation"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
@@ -135,7 +134,7 @@ export function Header() {
                   <Search className="w-full !justify-start !border-0 !bg-transparent !px-1 !font-semibold !shadow-none hover:!text-accent" />
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </nav>

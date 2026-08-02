@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import * as m from 'framer-motion/m';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 /**
@@ -102,7 +103,7 @@ export function ScrollStory({ steps, eyebrow }: ScrollStoryProps) {
           {String(active + 1).padStart(2, '0')}
         </div>
         <div className="mt-4 h-1 w-full bg-text/15">
-          <motion.div
+          <m.div
             className="h-full"
             style={{ backgroundColor: 'var(--color-accent)' }}
             animate={{
@@ -113,7 +114,7 @@ export function ScrollStory({ steps, eyebrow }: ScrollStoryProps) {
         </div>
         <div className="mt-4 min-h-[3.5rem]">
           <AnimatePresence mode="wait">
-            <motion.p
+            <m.p
               key={active}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
@@ -122,7 +123,7 @@ export function ScrollStory({ steps, eyebrow }: ScrollStoryProps) {
               className="font-display text-2xl text-text"
             >
               {parsed[active]?.title}
-            </motion.p>
+            </m.p>
           </AnimatePresence>
         </div>
         <p className="mt-3 font-mono text-xs text-muted tabular-nums">
