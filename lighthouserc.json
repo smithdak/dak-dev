@@ -10,6 +10,7 @@
         "http://localhost:3000/about",
         "http://localhost:3000/work",
         "http://localhost:3000/learn",
+        "http://localhost:3000/learn/patterns",
         "http://localhost:3000/learn/toolkit",
         "http://localhost:3000/learn/harness"
       ],

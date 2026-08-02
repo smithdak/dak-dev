@@ -154,7 +154,8 @@ export default function ToolkitIndexPage() {
             </h2>
             <p className="mt-4 leading-relaxed text-muted">
               Start with the problem you need to solve, then compare product behavior at the exact
-              CLI, IDE, web, or cloud surface where the work will run.
+              CLI, IDE, web, or cloud surface where the work will run. An “Unknown” marks a dated
+              evidence gap only for the surface beside it, never a product-wide verdict.
             </p>
           </div>
           <ToolkitCapabilityIndex topics={topics} products={products} />

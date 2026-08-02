@@ -707,9 +707,10 @@ passing first:
   lockfile + source hash.
 
 **`lighthouse.yml`** — the blocking Lighthouse CI job builds, then audits home,
-blog index, the latest blog detail, About, Work, Learn, Toolkit, and Harness 3×
-each (`lighthouserc.json`). It posts one representative run per URL to the PR,
-preserves the complete reports as workflow artifacts, and **fails** on:
+blog index, the latest blog detail, About, Work, Learn, Patterns, Toolkit, and
+Harness 3× each (`lighthouserc.json`). It posts one representative run per URL
+to the PR, preserves the complete reports as workflow artifacts, and **fails**
+on:
 
 - Accessibility, Best Practices, SEO < `1.0` on the pessimistic aggregation —
   one failing run blocks the merge.
@@ -717,12 +718,12 @@ preserves the complete reports as workflow artifacts, and **fails** on:
 - Specific a11y audits < `1.0` on any run (§9).
 
 A separate non-blocking desktop job pins the current Lighthouse `13.4.1`
-package and captures HTML and JSON diagnostics for home, blog, Toolkit, and
-Work. This is the forward-looking Performance Insights and Agentic Browsing
-path. It remains advisory because the SHA-pinned Lighthouse CI action currently
-bundles Lighthouse `12.6.1`; forcing a different major through its dependency
-tree would create an unqualified merge gate. The two report sets are named and
-stored separately.
+package and captures HTML and JSON diagnostics for home, blog, Patterns,
+Toolkit, and Work. This is the forward-looking Performance Insights and
+Agentic Browsing path. It remains advisory because the SHA-pinned Lighthouse CI
+action currently bundles Lighthouse `12.6.1`; forcing a different major through
+its dependency tree would create an unqualified merge gate. The two report sets
+are named and stored separately.
 
 **`content-check.yml`** — on content- and Toolkit-path PRs only: runs content,
 Toolkit evidence, and image validation and **fails if average content score <
