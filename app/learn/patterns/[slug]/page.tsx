@@ -216,7 +216,7 @@ export default async function PatternPage({ params }: { params: Promise<{ slug: 
           </div>
 
           {/* Sidebar */}
-          <aside className="hidden max-h-[calc(100dvh-7.25rem)] overflow-y-auto overscroll-contain pr-2 lg:sticky lg:top-[calc(var(--layout-header-height)+1.25rem)] lg:block lg:self-start">
+          <aside className="hidden max-h-[calc(100dvh-var(--layout-header-height)-2.5rem)] overflow-y-auto overscroll-contain pr-2 lg:sticky lg:top-[calc(var(--layout-header-height)+1.25rem)] lg:block lg:self-start">
             <div className="space-y-8">
               <TableOfContents items={toc} />
               {relatedPatterns.length > 0 && (
