@@ -1,23 +1,16 @@
 {
   "schemaVersion": 1,
-  "generatorVersion": "1.1.0",
+  "generatorVersion": "1.2.0",
   "reviewedAt": "2026-08-02",
   "renderer": {
     "sharp": "0.35.3",
+    "fontkit": "2.0.4",
     "vips": "8.18.3",
     "cairo": "1.18.4",
-    "fontconfigVersion": "2.18.1",
-    "freetype": "2.14.3",
-    "harfbuzz": "14.2.1",
-    "pango": "1.57.1",
     "rsvg": "2.62.3",
     "png": "1.6.58",
     "simd": false,
-    "pngCompressionLevel": 9,
-    "fontconfig": {
-      "path": "assets/fonts/fonts.conf",
-      "sha256": "5d5ab5cc4dff26c2d8d016a08b3d12ee3d94b0f8362c563a3bfd906e9e1688cf"
-    }
+    "pngCompressionLevel": 9
   },
   "identity": {
     "name": "Dakota Smith",

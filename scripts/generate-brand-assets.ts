@@ -3,9 +3,9 @@
  * Deterministic brand-asset generator.
  *
  * All identity copy, palette values, font provenance, output geometry, and
- * renderer inputs live in `.content/brand/brand-kit.v1.json`. A checked-in
- * Fontconfig sandbox is loaded before Sharp so raster output never depends on
- * host-installed fonts or network access.
+ * renderer inputs live in `.content/brand/brand-kit.v1.json`. Downloadable SVG
+ * masters retain embedded text, while PNG inputs replace every text node with
+ * deterministic glyph paths before Sharp sees the SVG.
  *
  * Usage:
  *   pnpm brand:generate
@@ -15,6 +15,7 @@
 
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
 const ROOT = process.cwd();
@@ -23,6 +24,36 @@ const PUBLIC_DIR = path.join(ROOT, 'public');
 const PUBLIC_MANIFEST_PATH = path.join(PUBLIC_DIR, 'brand', 'manifest.json');
 
 let sharp: typeof import('sharp').default;
+
+interface FontkitGlyph {
+  path: {
+    toSVG(): string;
+  };
+}
+
+interface FontkitPosition {
+  xAdvance: number;
+  yAdvance: number;
+  xOffset: number;
+  yOffset: number;
+}
+
+interface FontkitRun {
+  glyphs: FontkitGlyph[];
+  positions: FontkitPosition[];
+}
+
+interface FontkitFont {
+  unitsPerEm: number;
+  layout(text: string): FontkitRun;
+}
+
+interface FontkitModule {
+  create(data: Buffer): FontkitFont;
+}
+
+const requireFromHere = createRequire(import.meta.url);
+const fontkit = requireFromHere('fontkit') as FontkitModule;
 
 type Theme = 'light' | 'dark';
 type AssetFormat = 'png' | 'svg';
@@ -52,17 +83,13 @@ interface BrandManifest {
   reviewedAt: string;
   renderer: {
     sharp: string;
+    fontkit: string;
     vips: string;
     cairo: string;
-    fontconfigVersion: string;
-    freetype: string;
-    harfbuzz: string;
-    pango: string;
     rsvg: string;
     png: string;
     simd: false;
     pngCompressionLevel: number;
-    fontconfig: FontSpec;
   };
   identity: {
     name: string;
@@ -110,6 +137,7 @@ const fontWeights: Record<FontWeight, number> = {
 };
 
 const fontData = new Map<FontWeight, string>();
+const outlineFonts = new Map<FontWeight, FontkitFont>();
 
 function fail(message: string): never {
   throw new Error(message);
@@ -155,7 +183,6 @@ function parseManifest(): BrandManifest {
   const raw = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8')) as unknown;
   const root = requireRecord(raw, 'manifest');
   const renderer = requireRecord(root.renderer, 'manifest.renderer');
-  const fontconfig = requireRecord(renderer.fontconfig, 'manifest.renderer.fontconfig');
   const identity = requireRecord(root.identity, 'manifest.identity');
   const palette = requireRecord(root.palette, 'manifest.palette');
   const fonts = requireRecord(root.fonts, 'manifest.fonts');
@@ -224,15 +251,9 @@ function parseManifest(): BrandManifest {
     reviewedAt: requireString(root.reviewedAt, 'manifest.reviewedAt'),
     renderer: {
       sharp: requireString(renderer.sharp, 'manifest.renderer.sharp'),
+      fontkit: requireString(renderer.fontkit, 'manifest.renderer.fontkit'),
       vips: requireString(renderer.vips, 'manifest.renderer.vips'),
       cairo: requireString(renderer.cairo, 'manifest.renderer.cairo'),
-      fontconfigVersion: requireString(
-        renderer.fontconfigVersion,
-        'manifest.renderer.fontconfigVersion'
-      ),
-      freetype: requireString(renderer.freetype, 'manifest.renderer.freetype'),
-      harfbuzz: requireString(renderer.harfbuzz, 'manifest.renderer.harfbuzz'),
-      pango: requireString(renderer.pango, 'manifest.renderer.pango'),
       rsvg: requireString(renderer.rsvg, 'manifest.renderer.rsvg'),
       png: requireString(renderer.png, 'manifest.renderer.png'),
       simd: renderer.simd === false ? false : fail('manifest.renderer.simd must be false'),
@@ -240,13 +261,6 @@ function parseManifest(): BrandManifest {
         renderer.pngCompressionLevel,
         'manifest.renderer.pngCompressionLevel'
       ),
-      fontconfig: {
-        path: requireString(fontconfig.path, 'manifest.renderer.fontconfig.path'),
-        sha256: requireString(
-          fontconfig.sha256,
-          'manifest.renderer.fontconfig.sha256'
-        ).toLowerCase(),
-      },
     },
     identity: {
       name: requireString(identity.name, 'manifest.identity.name'),
@@ -273,7 +287,7 @@ function parseManifest(): BrandManifest {
     assets: parsedAssets,
   };
 
-  if (manifest.schemaVersion !== 1 || manifest.generatorVersion !== '1.1.0') {
+  if (manifest.schemaVersion !== 1 || manifest.generatorVersion !== '1.2.0') {
     fail(`Unsupported brand-kit contract ${manifest.schemaVersion}/${manifest.generatorVersion}`);
   }
   if (manifest.renderer.pngCompressionLevel < 1 || manifest.renderer.pngCompressionLevel > 9) {
@@ -314,16 +328,18 @@ function readVerifiedInput(spec: FontSpec, label: string): { data: Buffer; fileP
   return { data, filePath };
 }
 
-async function loadRenderer(manifest: BrandManifest): Promise<void> {
-  const { filePath } = readVerifiedInput(
-    manifest.renderer.fontconfig,
-    'manifest.renderer.fontconfig'
-  );
-
-  // Sharp loads Fontconfig through librsvg at module initialization. Set this
-  // first or text silently falls back to a host-dependent sans-serif font.
-  process.env.FONTCONFIG_FILE = filePath;
+async function loadRenderer(): Promise<void> {
   sharp = (await import('sharp')).default;
+}
+
+function installedPackageVersion(packageName: string): string {
+  const entryPath = requireFromHere.resolve(packageName);
+  const packagePath = path.resolve(path.dirname(entryPath), '..', 'package.json');
+  const packageJson = requireRecord(
+    JSON.parse(fs.readFileSync(packagePath, 'utf8')) as unknown,
+    `${packageName}/package.json`
+  );
+  return requireString(packageJson.version, `${packageName}/package.json.version`);
 }
 
 function verifyInputs(manifest: BrandManifest): void {
@@ -331,10 +347,6 @@ function verifyInputs(manifest: BrandManifest): void {
     sharp: manifest.renderer.sharp,
     vips: manifest.renderer.vips,
     cairo: manifest.renderer.cairo,
-    fontconfig: manifest.renderer.fontconfigVersion,
-    freetype: manifest.renderer.freetype,
-    harfbuzz: manifest.renderer.harfbuzz,
-    pango: manifest.renderer.pango,
     rsvg: manifest.renderer.rsvg,
     png: manifest.renderer.png,
   };
@@ -347,9 +359,21 @@ function verifyInputs(manifest: BrandManifest): void {
     }
   }
 
+  const installedFontkit = installedPackageVersion('fontkit');
+  if (installedFontkit !== manifest.renderer.fontkit) {
+    fail(
+      `Renderer version mismatch for fontkit: expected ${manifest.renderer.fontkit}, found ${installedFontkit}`
+    );
+  }
+
   for (const [weight, spec] of Object.entries(manifest.fonts) as Array<[FontWeight, FontSpec]>) {
     const { data } = readVerifiedInput(spec, `manifest.fonts.${weight}`);
     fontData.set(weight, data.toString('base64'));
+    const font = fontkit.create(data);
+    if (!Number.isFinite(font.unitsPerEm) || font.unitsPerEm <= 0) {
+      fail(`manifest.fonts.${weight} has an invalid unitsPerEm value`);
+    }
+    outlineFonts.set(weight, font);
   }
 
   const css = fs.readFileSync(path.join(ROOT, 'app', 'globals.css'), 'utf8').toLowerCase();
@@ -388,6 +412,192 @@ function fontCss(...weights: FontWeight[]): string {
       return `@font-face{font-family:'Space Grotesk';src:url(data:font/ttf;base64,${data}) format('truetype');font-style:normal;font-weight:${fontWeights[weight]};}`;
     })
     .join('');
+}
+
+function decodeXml(value: string): string {
+  const entities: Record<string, string> = {
+    '&lt;': '<',
+    '&gt;': '>',
+    '&amp;': '&',
+    '&apos;': "'",
+    '&quot;': '"',
+  };
+  return value.replace(/&(lt|gt|amp|apos|quot);/g, (entity) => entities[entity]);
+}
+
+function parseSvgAttributes(source: string, label: string): Record<string, string> {
+  const attributes: Record<string, string> = {};
+  const attributePattern = /([\w:-]+)="([^"]*)"/g;
+  let match: RegExpExecArray | null;
+  let consumed = '';
+
+  while ((match = attributePattern.exec(source)) !== null) {
+    attributes[match[1]] = decodeXml(match[2]);
+    consumed += match[0];
+  }
+
+  const normalizedSource = source.replace(/\s+/g, ' ').trim();
+  const normalizedConsumed = consumed.replace(/\s+/g, ' ').trim();
+  if (normalizedSource.replace(/\s/g, '') !== normalizedConsumed.replace(/\s/g, '')) {
+    fail(`${label} contains an unsupported SVG attribute`);
+  }
+
+  return attributes;
+}
+
+function parseSvgNumber(value: string | undefined, label: string): number {
+  if (value === undefined) fail(`${label} is required`);
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) fail(`${label} must be a finite number`);
+  return parsed;
+}
+
+function parseSvgLength(value: string | undefined, fontSize: number, label: string): number {
+  if (value === undefined) return 0;
+  const normalized = value.trim();
+  const parsed = normalized.endsWith('em')
+    ? Number(normalized.slice(0, -2)) * fontSize
+    : Number(normalized);
+  if (!Number.isFinite(parsed)) fail(`${label} must be a finite number or em length`);
+  return parsed;
+}
+
+function fontWeightFrom(attributes: Record<string, string>, label: string): FontWeight {
+  const value = attributes['font-weight'] ?? '400';
+  switch (value) {
+    case '400':
+    case 'normal':
+      return 'regular';
+    case '500':
+      return 'medium';
+    case '700':
+    case 'bold':
+      return 'bold';
+    default:
+      return fail(`${label}.font-weight is unsupported: ${value}`);
+  }
+}
+
+function svgNumber(value: number): string {
+  const rounded = Number(value.toFixed(6));
+  return Object.is(rounded, -0) ? '0' : String(rounded);
+}
+
+function outlineTextLine(
+  encodedText: string,
+  attributes: Record<string, string>,
+  x: number,
+  baselineY: number,
+  label: string
+): string {
+  if (/<[^>]+>/.test(encodedText)) fail(`${label} contains unsupported nested markup`);
+  const text = decodeXml(encodedText);
+  const fontSize = parseSvgNumber(attributes['font-size'], `${label}.font-size`);
+  const weight = fontWeightFrom(attributes, label);
+  const font = outlineFonts.get(weight) ?? fail(`Outline font not loaded for ${weight}`);
+  const fill = attributes.fill ?? fail(`${label}.fill is required`);
+  const family = attributes['font-family'];
+  if (family !== 'Space Grotesk') {
+    fail(`${label}.font-family is unsupported: ${family ?? 'missing'}`);
+  }
+
+  const run = font.layout(text);
+  if (run.glyphs.length !== run.positions.length) {
+    fail(`${label} produced mismatched glyph and position counts`);
+  }
+
+  const scale = fontSize / font.unitsPerEm;
+  const letterSpacing = parseSvgLength(
+    attributes['letter-spacing'],
+    fontSize,
+    `${label}.letter-spacing`
+  );
+  const runWidth =
+    run.positions.reduce((width, position) => width + position.xAdvance * scale, 0) +
+    Math.max(0, run.glyphs.length - 1) * letterSpacing;
+  const textAnchor = attributes['text-anchor'] ?? 'start';
+  const originX =
+    textAnchor === 'end'
+      ? x - runWidth
+      : textAnchor === 'middle'
+        ? x - runWidth / 2
+        : textAnchor === 'start'
+          ? x
+          : fail(`${label}.text-anchor is unsupported: ${textAnchor}`);
+
+  let cursorX = 0;
+  let cursorY = 0;
+  const paths: string[] = [];
+  for (let index = 0; index < run.glyphs.length; index++) {
+    const glyph = run.glyphs[index];
+    const position = run.positions[index];
+    const pathData = glyph.path.toSVG();
+    if (pathData.length > 0) {
+      const glyphX = originX + cursorX + position.xOffset * scale;
+      const glyphY = baselineY - cursorY - position.yOffset * scale;
+      paths.push(
+        `<path d="${pathData}" transform="translate(${svgNumber(glyphX)} ${svgNumber(glyphY)}) scale(${svgNumber(scale)} ${svgNumber(-scale)})" fill="${escapeXml(fill)}"/>`
+      );
+    }
+    cursorX += position.xAdvance * scale;
+    cursorY += position.yAdvance * scale;
+    if (index < run.glyphs.length - 1) cursorX += letterSpacing;
+  }
+
+  return paths.join('');
+}
+
+function outlineTextNode(attributesSource: string, content: string, index: number): string {
+  const label = `text[${index}]`;
+  const attributes = parseSvgAttributes(attributesSource, label);
+  let x = parseSvgNumber(attributes.x, `${label}.x`);
+  let y = parseSvgNumber(attributes.y, `${label}.y`);
+  const tspanPattern = /<tspan\b([^>]*)>([\s\S]*?)<\/tspan>/g;
+  const tspanMatches = [...content.matchAll(tspanPattern)];
+
+  if (tspanMatches.length === 0) {
+    return outlineTextLine(content, attributes, x, y, label);
+  }
+
+  const remainingContent = content.replace(tspanPattern, '');
+  if (remainingContent.trim().length > 0) {
+    fail(`${label} mixes direct text with tspans`);
+  }
+
+  return tspanMatches
+    .map((match, tspanIndex) => {
+      const tspanLabel = `${label}.tspan[${tspanIndex}]`;
+      const spanAttributes = parseSvgAttributes(match[1], tspanLabel);
+      const tspanAttributes = {
+        ...attributes,
+        ...spanAttributes,
+      };
+      const fontSize = parseSvgNumber(tspanAttributes['font-size'], `${tspanLabel}.font-size`);
+      if (spanAttributes.x !== undefined) {
+        x = parseSvgNumber(spanAttributes.x, `${tspanLabel}.x`);
+      }
+      if (spanAttributes.y !== undefined) {
+        y = parseSvgNumber(spanAttributes.y, `${tspanLabel}.y`);
+      }
+      x += parseSvgLength(spanAttributes.dx, fontSize, `${tspanLabel}.dx`);
+      y += parseSvgLength(spanAttributes.dy, fontSize, `${tspanLabel}.dy`);
+      return outlineTextLine(match[2], tspanAttributes, x, y, tspanLabel);
+    })
+    .join('');
+}
+
+function outlineSvgText(svg: string): string {
+  let textIndex = 0;
+  const outlined = svg
+    .replace(/<text\b([^>]*)>([\s\S]*?)<\/text>/g, (_match, attributes: string, content: string) =>
+      outlineTextNode(attributes, content, textIndex++)
+    )
+    .replace(/<style>[\s\S]*?<\/style>/g, '');
+
+  if (/<(?:text|tspan)\b|@font-face/i.test(outlined)) {
+    fail('Raster SVG still contains text or font definitions after glyph outlining');
+  }
+  return outlined;
 }
 
 function svgDocument(width: number, height: number, body: string, styles = ''): string {
@@ -652,10 +862,12 @@ function buildSvg(manifest: BrandManifest, asset: AssetSpec): string {
 }
 
 async function renderAsset(manifest: BrandManifest, asset: AssetSpec): Promise<Buffer> {
-  const svg = Buffer.from(buildSvg(manifest, asset));
-  if (asset.format === 'svg') return svg;
+  const svg = buildSvg(manifest, asset);
+  if (asset.format === 'svg') return Buffer.from(svg);
 
-  return sharp(svg)
+  const outlinedSvg = Buffer.from(outlineSvgText(svg));
+
+  return sharp(outlinedSvg)
     .png({
       compressionLevel: manifest.renderer.pngCompressionLevel,
       adaptiveFiltering: false,
@@ -750,7 +962,7 @@ Usage:
 async function main(): Promise<void> {
   const options = parseCli();
   const manifest = parseManifest();
-  await loadRenderer(manifest);
+  await loadRenderer();
   verifyInputs(manifest);
 
   sharp.cache(false);
