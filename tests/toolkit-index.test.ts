@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { ToolkitCapabilityIndex } from '../components/toolkit/ToolkitCapabilityIndex';
-import type { AgentToolMeta, ToolkitCoverage, ToolkitTopicMeta } from '../lib/toolkit-types';
+import { ToolkitCapabilityIndex } from '@/components/toolkit/ToolkitCapabilityIndex';
+import type { AgentToolMeta, ToolkitCoverage, ToolkitTopicMeta } from '@/lib/toolkit-types';
 
 const topic: ToolkitTopicMeta = {
   slug: 'project-instructions',
