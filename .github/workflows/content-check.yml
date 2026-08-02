@@ -42,7 +42,7 @@ jobs:
 
       - name: Run image validation
         if: always()
-        run: pnpm run images:validate -- --ci
+        run: pnpm images:validate
 
       - name: Upload validation evidence
         if: always() && hashFiles('.content/validation-report.json') != ''
