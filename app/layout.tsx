@@ -11,12 +11,9 @@ import { SITE_URL as siteUrl } from '@/lib/site';
 import './globals.css';
 
 const editorialSans = localFont({
-  src: [
-    { path: '../assets/fonts/SpaceGrotesk-Regular.ttf', weight: '400', style: 'normal' },
-    { path: '../assets/fonts/SpaceGrotesk-Medium.ttf', weight: '500', style: 'normal' },
-    { path: '../assets/fonts/SpaceGrotesk-Medium.ttf', weight: '600', style: 'normal' },
-    { path: '../assets/fonts/SpaceGrotesk-Bold.ttf', weight: '700', style: 'normal' },
-  ],
+  src: '../assets/fonts/SpaceGrotesk-Variable.woff2',
+  weight: '300 700',
+  style: 'normal',
   variable: '--font-editorial-sans',
   display: 'swap',
 });

@@ -9,7 +9,7 @@ import {
   getHarnessChapterBySlug,
   getHarnessChapter,
 } from '@/lib/harness';
-import { mdxComponents } from '@/components/blog/MdxComponents';
+import { interactiveMdxComponents } from '@/components/blog/InteractiveMdxComponents';
 import { getMdxOptions } from '@/lib/mdx-options';
 import { generateBreadcrumbSchema } from '@/lib/schema';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -109,7 +109,7 @@ export default async function HarnessChapterPage({
             <CodeBlockWrapper>
               <MDXRemote
                 source={page.content}
-                components={mdxComponents}
+                components={interactiveMdxComponents}
                 options={mdxOptions as Parameters<typeof MDXRemote>[0]['options']}
               />
             </CodeBlockWrapper>

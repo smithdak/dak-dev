@@ -145,7 +145,6 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
               title={post.frontmatter.title}
               url={fullUrl}
               excerpt={post.frontmatter.excerpt}
-              variant="dropdown"
               className="mt-4"
             />
           </div>

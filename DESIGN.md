@@ -272,10 +272,10 @@ build it. It decodes the vocabulary (the **Decoder**, a thematic glossary at
 `/learn/start/explain/<slug>` and **Demo, Decoded** walkthroughs at
 `/learn/start/demo/<slug>`), then links _into_ the four pillars.
 
-**Define-on-first-use toggletips are site-wide.** `lib/rehype-glossary.ts` runs
+**Define-on-first-use popovers are site-wide.** `lib/rehype-glossary.ts` runs
 in the shared MDX pipeline (`lib/mdx-options.ts`) and wraps the first occurrence
 of each Decoder term in any document in a `<glossaryterm>` element, mapped in
-`components/blog/MdxComponents.tsx` to an accessible click-toggletip
+`components/blog/MdxComponents.tsx` to an accessible native HTML popover
 (`components/learn/GlossaryTerm.tsx`) that links back to the Decoder. It skips
 code, links, and headings, and wraps each term at most once per document.
 
@@ -405,18 +405,20 @@ is _why_ the bootstrap script in §6.3 exists.
 
 ### 6.2 Typography
 
-Space Grotesk is loaded from checked-in TTF files with `next/font/local`
-(`app/layout.tsx`) at weights 400, 500/600, and 700, exposed as
-`--font-editorial-sans` and mapped to `font-sans` in `@theme inline`. Editorial
-display copy uses the `font-serif` / `font-display` system stack declared in
-`app/globals.css`: Bodoni/Didot where available, then Baskerville/Iowan Old
-Style/Georgia. The result is typographic contrast without a third-party font
-request. This is both a performance property and a privacy/security property
-consistent with CSP `font-src 'self'` (`next.config.ts`).
+Space Grotesk is loaded from one checked-in variable WOFF2 with
+`next/font/local` (`app/layout.tsx`) across weights 300–700, exposed as
+`--font-editorial-sans` and mapped to `font-sans` in `@theme inline`. The
+static TTFs remain the deterministic input for brand-asset generation, not web
+delivery. Editorial display copy uses the `font-serif` / `font-display` system
+stack declared in `app/globals.css`: Bodoni/Didot where available, then
+Baskerville/Iowan Old Style/Georgia. The result is typographic contrast without
+a third-party font request or three competing high-priority font transfers.
+This is both a performance property and a privacy/security property consistent
+with CSP `font-src 'self'` (`next.config.ts`).
 
 ### 6.3 The theme bootstrap (and why it costs us a CSP control)
 
-`app/layout.tsx:91-109` injects a blocking inline `<script>` in `<head>` that
+`app/layout.tsx:91-119` injects a blocking inline `<script>` in `<head>` that
 reads `localStorage['theme-preference']` (default `light`, `system` resolved via
 `matchMedia`), removes any stale theme class, and sets exactly one resolved
 class on `documentElement` _before_ CSS applies. `ThemeToggle` is mounted in
@@ -478,11 +480,12 @@ Components are grouped by domain under `components/` (`editorial/`, `ui/`,
 The organizing rule is principle #2 — the boundary is an I/O boundary:
 
 - **Server (default):** index pages, data-fetching pages, MDX rendering,
-  `Footer`, `LearnShowcase`, `JsonLd`. These touch `lib/` (filesystem,
-  parsing) and produce static HTML.
-- **Client (`'use client'`):** `Header`, `Search`, `BlogFilters`,
-  `TableOfContents`, `Comments`, theme toggle, all sidebars/mobile-nav, all
-  Framer Motion. These hold state and respond to input; they receive
+  `Footer`, `LearnShowcase`, `CodeBlockWrapper`, `ShareButtons`, `JsonLd`.
+  These touch `lib/` (filesystem, parsing) or produce static HTML.
+- **Client (`'use client'`):** `Header`, the lightweight `Search` launcher,
+  on-demand `SearchDialog`, `BlogFilters`, `TableOfContents`, `Comments`,
+  `CodeBlockEnhancer`, `ShareActions`, theme toggle, all sidebars/mobile-nav,
+  all Framer Motion. These hold state and respond to input; they receive
   already-shaped data as props.
 
 The discipline that keeps hydration cost down: data fetching stays at the
@@ -491,19 +494,33 @@ Server Component that loads and shapes data, then hands plain props to a few
 Client leaves. Do not promote a whole page to a Client Component to make one
 button interactive — extract the button.
 
-MDX gets two component maps because blog prose and pattern prose need different
-element overrides (callouts, diff blocks, tool-example tabs exist only in
-patterns). Both route code through the same Shiki path so highlighting is
-identical everywhere it appears.
+Browser primitives own disclosure state where they are sufficient. Glossary
+definitions and the article share panel use native HTML popovers, so Escape,
+light-dismiss, and top-layer placement do not require React state. Only Web
+Share and clipboard status cross the share boundary. The global search trigger
+keeps its keyboard shortcut in the initial bundle, but the dialog, search
+engine, and motion implementation load only after first activation.
+
+MDX uses layered component maps so a route ships only the components its corpus
+can invoke. The base editorial map serves blog, Toolkit, and Security prose; the
+Patterns map extends it with pattern-only callouts, diff blocks, and tool-example
+tabs; `InteractiveMdxComponents` extends it only for Harness and Start Here.
+Every map routes code through the same Shiki path so highlighting is identical
+everywhere it appears. The rehype glossary transform resolves each matched term
+at build time and passes only that term's analogy and definition into a native
+HTML popover; ordinary MDX routes ship neither the complete Decoder registry nor
+a glossary hydration state machine.
 
 **Interactive "explorable" components** live in `components/interactive/`
-(`AgentLoopStepper`, `ScrollStory`, `RunnableSnippet`) and are registered in the
-_base_ `mdxComponents` map (`components/blog/MdxComponents.tsx`), so they are
-available to blog, harness, and pattern prose alike (the pattern map spreads the
-base). They are small `'use client'` islands that receive already-shaped props
-and inherit the global reduced-motion contract (§6.4). Following the
-`FlowDiagram` convention, components that take structured data accept it as a
-**single-quoted JSON string literal** parsed inside the component
+(`AgentLoopStepper`, `ScrollStory`, `RunnableSnippet`). `AgentLoopStepper` and
+`ScrollStory` are registered only in the opt-in interactive map
+(`components/blog/InteractiveMdxComponents.tsx`); `RunnableSnippet` remains a
+direct-use component for the component demo and is not exposed to MDX. This
+keeps unused client islands out of ordinary article bundles. The components are
+small `'use client'` leaves that receive already-shaped props and inherit the
+global reduced-motion contract (§6.4). Following the `FlowDiagram` convention,
+components that take structured data accept it as a **single-quoted JSON string
+literal** parsed inside the component
 (`<ScrollStory steps='[{"title":"…","body":"…"}]' />`). Neither raw
 array/object literals nor the `{JSON.stringify([…])}` expression form survive
 the RSC MDX attribute path — only a literal string does.
@@ -531,7 +548,7 @@ Mechanisms, each tied to code:
 - **Lazy Shiki** (§5.2) — the heaviest content dependency is dynamically
   imported and prod-only.
 - **Conditional analytics** — `<Analytics />` / `<SpeedInsights />` render only
-  when `NEXT_PUBLIC_VERCEL_ENV` is set (`app/layout.tsx:142-143`), so they cost
+  when `NEXT_PUBLIC_VERCEL_ENV` is set (`app/layout.tsx:145-146`), so they cost
   nothing in local/preview-less contexts.
 - **Split asset caching** (§3.3) — immutable only when filenames are
   fingerprinted; replaceable editorial images revalidate.
@@ -548,8 +565,8 @@ pre-optimize it now.
 
 100 is a merge gate (§12), so a11y is enforced, not reviewed. The mechanisms:
 
-- **Skip link** — `app/layout.tsx:126-130`, `sr-only` until focused, jumps to
-  `#main-content` (`app/layout.tsx:135`).
+- **Skip link** — `app/layout.tsx:129-134`, `sr-only` until focused, jumps to
+  `#main-content` (`app/layout.tsx:138`).
 - **Reduced motion** — globally via `MotionConfig` (§6.4), not per-component.
 - **Focus visibility** — high-contrast `accent` focus rings with a background
   offset remain visible in both themes without changing layout.

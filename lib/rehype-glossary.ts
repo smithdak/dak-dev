@@ -37,15 +37,21 @@ function escapeRegExp(s: string): string {
 // shorter overlap. Word-boundary, case-insensitive; non-global so the regex is
 // reusable across nodes (lastIndex stays 0).
 const MATCHERS = [...GLOSSARY_TERMS]
-  .map((t) => t.term)
-  .sort((a, b) => b.length - a.length)
-  .map((term) => ({ term, re: new RegExp(`\\b${escapeRegExp(term)}\\b`, 'i') }));
+  .sort((a, b) => b.term.length - a.term.length)
+  .map((entry) => ({
+    entry,
+    re: new RegExp(`\\b${escapeRegExp(entry.term)}\\b`, 'i'),
+  }));
 
-function makeNode(term: string, matched: string): HastNode {
+function makeNode(entry: (typeof GLOSSARY_TERMS)[number], matched: string): HastNode {
   return {
     type: 'element',
     tagName: 'glossaryterm',
-    properties: { term },
+    properties: {
+      term: entry.term,
+      analogy: entry.analogy,
+      definition: entry.definition,
+    },
     children: [{ type: 'text', value: matched }],
   };
 }
@@ -53,7 +59,7 @@ function makeNode(term: string, matched: string): HastNode {
 /**
  * rehype-glossary — wraps the FIRST textual occurrence of each on-ramp glossary
  * term in a <glossaryterm> element, rendered site-wide as an accessible
- * toggletip (components/learn/GlossaryTerm) that links into the Decoder.
+ * native popover (components/learn/GlossaryTerm) that links into the Decoder.
  *
  * "Define on first use": each term is wrapped at most once per document. It
  * skips code, links, headings, and existing toggletips, so it never mangles
@@ -67,21 +73,26 @@ export default function rehypeGlossary() {
       const out: HastNode[] = [];
       let cursor = 0;
       for (;;) {
-        let next: { index: number; length: number; term: string; matched: string } | null = null;
-        for (const { term, re } of MATCHERS) {
-          if (used.has(term)) continue;
+        let next: {
+          index: number;
+          length: number;
+          entry: (typeof GLOSSARY_TERMS)[number];
+          matched: string;
+        } | null = null;
+        for (const { entry, re } of MATCHERS) {
+          if (used.has(entry.term)) continue;
           const m = re.exec(value.slice(cursor));
           if (m) {
             const absolute = cursor + m.index;
             if (next === null || absolute < next.index) {
-              next = { index: absolute, length: m[0].length, term, matched: m[0] };
+              next = { index: absolute, length: m[0].length, entry, matched: m[0] };
             }
           }
         }
         if (!next) break;
         if (next.index > cursor) out.push({ type: 'text', value: value.slice(cursor, next.index) });
-        out.push(makeNode(next.term, next.matched));
-        used.add(next.term);
+        out.push(makeNode(next.entry, next.matched));
+        used.add(next.entry.term);
         cursor = next.index + next.length;
       }
       if (cursor === 0) return null; // nothing matched — leave the node untouched
