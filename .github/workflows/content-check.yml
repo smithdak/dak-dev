@@ -3,6 +3,8 @@ name: Content Check
 on:
   pull_request:
     paths:
+      - '.gitattributes'
+      - '.imgbotconfig'
       - 'content/**'
       - '.content/**'
       - 'app/globals.css'

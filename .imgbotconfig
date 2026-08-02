@@ -1,0 +1,10 @@
+{
+  "ignoredFiles": [
+    "public/brand/**",
+    "public/images/posts/**",
+    "public/favicon.svg",
+    "public/favicon-32x32.png",
+    "public/apple-touch-icon.png",
+    "public/og-default.png"
+  ]
+}
