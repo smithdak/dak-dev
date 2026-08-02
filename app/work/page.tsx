@@ -19,19 +19,37 @@ export const metadata = {
 };
 
 function ProjectAction({ record }: { record: WorkRecord }) {
-  const className =
+  const primaryClassName =
     'editorial-link inline-flex min-h-11 items-center font-semibold text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background';
+
+  if (record.repositoryUrl) {
+    return (
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <a href={record.url} target="_blank" rel="noopener noreferrer" className={primaryClassName}>
+          Open live system
+        </a>
+        <a
+          href={record.repositoryUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="editorial-link inline-flex min-h-11 items-center font-semibold text-muted transition-colors hover:text-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+        >
+          View public repository
+        </a>
+      </div>
+    );
+  }
 
   if (isExternalWorkUrl(record.url)) {
     return (
-      <a href={record.url} target="_blank" rel="noopener noreferrer" className={className}>
+      <a href={record.url} target="_blank" rel="noopener noreferrer" className={primaryClassName}>
         Inspect public repository
       </a>
     );
   }
 
   return (
-    <Link href={record.url} className={className}>
+    <Link href={record.url} className={primaryClassName}>
       Read project article
     </Link>
   );
@@ -39,22 +57,25 @@ function ProjectAction({ record }: { record: WorkRecord }) {
 
 export default async function WorkPage() {
   const products = await getAllProducts();
-  const records: WorkRecord[] = products.map(({ id, name, description, url, category, date }) => ({
-    id,
-    name,
-    description,
-    url,
-    category,
-    date,
-  }));
-  const selectedRecords = products
-    .filter((product) => product.featured)
-    .slice(0, 4)
-    .map(({ id, name, description, url, category, date }) => ({
+  const records: WorkRecord[] = products.map(
+    ({ id, name, description, url, repositoryUrl, category, date }) => ({
       id,
       name,
       description,
       url,
+      repositoryUrl,
+      category,
+      date,
+    })
+  );
+  const selectedRecords: WorkRecord[] = products
+    .filter((product) => product.featured)
+    .map(({ id, name, description, url, repositoryUrl, category, date }) => ({
+      id,
+      name,
+      description,
+      url,
+      repositoryUrl,
       category,
       date,
     }));
@@ -77,6 +98,7 @@ export default async function WorkPage() {
         name: record.name,
         description: record.description,
         url: isExternalWorkUrl(record.url) ? record.url : `${SITE_URL}${record.url}`,
+        sameAs: record.repositoryUrl ? [record.repositoryUrl] : undefined,
       })),
     },
   };

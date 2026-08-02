@@ -2,8 +2,8 @@
 // readers (founders, PMs, designers, ops) who watched an agentic-engineering
 // demo and asked "how do I understand what you're doing?". It decodes the
 // vocabulary and the core mental models, then hands the curious off to the four
-// pillars. This module is client-safe (no fs) so the Decoder client island can
-// import the glossary data directly.
+// pillars. This module stays client-safe (no fs) so the glossary data can be
+// reused by either Server or Client Components without changing the boundary.
 //
 // NOT A FIFTH PILLAR. The four pillars (Patterns, Toolkit, Harness, Security)
 // are expert guides for builders; this layer sits *in front of* them. It still
@@ -99,58 +99,71 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
   {
     term: 'Token',
     cluster: 'foundations',
-    analogy: 'A chunk of text — roughly three-quarters of a word. The unit the model reads and bills in.',
+    analogy:
+      'A chunk of text — roughly three-quarters of a word. The unit the model reads and bills in.',
     definition:
       'The fragments a model breaks text into. Around 100 tokens ≈ 75 English words. Limits and pricing are counted in tokens, not words or characters.',
-    example: '"strawberry" can be three tokens — which is part of why a model can miscount the letters in it.',
+    example:
+      '"strawberry" can be three tokens — which is part of why a model can miscount the letters in it.',
   },
   {
     term: 'Context window',
     cluster: 'foundations',
-    analogy: "The model's working memory — a desk. Pile on too many papers and the earliest ones slide off the edge.",
+    analogy:
+      "The model's working memory — a desk. Pile on too many papers and the earliest ones slide off the edge.",
     definition:
       'Everything the model can see at once: your prompt, the conversation so far, attached files, and its own reply. Past the limit, earlier content is dropped — and nothing persists once the session ends.',
-    example: 'In a long chat it "forgets" what you said at the start — that text fell off the desk.',
+    example:
+      'In a long chat it "forgets" what you said at the start — that text fell off the desk.',
     deeper: { label: 'The agent loop', href: '/learn/harness/agent-loop' },
   },
   {
     term: 'Prompt',
     cluster: 'foundations',
     analogy: 'The brief. Closer to writing instructions for a new contractor than to programming.',
-    definition: 'The text you give the model — question, instructions, context. Its quality shapes the quality of the output.',
-    example: '"Summarise this" versus "Summarise this in three bullets for a CFO" pull sharply different results from the same model.',
+    definition:
+      'The text you give the model — question, instructions, context. Its quality shapes the quality of the output.',
+    example:
+      '"Summarise this" versus "Summarise this in three bullets for a CFO" pull sharply different results from the same model.',
     deeper: { label: 'Patterns', href: '/learn/patterns' },
   },
   // — How agents act —
   {
     term: 'Agent',
     cluster: 'action',
-    analogy: 'A worker you delegate to: brief it, and it takes steps on its own. A chatbot answers; an agent acts.',
+    analogy:
+      'A worker you delegate to: brief it, and it takes steps on its own. A chatbot answers; an agent acts.',
     definition:
       'An LLM that runs tools in a loop toward a goal — it acts, checks the result, decides the next step, and repeats until done.',
-    example: '"Fix the failing test": it reads the test, edits the code, re-runs the suite, and stops once it passes.',
+    example:
+      '"Fix the failing test": it reads the test, edits the code, re-runs the suite, and stops once it passes.',
     deeper: { label: 'The agent loop', href: '/learn/harness/agent-loop' },
   },
   {
     term: 'Agentic',
     cluster: 'action',
-    analogy: 'The adjective for "acts like an agent" — multi-step and self-directed, not one question and one answer.',
-    definition: 'Describes AI that plans and takes a sequence of actions with some autonomy, adapting as new information comes back.',
-    example: 'An "agentic workflow" books the whole trip end to end; a chatbot only tells you how to book it.',
+    analogy:
+      'The adjective for "acts like an agent" — multi-step and self-directed, not one question and one answer.',
+    definition:
+      'Describes AI that plans and takes a sequence of actions with some autonomy, adapting as new information comes back.',
+    example:
+      'An "agentic workflow" books the whole trip end to end; a chatbot only tells you how to book it.',
   },
   {
     term: 'Tool use',
     cluster: 'action',
-    analogy: 'Letting the model pick up the phone. On its own it can only write text; a tool lets it do something in the real world.',
+    analogy:
+      'Letting the model pick up the phone. On its own it can only write text; a tool lets it do something in the real world.',
     definition:
       'Also called "function calling": the model requests an action from outside software — search the web, read a file, hit an API — and the result comes back into its context.',
-    example: 'Asked for today\'s weather, it calls a weather tool instead of guessing.',
+    example: "Asked for today's weather, it calls a weather tool instead of guessing.",
     deeper: { label: 'Hooks', href: '/learn/toolkit/hooks' },
   },
   {
     term: 'MCP',
     cluster: 'action',
-    analogy: 'USB-C for AI — one standard plug so any agent can connect to any data source or tool.',
+    analogy:
+      'USB-C for AI — one standard plug so any agent can connect to any data source or tool.',
     definition:
       'The Model Context Protocol: an open standard (Anthropic, 2024) for connecting AI systems to external tools and data without building a custom integration for each one.',
     example: 'An MCP server for your docs lets an agent read them without bespoke glue code.',
@@ -160,10 +173,12 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
   {
     term: 'Harness',
     cluster: 'trust',
-    analogy: 'The cockpit around the engine. The model is the engine; the harness is everything that makes it useful and safe to fly.',
+    analogy:
+      'The cockpit around the engine. The model is the engine; the harness is everything that makes it useful and safe to fly.',
     definition:
       'The runtime around the model — the loop, tool access, memory, prompts, and guardrails. The model reasons; the harness does everything else.',
-    example: 'Two products built on the same model can behave nothing alike because their harnesses differ.',
+    example:
+      'Two products built on the same model can behave nothing alike because their harnesses differ.',
     deeper: { label: 'Harness Engineering', href: '/learn/harness' },
   },
   {
@@ -181,15 +196,19 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
     analogy: 'A dial, not a switch — from "asks before every move" to "acts and reports back".',
     definition:
       'How much the agent does without you: in-the-loop (you approve each action), on-the-loop (it acts, you monitor), or out-of-the-loop (fully autonomous).',
-    example: 'An agent that asks before deleting files is in-the-loop; one that opens a pull request for your review is on-the-loop.',
+    example:
+      'An agent that asks before deleting files is in-the-loop; one that opens a pull request for your review is on-the-loop.',
     deeper: { label: 'Permission architecture', href: '/learn/security/permission-architecture' },
   },
   {
     term: 'Hallucination',
     cluster: 'trust',
-    analogy: 'A confident bluff. It is generating plausible text, so "I don\'t know" rarely comes naturally.',
-    definition: 'When a model states something false as if it were true — because it predicts likely text rather than retrieving verified facts.',
-    example: 'It cites a court case that does not exist: fluent, well-formatted, and entirely invented.',
+    analogy:
+      'A confident bluff. It is generating plausible text, so "I don\'t know" rarely comes naturally.',
+    definition:
+      'When a model states something false as if it were true — because it predicts likely text rather than retrieving verified facts.',
+    example:
+      'It cites a court case that does not exist: fluent, well-formatted, and entirely invented.',
     deeper: { label: 'The real risks', href: '/learn/security/the-real-risks' },
   },
 ];
@@ -225,7 +244,8 @@ export const DEMO_WALKTHROUGHS: DemoMeta[] = [
   {
     slug: 'fix-a-failing-test',
     title: 'Fix a Failing Test',
-    scenario: 'Watch an agent find and fix a real bug — every move decoded in plain English as it happens.',
+    scenario:
+      'Watch an agent find and fix a real bug — every move decoded in plain English as it happens.',
     icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
     order: 1,
   },
@@ -299,7 +319,8 @@ export const EXPLAINERS: ExplainerMeta[] = [
   {
     slug: 'why-it-makes-things-up',
     title: 'Why It Makes Things Up',
-    mentalModel: 'It generates; it does not look things up. That single fact explains hallucinations.',
+    mentalModel:
+      'It generates; it does not look things up. That single fact explains hallucinations.',
     icon: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
     order: 6,
   },

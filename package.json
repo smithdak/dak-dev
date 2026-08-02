@@ -22,13 +22,15 @@
     "images:check": "tsx scripts/generate-post-images.ts --check",
     "images:placeholder": "tsx scripts/generate-post-images.ts",
     "thumbnail:create": "tsx scripts/generate-post-images.ts",
+    "brand:generate": "tsx scripts/generate-brand-assets.ts",
+    "brand:check": "tsx scripts/generate-brand-assets.ts --check",
     "resume:generate": "tsx scripts/generate-resume-pdf.ts",
     "rss:test": "tsx --test tests/rss.test.ts",
     "test:search": "tsx --test tests/search.test.ts",
     "publish:prepare": "tsx scripts/publish-prepare.ts",
     "publish:prepare:fix": "tsx scripts/publish-prepare.ts --fix",
     "publish:prepare:all": "tsx scripts/publish-prepare.ts --all",
-    "generate:og": "tsx scripts/generate-default-og.ts"
+    "generate:og": "tsx scripts/generate-brand-assets.ts --asset og-default"
   },
   "repository": {
     "type": "git",

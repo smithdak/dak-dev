@@ -13,16 +13,16 @@
 "A Learn area to point non-devs/technical people/engineers to after a demo."
 Clarified to:
 
-- **Primary reader:** non-technical professionals who want to *understand*, not
+- **Primary reader:** non-technical professionals who want to _understand_, not
   build. No code assumed.
 - **Two core gaps:** (1) the **jargon** (agent, agentic, context window, MCP,
   harness, RAG…), (2) the **mental models** (what the agent is actually doing,
   why it works, why it fails).
 - **IA:** left open ("surprise me") → see the decision in §5.
-- **Deliverable:** multiple *distinct* concept options + a recommendation.
+- **Deliverable:** multiple _distinct_ concept options + a recommendation.
 
-The brand constraint is the design key: *"complex concepts explained without
-dumbing down."* That matches the plain-language standard exactly — calibrate
+The brand constraint is the design key: _"complex concepts explained without
+dumbing down."_ That matches the plain-language standard exactly — calibrate
 complexity, don't remove it. So every analogy is **paired with** the precise
 term, never a replacement.
 
@@ -35,21 +35,22 @@ list in §8.
 
 ## 3. The six options
 
-| # | Concept | Gap | Build | Differentiation |
-|---|---|---|---|---|
-| 1 | **The Decoder** — plain-English glossary of *your* words | Vocabulary | Low | Medium |
-| 2 | **How This Actually Works** — 6–8 mental-model explainers | Models | Med | Medium |
-| 3 | **Demo, Decoded** — annotated replays of real demos | Both, in context | Med | **Very high** |
-| 4 | **Explain Me This** — one concept at escalating depth | Both (tiering) | Low (layer) | Medium |
-| 5 | **Start Here** — guided on-ramp + curated canon | Orientation | Low | Low |
-| 6 | **The Playground** — interactive agent-loop explorable | Models | High | High (caveated) |
+| #   | Concept                                                   | Gap              | Build       | Differentiation |
+| --- | --------------------------------------------------------- | ---------------- | ----------- | --------------- |
+| 1   | **The Decoder** — plain-English glossary of _your_ words  | Vocabulary       | Low         | Medium          |
+| 2   | **How This Actually Works** — 6–8 mental-model explainers | Models           | Med         | Medium          |
+| 3   | **Demo, Decoded** — annotated replays of real demos       | Both, in context | Med         | **Very high**   |
+| 4   | **Explain Me This** — one concept at escalating depth     | Both (tiering)   | Low (layer) | Medium          |
+| 5   | **Start Here** — guided on-ramp + curated canon           | Orientation      | Low         | Low             |
+| 6   | **The Playground** — interactive agent-loop explorable    | Models           | High        | High (caveated) |
 
 Condensed rationale (evidence in §8):
 
 1. **The Decoder.** Thematic (not alphabetical) glossary; each term =
    analogy → precise definition → example → go deeper. Define-on-first-use is
-   the usability-tested jargon standard. On-brand hook: the existing
-   `TextDecode` scramble-reveal literally "decodes" each term.
+   the usability-tested jargon standard. A literal `TextDecode` scramble was
+   considered, then rejected in the polish pass: decorative motion delays
+   scanning on a reference surface without improving comprehension.
 2. **How This Actually Works.** A finite set of Explanation-quadrant pieces, one
    durable mental model each (agent loop; context window = working memory; the
    jagged frontier; model-vs-system; autonomy dial; why it makes things up).
@@ -57,7 +58,7 @@ Condensed rationale (evidence in §8):
    ≈ 3× transfer (Gentner).
 3. **Demo, Decoded.** Take the real demo and annotate every move in context.
    Worked examples are the highest-leverage tool for novices (Sweller); it is
-   *unreplicable* (your actual work) → strongest differentiator. **Made the
+   _unreplicable_ (your actual work) → strongest differentiator. **Made the
    signature piece.**
 4. **Explain Me This.** Depth tiers (Curious → Decision-maker → Builder), capped
    at 2–3 (NN/g). Serves the whole spread without separate tracks, and avoids
@@ -73,7 +74,7 @@ Condensed rationale (evidence in §8):
 - Pair every analogy with the precise term.
 - Question-first headers ("How does an agent remember?" not "Memory").
 - Name the misconception, then correct it (7 ready-made misconceptions).
-- Lead with "why this matters to *you*."
+- Lead with "why this matters to _you_."
 - Don't build modality tracks; do offer depth tiers.
 - A11y is the existing gate: toggletips not hover; reduced-motion; captions +
   transcripts for video; `<title>/<desc>` on SVG diagrams.
@@ -86,7 +87,7 @@ Condensed rationale (evidence in §8):
 **Not a fifth pillar.** The four pillars are expert guides for builders; a
 non-technical layer as a peer erodes the boundary-statement legibility that
 DESIGN.md §4 protects. Instead: a distinct **on-ramp layer in front of** the
-pillars at `/learn/start`, which funnels the curious *into* them (harness is the
+pillars at `/learn/start`, which funnels the curious _into_ them (harness is the
 natural bridge term). It still ships the §4 conventions (boundary, client-safe
 types, loader, routing invariant) to stay architecturally honest. See
 `DESIGN.md` §4.1.
@@ -99,8 +100,8 @@ Demo, Decoded → Explain Me This (layer) → Playground (later)**.
 - `lib/onramp-types.ts` — client-safe: `ONRAMP_BOUNDARY`, routing invariant, the
   12-term glossary data + clusters, demo metadata, helpers.
 - `lib/onramp.ts` — server loader for demo MDX (re-exports the types module).
-- `components/learn/Decoder.tsx` — client island; thematic glossary using
-  `TextDecode` + `ScrollReveal`.
+- `components/learn/Decoder.tsx` — static thematic field lexicon with a compact
+  term index and numbered, anchored records; no client-only behavior.
 - `components/learn/Annotation.tsx` — presentational "decode this step" margin
   note for demos.
 - `components/learn/sectionTheme.ts` — added the `amber` (chapter-5) section
@@ -128,8 +129,9 @@ Demo, Decoded → Explain Me This (layer) → Playground (later)**.
 ## 8. Verified facts, discarded myths, and sources
 
 **Verified this session:**
+
 - Jagged-frontier RCT (Dell'Acqua, McFowland, Mollick et al., HBS WP 24-013 /
-  *Organization Science* 2025): 758 BCG consultants; **+12.2% tasks, 25.1%
+  _Organization Science_ 2025): 758 BCG consultants; **+12.2% tasks, 25.1%
   faster, ~40% higher quality** inside the frontier; **19% less likely correct**
   outside it. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4573321
 - Elements of AI: 2M+ enrolled, 170+ countries, ~40% women.

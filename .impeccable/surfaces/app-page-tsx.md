@@ -22,7 +22,7 @@ Readers need to understand Dakota Smith's position on accountable agentic delive
 
 ## Content and constraints
 
-Use only published post metadata, the committed Learn corpus, and the public systems catalog. Preserve the truthful `Principal Architect` title. AI innovation leadership is a stated direction, never a current-title claim. Separate documented local evidence from operational or externally verified proof.
+Use only published post metadata, the committed Learn corpus, and the public systems catalog. Preserve the truthful `AI Systems Architect & Full-Stack Engineer` title. AI innovation leadership is a stated direction, never a current-title claim. Separate documented local evidence from operational or externally verified proof.
 
 ## Chosen direction
 

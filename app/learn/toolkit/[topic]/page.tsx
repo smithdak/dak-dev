@@ -5,9 +5,9 @@ import { MDXRemote } from 'next-mdx-remote/rsc';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { mdxComponents } from '@/components/blog/MdxComponents';
 import { CodeBlockWrapper } from '@/components/blog/CodeBlockWrapper';
-import { TableOfContents } from '@/components/blog/TableOfContents';
 import { SectionKicker } from '@/components/learn/SectionKicker';
 import { MobileTableOfContents } from '@/components/learn/MobileTableOfContents';
+import { StickyTableOfContents } from '@/components/learn/StickyTableOfContents';
 import { CapabilityComparison } from '@/components/toolkit/CapabilityComparison';
 import { SourceRegister } from '@/components/toolkit/SourceRegister';
 import {
@@ -168,9 +168,7 @@ export default async function ToolkitTopicPage({ params }: { params: Promise<{ t
           )}
         </article>
 
-        <aside className="hidden lg:block">
-          {toc.length > 0 && <TableOfContents items={toc} />}
-        </aside>
+        <StickyTableOfContents items={toc} />
       </div>
     </PageTransition>
   );

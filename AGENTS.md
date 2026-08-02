@@ -11,8 +11,9 @@ TypeScript runs in **strict** mode. ESLint + Prettier are configured and CI-enfo
 
 A high-performance Next.js 16 / React 19 blog plus a four-pillar "Learn"
 platform on agentic engineering (Patterns, Toolkit, Harness, Security).
-It is the executive-editorial publication of Dakota Smith, Principal Architect,
-at `daksmith.dev`: light-first, file-based MDX content deployed on Vercel.
+It is the executive-editorial publication of Dakota Smith, AI Systems Architect
+& Full-Stack Engineer, at `daksmith.dev`: light-first, file-based MDX content
+deployed on Vercel.
 
 **`DESIGN.md` is the canonical architecture reference** — the "why," the
 decision ledger, and the risk register. Read it for any structural change.

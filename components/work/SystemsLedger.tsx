@@ -96,7 +96,26 @@ export function SystemsLedger({ records }: SystemsLedgerProps) {
                 </p>
 
                 <div className="lg:text-right">
-                  {external ? (
+                  {record.repositoryUrl ? (
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 lg:flex-col lg:items-end">
+                      <a
+                        href={record.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="editorial-link inline-flex min-h-11 items-center text-sm font-semibold text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+                      >
+                        Open live system
+                      </a>
+                      <a
+                        href={record.repositoryUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="editorial-link inline-flex min-h-11 items-center text-sm font-semibold text-muted transition-colors hover:text-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
+                      >
+                        View public repository
+                      </a>
+                    </div>
+                  ) : external ? (
                     <a
                       href={record.url}
                       target="_blank"

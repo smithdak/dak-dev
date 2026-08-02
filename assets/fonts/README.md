@@ -5,8 +5,10 @@ providers. Web pages load Space Grotesk from this directory through
 `next/font/local`; image scripts may embed the same files when Sharp needs raw
 font data.
 
-The default social image is the static `public/og-default.png`. Regenerate it
-with `pnpm generate:og`; there is no dynamic OG route or runtime font fetch.
+The default social image and downloadable identity kit are static generated
+assets. Regenerate all of them with `pnpm brand:generate`, or only the default
+Open Graph image with `pnpm generate:og`; there is no dynamic image route or
+runtime font fetch.
 
 | Family                              | Source                                          | License     |
 | ----------------------------------- | ----------------------------------------------- | ----------- |

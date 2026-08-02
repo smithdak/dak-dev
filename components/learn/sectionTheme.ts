@@ -1,13 +1,16 @@
 // Static class literals keep the restrained field accents discoverable by
 // Tailwind while preventing section components from inventing local colours.
 
-export type SectionColor = 'green' | 'cyan' | 'purple' | 'red' | 'amber';
+export type SectionColor = 'accent' | 'green' | 'cyan' | 'purple' | 'red' | 'amber';
 
 export interface SectionTheme {
   text: string;
 }
 
 export const SECTION_THEME: Record<SectionColor, SectionTheme> = {
+  accent: {
+    text: 'text-accent',
+  },
   green: {
     text: 'text-chapter-1',
   },

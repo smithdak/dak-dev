@@ -6,6 +6,7 @@ export interface Product {
   name: string;
   description: string;
   url: string;
+  repositoryUrl?: string;
   icon: 'code' | 'tool' | 'app' | 'package' | 'api' | 'website';
   category: 'agent' | 'plugin' | 'product' | 'infrastructure';
   date: string;

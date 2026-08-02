@@ -37,7 +37,7 @@ The publication treats accountable AI delivery as a systems problem: models sit 
 ## Brand Commitments
 
 - Public identity: Dakota Smith.
-- Current professional position: Principal Architect.
+- Current professional position: AI Systems Architect & Full-Stack Engineer.
 - Domain signature: `daksmith.dev`.
 - “Head of AI Innovation” is an aspiration, never a current-title claim.
 - The approved homepage is the visual anchor: authoritative, editorial, precise, and materially quieter than the retired hobby-grid treatment.

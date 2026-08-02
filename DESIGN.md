@@ -5,7 +5,7 @@
 **Status:** Living document — reflects the implemented 2026 modernization
 **Audience:** Engineers contributing to this codebase
 **Owner:** Dakota Smith
-**Public identity:** Dakota Smith · Principal Architect · `daksmith.dev`
+**Public identity:** Dakota Smith · AI Systems Architect & Full-Stack Engineer · `daksmith.dev`
 **Last reconciled with code:** 2026-08-02
 
 ---
@@ -28,9 +28,9 @@ build plan and older visual guidance:
   serif display type, and generous negative space establish authority without
   implying a title Dakota does not hold. See §6.
 - **The public identity is personal and precise.** The wordmark is `Dakota
-Smith`; `daksmith.dev` is the domain signature; `Principal Architect` is the
-  current professional position. “Head of AI Innovation” is an aspiration, not
-  a claim made by the product.
+Smith`; `daksmith.dev` is the domain signature; `AI Systems Architect &
+Full-Stack Engineer` is the current professional position. “Head of AI
+  Innovation” is an aspiration, not a claim made by the product.
 - **Toolkit is capability-first and cross-vendor.** Durable engineering
   capabilities are the taxonomy; Claude Code, OpenAI Codex, and GitHub Copilot
   are evidence-backed product projections. See §4.
@@ -48,9 +48,9 @@ design doc that drifts from the code is worse than no design doc.
 This is Dakota Smith's professional publication — a blog plus a four-pillar
 learning corpus on accountable AI systems and agentic engineering (114 MDX
 documents across six content areas as of 2026-08-01). It must read as the work
-of a principal architect operating toward AI innovation leadership, not as a
-hobby portfolio or a generic developer blog. Four forcing functions shape
-every decision:
+of an AI systems architect and full-stack engineer operating toward AI
+innovation leadership, not as a hobby portfolio or a generic developer blog.
+Four forcing functions shape every decision:
 
 1. **A hard performance/accessibility bar.** Lighthouse Accessibility, Best
    Practices, and SEO must score **100** (enforced as `1.0` in
@@ -59,8 +59,8 @@ every decision:
    are not aspirations; they are merge gates (§12).
 2. **Professional credibility without title inflation.** Authority comes from
    the quality of the work, the specificity of the writing, and the product's
-   editorial discipline. The site says `Principal Architect`; it does not claim
-   `Head of AI Innovation`.
+   editorial discipline. The site says `AI Systems Architect & Full-Stack
+Engineer`; it does not claim `Head of AI Innovation`.
 3. **A real security posture.** This site teaches AI security; shipping a weak
    header set would be self-refuting. The trust surface is a first-class
    deliverable, not an afterthought (§10).
@@ -200,8 +200,10 @@ Patterns, Capability Index, Harness, and Security. It does not load the full
 corpus. Each pillar owns a route-local layout that loads only its syllabus and
 hands client-safe navigation records to `LearnSectionShell`. The rail begins at
 `xl`; smaller viewports retain a compact disclosure so it never collides with a
-detail-page table of contents. The `/learn` hub remains full width and leads
-with decisions rather than document taxonomy.
+detail-page table of contents. Desktop article indexes use
+`StickyTableOfContents`, pinned below the persistent site header with a bounded
+viewport height; mobile keeps the in-flow disclosure. The `/learn` hub remains
+full width and leads with decisions rather than document taxonomy.
 
 Two engineering patterns hold the content model together:
 
@@ -276,11 +278,12 @@ code, links, and headings, and wraps each term at most once per document.
 
 It follows the per-section convention without claiming peer status: a boundary
 statement plus a client-safe types module (`lib/onramp-types.ts`, which also
-carries the glossary data so the Decoder client island imports it directly), a
+carries the glossary data for the static Decoder field lexicon), a
 server loader (`lib/onramp.ts`) for the demo MDX, and a colocated routing
-invariant. Its identity colour is `amber` (chapter-5) — a fifth entry in
-`SECTION_THEME` (`components/learn/sectionTheme.ts`) chosen so the four-pillar
-colour contract (green/cyan/purple/red) stays intact.
+invariant. Its identity colour is `amber` (chapter-5). Harness uses the core
+forest `accent` rather than the former purple AI shorthand; purple remains only
+where it carries categorical meaning inside Patterns chapter 4. The remaining
+pillar accents are Patterns green, Toolkit cyan, and Security red.
 
 **It is excluded from every pillar syllabus on purpose.** The field-level
 `LearnPrimaryNav` identifies Start directly; route-local `LearnSidebar` and
@@ -739,26 +742,26 @@ supports the same major or the project deliberately owns a replacement runner.
 The load-bearing decisions, with the alternative we rejected and the condition
 that should make us revisit. Detail is in the cited section.
 
-| #   | Decision                                                                                | Rejected alternative                             | Revisit when                                                                                             | §        |
-| --- | --------------------------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | -------- |
-| 1   | SSG only, no middleware                                                                 | SSR/ISR for freshness                            | A real backend appears                                                                                   | 3        |
-| 2   | CSP allows `script-src 'unsafe-inline'`                                                 | Nonce-based strict CSP                           | A server/middleware tier exists                                                                          | 10.1     |
-| 3   | Omit `X-XSS-Protection`                                                                 | Keep legacy header                               | Never (CSP supersedes); documented to prevent re-adding                                                  | 10.1     |
-| 4   | Tailwind v4 CSS-first, tokens as CSS vars                                               | `tailwind.config.ts` + dark variant              | Tokens outgrow CSS-var theming                                                                           | 6        |
-| 5   | Dev = no Shiki, prod = Shiki                                                            | Highlight in dev too                             | HMR cost stops mattering                                                                                 | 5.2      |
-| 6   | Blocking inline theme script in `<head>`                                                | Defer / accept theme flash                       | Coupled to #2 — revisit together                                                                         | 6.3      |
-| 7   | 3-day dependency cooldown + SHA-pinned actions + frozen lockfile                        | Trust latest, tag-pinned actions                 | Threat model changes                                                                                     | 10.3     |
-| 8   | Four pillars + boundary statements + colocated routing invariants                       | Free-form sections                               | Adding a pillar (must ship a boundary)                                                                   | 4        |
-| 9   | Filesystem content, no CMS, no memoization                                              | Database/CMS, or cached reads                    | Thousands of docs, or non-git authoring                                                                  | 5, 8     |
-| 10  | Perf gate `0.90` on median run; correctness gates pessimistic `1.0`                     | Best-run aggregation for all categories          | Runner variance makes the median gate materially flaky                                                   | 12       |
-| 11  | Runnable code embeds (Codapi) opt-in, OFF by default behind `NEXT_PUBLIC_ENABLE_CODAPI` | Ship runnable by default                         | The CSP relaxation (wasm-unsafe-eval + unpkg origin) is accepted and Lighthouse re-verified              | 10.1, 14 |
-| 12  | `robots.txt` explicitly _welcomes_ major AI crawlers (per-agent rules)                  | Wildcard-only, or block AI bots                  | A crawler abuses access, or citation policy changes (flip its entry to `disallow`)                       | 11       |
-| 13  | `/quality-gate`: enforced prose-rubric gate + human sign-off, "gates over trust"        | Trust the mechanical score alone                 | LLM-as-judge proves unreliable enough to drop, or a deterministic prose check replaces it                | —        |
-| 14  | Executive-editorial visual system; warm-ivory light theme is default                    | Preserve dark neo-brutal grid                    | Repeated user feedback or measured readability/accessibility evidence shows the direction weakens trust  | 6        |
-| 15  | `Dakota Smith` wordmark, `daksmith.dev` signature, `Principal Architect` position       | `DAK`, `dak.dev`, or aspirational-title branding | Dakota's legal/public identity or held role changes                                                      | 0, 1, 6  |
-| 16  | Toolkit taxonomy is capability-first; product routes project one dated evidence model   | Separate Claude/Codex/Copilot trees              | Product capabilities stop mapping to durable shared problems                                             | 4        |
-| 17  | Checked-in static `public/og-default.png`; no dynamic OG route                          | Request-time `ImageResponse` route               | Per-page generated social art creates value worth adding a rendering tier                                | 3, 11    |
-| 18  | Versioned deterministic raster art for every post                                       | Manual or stochastic per-post image creation     | The publication adopts photography or commissioned source masters that need a different provenance model | 5.4, 8   |
+| #   | Decision                                                                                                 | Rejected alternative                             | Revisit when                                                                                             | §        |
+| --- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | -------- |
+| 1   | SSG only, no middleware                                                                                  | SSR/ISR for freshness                            | A real backend appears                                                                                   | 3        |
+| 2   | CSP allows `script-src 'unsafe-inline'`                                                                  | Nonce-based strict CSP                           | A server/middleware tier exists                                                                          | 10.1     |
+| 3   | Omit `X-XSS-Protection`                                                                                  | Keep legacy header                               | Never (CSP supersedes); documented to prevent re-adding                                                  | 10.1     |
+| 4   | Tailwind v4 CSS-first, tokens as CSS vars                                                                | `tailwind.config.ts` + dark variant              | Tokens outgrow CSS-var theming                                                                           | 6        |
+| 5   | Dev = no Shiki, prod = Shiki                                                                             | Highlight in dev too                             | HMR cost stops mattering                                                                                 | 5.2      |
+| 6   | Blocking inline theme script in `<head>`                                                                 | Defer / accept theme flash                       | Coupled to #2 — revisit together                                                                         | 6.3      |
+| 7   | 3-day dependency cooldown + SHA-pinned actions + frozen lockfile                                         | Trust latest, tag-pinned actions                 | Threat model changes                                                                                     | 10.3     |
+| 8   | Four pillars + boundary statements + colocated routing invariants                                        | Free-form sections                               | Adding a pillar (must ship a boundary)                                                                   | 4        |
+| 9   | Filesystem content, no CMS, no memoization                                                               | Database/CMS, or cached reads                    | Thousands of docs, or non-git authoring                                                                  | 5, 8     |
+| 10  | Perf gate `0.90` on median run; correctness gates pessimistic `1.0`                                      | Best-run aggregation for all categories          | Runner variance makes the median gate materially flaky                                                   | 12       |
+| 11  | Runnable code embeds (Codapi) opt-in, OFF by default behind `NEXT_PUBLIC_ENABLE_CODAPI`                  | Ship runnable by default                         | The CSP relaxation (wasm-unsafe-eval + unpkg origin) is accepted and Lighthouse re-verified              | 10.1, 14 |
+| 12  | `robots.txt` explicitly _welcomes_ major AI crawlers (per-agent rules)                                   | Wildcard-only, or block AI bots                  | A crawler abuses access, or citation policy changes (flip its entry to `disallow`)                       | 11       |
+| 13  | `/quality-gate`: enforced prose-rubric gate + human sign-off, "gates over trust"                         | Trust the mechanical score alone                 | LLM-as-judge proves unreliable enough to drop, or a deterministic prose check replaces it                | —        |
+| 14  | Executive-editorial visual system; warm-ivory light theme is default                                     | Preserve dark neo-brutal grid                    | Repeated user feedback or measured readability/accessibility evidence shows the direction weakens trust  | 6        |
+| 15  | `Dakota Smith` wordmark, `daksmith.dev` signature, `AI Systems Architect & Full-Stack Engineer` position | `DAK`, `dak.dev`, or aspirational-title branding | Dakota's legal/public identity or held role changes                                                      | 0, 1, 6  |
+| 16  | Toolkit taxonomy is capability-first; product routes project one dated evidence model                    | Separate Claude/Codex/Copilot trees              | Product capabilities stop mapping to durable shared problems                                             | 4        |
+| 17  | Checked-in static `public/og-default.png`; no dynamic OG route                                           | Request-time `ImageResponse` route               | Per-page generated social art creates value worth adding a rendering tier                                | 3, 11    |
+| 18  | Versioned deterministic raster art for every post                                                        | Manual or stochastic per-post image creation     | The publication adopts photography or commissioned source masters that need a different provenance model | 5.4, 8   |
 
 ---
 

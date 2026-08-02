@@ -125,7 +125,7 @@ export function EditorialHomepage({ featuredPost, publicationRecord }: Editorial
               <span className="mx-2 text-accent" aria-hidden="true">
                 /
               </span>{' '}
-              Principal Architect{' '}
+              AI Systems Architect &amp; Full-Stack Engineer{' '}
               <span className="mx-2 text-accent" aria-hidden="true">
                 /
               </span>{' '}

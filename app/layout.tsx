@@ -24,11 +24,11 @@ const editorialSans = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Dakota Smith — Principal Architect',
+    default: 'Dakota Smith — AI Systems Architect & Full-Stack Engineer',
     template: '%s | Dakota Smith',
   },
   description:
-    'Principal architect writing about accountable AI systems, innovation strategy, and governed delivery.',
+    'AI systems architect and full-stack engineer writing about accountable AI systems, innovation strategy, and governed delivery.',
   keywords: [
     'Dakota Smith',
     'agentic engineering',
@@ -46,22 +46,29 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: siteUrl,
     siteName: 'Dakota Smith',
-    title: 'Dakota Smith — Principal Architect',
+    title: 'Dakota Smith — AI Systems Architect & Full-Stack Engineer',
     description: 'Accountable AI systems, innovation strategy, and governed delivery.',
     images: [
       {
         url: '/og-default.png',
         width: 1200,
         height: 630,
-        alt: 'Dakota Smith — Principal Architect',
+        alt: 'Dakota Smith — AI Systems Architect & Full-Stack Engineer',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Dakota Smith — Principal Architect',
+    title: 'Dakota Smith — AI Systems Architect & Full-Stack Engineer',
     description: 'Accountable AI systems, innovation strategy, and governed delivery.',
     images: ['/og-default.png'],
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' }],
   },
   robots: {
     index: true,
@@ -74,7 +81,6 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  // Icons generated via app/icon.tsx and app/apple-icon.tsx
 };
 
 export default function RootLayout({

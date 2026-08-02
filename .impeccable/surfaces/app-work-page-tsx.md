@@ -15,7 +15,7 @@ Readers evaluating Dakota's practice need to inspect the existing systems and un
 
 ## Content and constraints
 
-Use only `content/products.json` names, dates, categories, descriptions, feature flags, and URLs. Do not fabricate case-study outcomes, clients, screenshots, adoption, or production status. All external links must be labeled as such.
+Use only `content/products.json` names, dates, categories, descriptions, feature flags, live URLs, and optional repository URLs. Do not fabricate case-study outcomes, clients, screenshots, adoption, or production status. Distinguish a live system from its public source repository whenever both exist.
 
 ## Chosen direction
 

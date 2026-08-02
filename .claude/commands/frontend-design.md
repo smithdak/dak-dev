@@ -6,7 +6,7 @@ responsive behavior, or design-system work.
 
 ## Product position
 
-The interface should look like the publication of a principal architect who
+The interface should look like the publication of an AI systems architect and full-stack engineer who
 builds accountable AI systems and is progressing toward AI innovation
 leadership. It must demonstrate that trajectory through judgment and work; it
 must not claim that Dakota currently holds the title Head of AI Innovation.
@@ -15,7 +15,7 @@ Identity is exact:
 
 - wordmark: **Dakota Smith**;
 - domain signature: **daksmith.dev**;
-- current professional position: **Principal Architect**.
+- current professional position: **AI Systems Architect & Full-Stack Engineer**.
 
 `DAK`, `dak.dev`, and aspirational-title branding are not substitutes.
 
@@ -174,7 +174,7 @@ asserting them.
 
 ## Completion checklist
 
-- [ ] Identity reads `Dakota Smith` / `daksmith.dev` / `Principal Architect`.
+- [ ] Identity reads `Dakota Smith` / `daksmith.dev` / `AI Systems Architect & Full-Stack Engineer`.
 - [ ] No aspirational role is represented as a current title.
 - [ ] The result reads as executive editorial, not a hobby dashboard.
 - [ ] Semantic tokens only; light and dark both verified.

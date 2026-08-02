@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "generatorVersion": "1.0.0",
+  "reviewedAt": "2026-08-02",
+  "identity": {
+    "name": "Dakota Smith",
+    "role": "AI Systems Architect & Full-Stack Engineer",
+    "domain": "daksmith.dev",
+    "thesis": "Designing the authority layer around agent-produced change.",
+    "practice": "AI systems · Innovation strategy · Governed delivery"
+  },
+  "palette": {
+    "paper": "#f7f4ee",
+    "surface": "#ebe6dc",
+    "ink": "#14211c",
+    "muted": "#5d665f",
+    "accent": "#006b4d",
+    "rule": "#d4cec2",
+    "darkCanvas": "#111713",
+    "darkSurface": "#1b231e",
+    "darkInk": "#f2efe7",
+    "darkMuted": "#aab2ac",
+    "darkAccent": "#72d3ad",
+    "darkRule": "#38423c"
+  },
+  "assets": [
+    {
+      "id": "mark-light-vector",
+      "path": "/brand/marks/dakota-smith-mark-light.svg",
+      "format": "svg",
+      "width": 512,
+      "height": 512,
+      "use": "Vector avatar and compact identity mark on light surfaces"
+    },
+    {
+      "id": "mark-dark-vector",
+      "path": "/brand/marks/dakota-smith-mark-dark.svg",
+      "format": "svg",
+      "width": 512,
+      "height": 512,
+      "use": "Vector avatar and compact identity mark on dark surfaces"
+    },
+    {
+      "id": "mark-light",
+      "path": "/brand/marks/dakota-smith-mark-light.png",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "use": "Upload-ready profile image on light surfaces"
+    },
+    {
+      "id": "mark-dark",
+      "path": "/brand/marks/dakota-smith-mark-dark.png",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "use": "Upload-ready profile image on dark surfaces"
+    },
+    {
+      "id": "site-favicon-vector",
+      "path": "/favicon.svg",
+      "format": "svg",
+      "width": 100,
+      "height": 100,
+      "use": "Scalable browser favicon"
+    },
+    {
+      "id": "site-favicon-32",
+      "path": "/favicon-32x32.png",
+      "format": "png",
+      "width": 32,
+      "height": 32,
+      "use": "32-pixel browser favicon fallback"
+    },
+    {
+      "id": "apple-touch-icon",
+      "path": "/apple-touch-icon.png",
+      "format": "png",
+      "width": 180,
+      "height": 180,
+      "use": "Apple touch and saved-home-screen icon"
+    },
+    {
+      "id": "lockup-ink-vector",
+      "path": "/brand/lockups/dakota-smith-lockup-ink.svg",
+      "format": "svg",
+      "width": 2400,
+      "height": 600,
+      "use": "Scalable transparent lockup for light backgrounds"
+    },
+    {
+      "id": "lockup-paper-vector",
+      "path": "/brand/lockups/dakota-smith-lockup-paper.svg",
+      "format": "svg",
+      "width": 2400,
+      "height": 600,
+      "use": "Scalable transparent lockup for dark backgrounds"
+    },
+    {
+      "id": "lockup-ink",
+      "path": "/brand/lockups/dakota-smith-lockup-ink.png",
+      "format": "png",
+      "width": 2400,
+      "height": 600,
+      "use": "Transparent raster lockup for light backgrounds"
+    },
+    {
+      "id": "lockup-paper",
+      "path": "/brand/lockups/dakota-smith-lockup-paper.png",
+      "format": "png",
+      "width": 2400,
+      "height": 600,
+      "use": "Transparent raster lockup for dark backgrounds"
+    },
+    {
+      "id": "linkedin-cover",
+      "path": "/brand/social/dakota-smith-linkedin-cover.png",
+      "format": "png",
+      "width": 1584,
+      "height": 396,
+      "use": "LinkedIn personal profile cover"
+    },
+    {
+      "id": "x-cover",
+      "path": "/brand/social/dakota-smith-x-cover.png",
+      "format": "png",
+      "width": 1500,
+      "height": 500,
+      "use": "X profile header"
+    },
+    {
+      "id": "github-social-preview",
+      "path": "/brand/social/dakota-smith-github-social-preview.png",
+      "format": "png",
+      "width": 1280,
+      "height": 640,
+      "use": "GitHub profile or repository social preview"
+    },
+    {
+      "id": "youtube-banner",
+      "path": "/brand/social/dakota-smith-youtube-banner.png",
+      "format": "png",
+      "width": 2560,
+      "height": 1440,
+      "use": "YouTube channel banner with centered cross-device safe content"
+    },
+    {
+      "id": "presentation-cover",
+      "path": "/brand/general/dakota-smith-presentation-cover.png",
+      "format": "png",
+      "width": 1920,
+      "height": 1080,
+      "use": "16:9 presentation cover and video-call backdrop"
+    },
+    {
+      "id": "social-square",
+      "path": "/brand/social/dakota-smith-social-square.png",
+      "format": "png",
+      "width": 1080,
+      "height": 1080,
+      "use": "Square launch, profile, and announcement post"
+    },
+    {
+      "id": "social-portrait",
+      "path": "/brand/social/dakota-smith-social-portrait.png",
+      "format": "png",
+      "width": 1080,
+      "height": 1350,
+      "use": "4:5 LinkedIn and Instagram feed post"
+    },
+    {
+      "id": "brand-sheet",
+      "path": "/brand/dakota-smith-brand-sheet.png",
+      "format": "png",
+      "width": 2400,
+      "height": 1600,
+      "use": "One-page identity reference"
+    },
+    {
+      "id": "og-default",
+      "path": "/og-default.png",
+      "format": "png",
+      "width": 1200,
+      "height": 630,
+      "use": "Default Open Graph and Twitter preview"
+    }
+  ]
+}

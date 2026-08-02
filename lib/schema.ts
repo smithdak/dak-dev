@@ -224,9 +224,9 @@ export function generateResumeSchema(): ProfilePageSchema {
     mainEntity: {
       '@type': 'Person',
       name: AUTHOR_NAME,
-      jobTitle: 'Principal Architect | Agentic Systems & Enterprise Platforms',
+      jobTitle: 'AI Systems Architect & Full-Stack Engineer',
       description:
-        'Principal architect with 15 years in enterprise software, focused on Sitecore/.NET modernization, agentic systems, and governed delivery architecture.',
+        'AI systems architect and full-stack engineer with 15 years in enterprise software, focused on Sitecore/.NET modernization, agentic systems, and governed delivery architecture.',
       url: `${SITE_URL}/about`,
       sameAs: ['https://linkedin.com/in/dakota-smith-a855b230', 'https://github.com/smithdak'],
       knowsAbout: [
