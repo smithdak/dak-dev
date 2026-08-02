@@ -1,16 +1,25 @@
 ---
-title: "Preparing for Mythos: Enterprise CMS Security Checklist"
-date: "2026-04-15"
-excerpt: "Protect your enterprise CMS stack against the vulnerabilities Mythos exposed with this platform-specific checklist for Sitecore, Umbraco, and Optimizely."
-slug: "preparing-for-mythos-ai-security-checklist"
-tags: ["security", "cms", "web-development", "dotnet"]
-thumbnail: "/images/posts/preparing-for-mythos-ai-security-checklist/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIDBv/EABwQAAMAAQUAAAAAAAAAAAAAAAABAhEDEiFRkf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AxG1pZcsUOpVOOafpDL7CP//Z"
-hero: "/images/posts/preparing-for-mythos-ai-security-checklist/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIDBv/EABwQAAMAAQUAAAAAAAAAAAAAAAABAgMREiExkf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8Aw+1pcyxQ5Kpz2/SOoR//2Q=="
+title: 'Preparing for Mythos: Enterprise CMS Security Checklist'
+date: '2026-04-15'
+excerpt: 'Protect your enterprise CMS stack against the vulnerabilities Mythos exposed with this platform-specific checklist for Sitecore, Umbraco, and Optimizely.'
+slug: 'preparing-for-mythos-ai-security-checklist'
+tags: ['security', 'cms', 'web-development', 'dotnet']
+thumbnail: '/images/posts/preparing-for-mythos-ai-security-checklist/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABgEF/8QAIBAAAQMDBQEAAAAAAAAAAAAAAQACAwQFERIhIjJRkf/EABUBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AX1cssdNK6Pu1pI2WKy6XEsaS05IGeKS4HimkeD4pL//Z'
+hero: '/images/posts/preparing-for-mythos-ai-security-checklist/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAABgH/xAAfEAABAwMFAAAAAAAAAAAAAAACAAERAwUhEiIxUpH/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAv/EABURAQEAAAAAAAAAAAAAAAAAAAAB/9oADAMBAAIRAxEAPwBoZmwlHMYQytfb4NYxEcMTs2xOYZTQHUfFJX//2Q=='
 published: true
-author: "Dakota Smith"
-keywords: ["mythos ai security", "sitecore security", "umbraco security", "optimizely security", "enterprise cms security", "project glasswing", "cms vulnerability checklist"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'mythos ai security',
+    'sitecore security',
+    'umbraco security',
+    'optimizely security',
+    'enterprise cms security',
+    'project glasswing',
+    'cms vulnerability checklist',
+  ]
 ---
 
 An AI model found thousands of zero-day vulnerabilities across every major browser and operating system — some hiding for over two decades. On April 8, 2026, Anthropic announced Claude Mythos Preview alongside Project Glasswing, a $100M cybersecurity initiative. The Mythos AI security findings hit enterprise CMS stacks hard: TLS library flaws affect every .NET application handling HTTPS, kernel-level privilege escalations compromise the Windows and Linux servers running Sitecore, Umbraco, and Optimizely, and browser sandbox escapes put every authenticated CMS backoffice session at risk.
@@ -21,13 +30,13 @@ I manage CMS implementations for enterprise clients across all three platforms. 
 
 Mythos is Anthropic's most capable AI model. It wasn't built for security — but its code reasoning capabilities made it extraordinarily effective at chaining exploitable vulnerabilities. The findings relevant to enterprise CMS stacks:
 
-| Finding | CMS Impact |
-|---------|------------|
-| **Browser sandbox escapes** | Chained four vulnerabilities to escape both renderer and OS sandboxes. Every CMS backoffice session (Sitecore `/sitecore/admin/`, Umbraco `/umbraco/`, Optimizely `/episerver/`) becomes an attack vector if the editor's browser is unpatched. |
-| **TLS/AES-GCM flaws** | .NET apps on Linux/Kestrel use OpenSSL directly. Self-hosted CMS instances with Kestrel reverse proxies are exposed. Windows IIS uses SChannel (not OpenSSL), but `HttpClient` calls to external APIs may route through vulnerable TLS stacks. |
-| **Linux kernel privilege escalation** | Multiple chains affecting production servers. Any self-hosted CMS on Linux (common for Umbraco 10+ on Kestrel, containerized Sitecore XM Cloud builds) needs kernel patches. |
-| **Windows Server vulnerabilities** | Kernel-level and HTTP.sys flaws affect IIS-hosted Sitecore 9-10, Umbraco, and Optimizely CMS 11-12. |
-| **16-year-old FFmpeg bug** | CMS media pipelines using FFmpeg for video transcoding or thumbnail generation are exposed. Crafted file uploads are the attack vector. |
+| Finding                               | CMS Impact                                                                                                                                                                                                                                      |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Browser sandbox escapes**           | Chained four vulnerabilities to escape both renderer and OS sandboxes. Every CMS backoffice session (Sitecore `/sitecore/admin/`, Umbraco `/umbraco/`, Optimizely `/episerver/`) becomes an attack vector if the editor's browser is unpatched. |
+| **TLS/AES-GCM flaws**                 | .NET apps on Linux/Kestrel use OpenSSL directly. Self-hosted CMS instances with Kestrel reverse proxies are exposed. Windows IIS uses SChannel (not OpenSSL), but `HttpClient` calls to external APIs may route through vulnerable TLS stacks.  |
+| **Linux kernel privilege escalation** | Multiple chains affecting production servers. Any self-hosted CMS on Linux (common for Umbraco 10+ on Kestrel, containerized Sitecore XM Cloud builds) needs kernel patches.                                                                    |
+| **Windows Server vulnerabilities**    | Kernel-level and HTTP.sys flaws affect IIS-hosted Sitecore 9-10, Umbraco, and Optimizely CMS 11-12.                                                                                                                                             |
+| **16-year-old FFmpeg bug**            | CMS media pipelines using FFmpeg for video transcoding or thumbnail generation are exposed. Crafted file uploads are the attack vector.                                                                                                         |
 
 The 90x improvement in exploit success rate between Opus 4.6 and Mythos (2 successes vs. 181 on Firefox exploit development) signals that AI-assisted vulnerability discovery now outpaces manual security research. Enterprise CMS platforms carry large dependency trees and legacy code — exactly the type of surface area Mythos excels at analyzing.
 
@@ -49,6 +58,7 @@ Sitecore's attack surface depends heavily on which generation you're running.
 ```
 
 **Additional hardening:**
+
 - Block public access to `/sitecore/admin/` and `/sitecore/login/` via IP allowlisting or VPN
 - Audit `Newtonsoft.Json` usage — any `TypeNameHandling` setting other than `None` enables deserialization attacks
 - Patch Windows Server and IIS immediately against the disclosed HTTP.sys vulnerabilities
@@ -58,6 +68,7 @@ Sitecore's attack surface depends heavily on which generation you're running.
 ### Sitecore XM Cloud
 
 XM Cloud shifts the server-side risk to Sitecore's managed infrastructure, but your rendering host (Next.js on Vercel or self-hosted) still needs attention:
+
 - Update your Next.js rendering host dependencies
 - Audit any middleware that processes media from the Sitecore CDN
 - Review Experience Edge API keys and scope permissions
@@ -91,6 +102,7 @@ services.AddUmbraco(_env, _config)
 ```
 
 **Backoffice hardening:**
+
 - Umbraco's backoffice at `/umbraco/` has no built-in rate limiting by default — add brute-force protection via middleware or a WAF
 - TinyMCE (the rich text editor) has had XSS vectors in older versions (CVE-2024-38356). Update to the version bundled with your Umbraco LTS release
 - If running on Linux/Kestrel: patch the kernel against Mythos-discovered privilege escalation chains
@@ -109,6 +121,7 @@ The security gap between Optimizely's DXP Cloud and self-hosted CMS 11/12 has ne
 CMS 11 is the legacy surface. It runs on .NET Framework 4.8, typically IIS on Windows Server. Every Windows kernel and HTTP.sys vulnerability Mythos found applies here.
 
 **Priority actions:**
+
 - Patch Windows Server immediately — the privilege escalation chains Mythos discovered grant kernel-level access
 - Audit `Newtonsoft.Json` with `TypeNameHandling` — same deserialization risk as Sitecore
 - Review `/episerver/` admin UI exposure. Block public access via network rules
@@ -148,13 +161,13 @@ Regardless of which CMS you run, these .NET-specific concerns apply to all three
 
 ### NuGet Packages to Audit Now
 
-| Package | Risk | Action |
-|---------|------|--------|
-| `Newtonsoft.Json` | Deserialization RCE when `TypeNameHandling != None` | Audit all usages, set to `None` where possible |
-| `System.Text.Json` | Pre-8.0.5 has known vulnerabilities | Update to latest |
-| `Microsoft.Data.SqlClient` | Pre-5.1.4 has SQL injection vectors | Update immediately |
-| `Microsoft.IdentityModel.*` | Pre-7.x had token validation bypasses | Update all identity packages |
-| `System.Security.Cryptography.Xml` | XML signature wrapping attacks | Update and audit XML processing |
+| Package                            | Risk                                                | Action                                         |
+| ---------------------------------- | --------------------------------------------------- | ---------------------------------------------- |
+| `Newtonsoft.Json`                  | Deserialization RCE when `TypeNameHandling != None` | Audit all usages, set to `None` where possible |
+| `System.Text.Json`                 | Pre-8.0.5 has known vulnerabilities                 | Update to latest                               |
+| `Microsoft.Data.SqlClient`         | Pre-5.1.4 has SQL injection vectors                 | Update immediately                             |
+| `Microsoft.IdentityModel.*`        | Pre-7.x had token validation bypasses               | Update all identity packages                   |
+| `System.Security.Cryptography.Xml` | XML signature wrapping attacks                      | Update and audit XML processing                |
 
 ### Automate Vulnerability Scanning
 
@@ -169,6 +182,7 @@ done
 ```
 
 **Tooling for .NET CMS stacks:**
+
 - **GitHub Dependabot** — Enable NuGet source scanning on all repos
 - **Snyk** — Supports .NET and NuGet with transitive dependency analysis
 - **`dotnet-outdated`** — CLI tool for checking outdated NuGet packages across solutions
@@ -178,14 +192,14 @@ done
 
 Not every CMS instance carries the same risk. Use this matrix to triage which systems to patch first.
 
-| Factor | Higher Risk | Lower Risk |
-|--------|------------|------------|
-| **Hosting model** | Self-hosted on bare metal or unmanaged VMs | Cloud-managed (XM Cloud, Umbraco Cloud, DXP Cloud) |
-| **Runtime** | .NET Framework 4.8 (Sitecore 9-10, Optimizely CMS 11) | .NET 6+ (Umbraco 10-14, Optimizely CMS 12) |
-| **Admin panel exposure** | `/sitecore/admin/`, `/umbraco/`, `/episerver/` publicly accessible | Admin restricted via VPN or IP allowlist |
-| **Dependency age** | Telerik UI, ImageSharp pre-3.x, `Newtonsoft.Json` with `TypeNameHandling` | Current LTS packages, no known vulnerable transitive deps |
-| **OS patching cadence** | Monthly or slower | Automated weekly with rollback capability |
-| **Media processing** | FFmpeg or ImageSharp processing user uploads | No server-side media processing or uploads restricted to trusted editors |
+| Factor                   | Higher Risk                                                               | Lower Risk                                                               |
+| ------------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Hosting model**        | Self-hosted on bare metal or unmanaged VMs                                | Cloud-managed (XM Cloud, Umbraco Cloud, DXP Cloud)                       |
+| **Runtime**              | .NET Framework 4.8 (Sitecore 9-10, Optimizely CMS 11)                     | .NET 6+ (Umbraco 10-14, Optimizely CMS 12)                               |
+| **Admin panel exposure** | `/sitecore/admin/`, `/umbraco/`, `/episerver/` publicly accessible        | Admin restricted via VPN or IP allowlist                                 |
+| **Dependency age**       | Telerik UI, ImageSharp pre-3.x, `Newtonsoft.Json` with `TypeNameHandling` | Current LTS packages, no known vulnerable transitive deps                |
+| **OS patching cadence**  | Monthly or slower                                                         | Automated weekly with rollback capability                                |
+| **Media processing**     | FFmpeg or ImageSharp processing user uploads                              | No server-side media processing or uploads restricted to trusted editors |
 
 ### Patch Order
 

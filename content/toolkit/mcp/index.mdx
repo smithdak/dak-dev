@@ -1,39 +1,38 @@
 ---
-title: "MCP Servers: Expert's Guide"
-topic: "mcp"
+title: 'MCP Integration Across Claude Code, Codex, and Copilot'
+topic: 'mcp'
 order: 1
-description: "Master the Model Context Protocol — external tool integration, custom server patterns, and protocol-level mastery for production workflows."
-relatedPatterns: ["agent-friendly-architecture", "safety-net"]
-relatedTopics: ["hooks", "agents", "settings", "skills"]
+description: 'Compare Model Context Protocol support by product surface, including tool, resource, prompt, authentication, and policy differences.'
+relatedPatterns: ['agent-friendly-architecture', 'safety-net']
+relatedTopics: ['hooks', 'agents', 'settings', 'skills']
 published: true
-keywords: ["MCP servers", "Model Context Protocol", "external tools", "custom servers"]
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-mcp', 'codex-mcp', 'copilot-customize-cli', 'copilot-cli-reference', 'copilot-cloud-mcp']
+keywords: ['Model Context Protocol', 'Claude Code MCP', 'Codex MCP', 'Copilot MCP', 'agent tools']
 ---
 
-# MCP Servers
+# MCP Integration
 
-MCP (Model Context Protocol) is how Claude Code connects to external tools and data sources. It is a bidirectional JSON-RPC 2.0 protocol with capability negotiation, session state, and structured primitives. Not an API. Not a plugin system. A protocol.
+Model Context Protocol gives an agent a negotiated interface to external tools and context. Claude Code, Codex, and Copilot all expose MCP integrations, but the word “supports” hides material differences by surface.
 
-## Why MCP Matters
+## Compare Primitives, Not Logos
 
-Without MCP, Claude Code operates in a closed loop: it reads files, writes files, and runs shell commands. MCP breaks that boundary. A connected MCP server gives Claude direct access to databases, monitoring dashboards, CI/CD pipelines, GraphQL endpoints, and any system you can wrap in a tool interface. The agent stops guessing and starts querying.
+For each target surface, verify:
 
-## Build vs. Reuse
+- Which MCP primitives are consumed: tools, resources, prompts, or a subset.
+- Which transports and authentication flows are supported.
+- Where configuration and secrets live.
+- Whether tool approval, allowlists, and managed policy are available.
+- How connection failures, timeouts, and oversized responses are surfaced.
+- Whether the integration runs locally, in a hosted environment, or both.
 
-| Situation | Approach |
-|-----------|----------|
-| Standard service (GitHub, Datadog, Postgres) | Use an existing MCP server |
-| Internal API or proprietary system | Build a custom server |
-| Need fine-grained access control | Build a custom server with scoped permissions |
-| Quick prototype or exploration | Use DBHub or a generic REST wrapper |
-| Enterprise deployment with policy controls | Use managed-mcp.json with allowlists |
+GitHub's cloud-agent documentation is a useful warning against family-level claims: that surface supports MCP tools while excluding resources, prompts, and remote OAuth. A statement about Copilot CLI MCP therefore cannot be copied to Copilot cloud agent unchanged.
 
-The ecosystem has production-grade servers for GitHub, Datadog, Grafana, PostgreSQL, MySQL, Jenkins, and GraphQL. Building custom makes sense when you need domain-specific tool descriptions, output shaping, or access control that generic wrappers cannot provide.
+## Architecture Boundary
 
-## What's Inside
+MCP is an integration protocol, not a trust boundary. A server's tool description is not authorization, and a successful connection is not evidence that its actions are safe. Apply least privilege at the credential and service layer, validate tool inputs, constrain egress, and record the resulting external action independently.
 
-Explore the sub-pages for deep expertise:
+Prefer an existing official or reviewed server when its trust and output contracts fit. Build a custom server when domain semantics, access control, or response shaping are part of the system's correctness.
 
-- **Mental Model** -- How the MCP protocol works under the hood: transports, handshakes, tool discovery, and the security model
-- **Playbook** -- Building production MCP servers in TypeScript and Python, plus configuration patterns for databases, APIs, and CI/CD
-- **Compositions** -- MCP servers combined with hooks, skills, subagents, CLAUDE.md, and memory for integrated workflows
-- **Pitfalls** -- Startup failures, timeout traps, transport corruption, security risks, and debugging strategies
+The deeper lenses retain Claude Code-specific configuration and server examples. Revalidate transport, authentication, and supported primitives for the exact product surface before reuse.

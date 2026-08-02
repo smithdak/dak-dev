@@ -1,0 +1,43 @@
+---
+title: 'Project Instructions: Compositions'
+topic: 'project-instructions'
+subPage: 'compositions'
+order: 4
+description: 'Compose repository instructions with skills, memory, hooks, and release evidence without duplicating policy.'
+relatedPatterns: ['convention-file', 'memory-layer', 'safety-net']
+relatedTopics: ['skills', 'memory', 'hooks', 'settings']
+published: true
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-memory', 'codex-agents-md', 'copilot-instructions-cli', 'copilot-instructions-support']
+keywords:
+  ['instruction composition', 'agent configuration architecture', 'instruction memory skills hooks']
+---
+
+# Compositions
+
+## Instructions + Skills
+
+Instructions name the mandatory workflow; a skill contains the workflow detail. The instruction stays short: “Use the release-readiness skill before proposing publication.” The skill owns steps, references, and output shape.
+
+This avoids loading an entire procedure on every turn while keeping the routing rule durable.
+
+## Instructions + Memory
+
+Instructions hold reviewed team rules. Memory holds revisable recall. Link from the instruction contract to memory only when the agent should consult it, and require freshness metadata for state that changes.
+
+Never let machine-authored memory silently override checked-in instructions.
+
+## Instructions + Hooks
+
+Instructions explain why a control exists and what remediation looks like. Hooks run the fast deterministic check at the relevant lifecycle point. CI or release policy repeats the load-bearing check outside the agent process.
+
+This creates three useful layers: model guidance, immediate feedback, and independent authorization.
+
+## Instructions + Product Adapters
+
+Keep portable rules in one source and limit `CLAUDE.md`, `AGENTS.md`, and Copilot-specific files to routing and native syntax. A change to a shared rule should produce one review that updates every adapter.
+
+## Instructions + Evidence
+
+Define completion as proof, not confidence. For example: type-check output, production build result, changed-file scope, and the commit SHA that was actually reviewed. The agent may collect evidence; a deterministic layer should decide whether it is admissible.

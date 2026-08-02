@@ -1,16 +1,23 @@
 ---
-title: "Claude Code Skills and the Agent Skills Open Standard"
-date: "2026-02-10"
+title: 'Claude Code Skills and the Agent Skills Open Standard'
+date: '2026-02-10'
 excerpt: "Build portable AI agent capabilities with Claude Code's SKILL.md format. The Agent Skills open standard works across 10+ platforms including GitHub Copilot."
-slug: "claude-code-skills-agent-skills-standard"
-tags: ["ai-tools", "claude-code", "skills", "developer-tools"]
-thumbnail: "/images/posts/claude-code-skills-agent-skills-standard/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAwEG/8QAHRABAAEDBQAAAAAAAAAAAAAAAQACEVEDITJhgf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AxZSHLY7ktTmFq1KF1fYV3MI//9k="
-hero: "/images/posts/claude-code-skills-agent-skills-standard/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAwIG/8QAGxABAAICAwAAAAAAAAAAAAAAAQACAxEhMlH/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMWVDtwSdV9h5LKG1hbhH//Z"
+slug: 'claude-code-skills-agent-skills-standard'
+tags: ['ai-tools', 'claude-code', 'skills', 'developer-tools']
+thumbnail: '/images/posts/claude-code-skills-agent-skills-standard/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAIDBv/EABsQAAMAAgMAAAAAAAAAAAAAAAABAgMREiJR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDZ1ktZVKnq1vfg/JlAJL//2Q=='
+hero: '/images/posts/claude-code-skills-agent-skills-standard/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIDBv/EABsQAAICAwEAAAAAAAAAAAAAAAACAREDE1Ex/8QAFQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDZPldcqLC2rezwbYxWg1HCS//Z'
 published: true
-author: "Dakota Smith"
-keywords: ["claude code skills", "agent skills standard", "SKILL.md", "agent skills open standard", "claude code custom commands"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'claude code skills',
+    'agent skills standard',
+    'SKILL.md',
+    'agent skills open standard',
+    'claude code custom commands',
+  ]
 ---
 
 Agent Skills is an open standard supported by GitHub Copilot, Cursor, Gemini CLI, and 7+ other platforms. Write a `SKILL.md` once and it works across all of them. Anthropic published the specification in December 2025 at [agentskills.io](https://agentskills.io/home), and adoption moved fast — the reference repository has 67,000+ stars on GitHub.
@@ -25,15 +32,15 @@ Every Claude Code Skill lives in a directory with a `SKILL.md` file at its root.
 
 ```yaml
 ---
-name: pr-review                    # Max 64 chars, lowercase + hyphens
+name: pr-review # Max 64 chars, lowercase + hyphens
 description: Reviews pull requests against team coding standards
-argument-hint: "[PR number]"       # Shown in autocomplete
-disable-model-invocation: false    # true = manual /pr-review only
-user-invocable: true               # false = Claude-only, hidden from / menu
-allowed-tools: Bash(gh *), Read    # Tools Claude can use without asking
-model: sonnet                      # Model override when active
-context: fork                      # Run in isolated subagent
-agent: Explore                     # Subagent type (with context: fork)
+argument-hint: '[PR number]' # Shown in autocomplete
+disable-model-invocation: false # true = manual /pr-review only
+user-invocable: true # false = Claude-only, hidden from / menu
+allowed-tools: Bash(gh *), Read # Tools Claude can use without asking
+model: sonnet # Model override when active
+context: fork # Run in isolated subagent
+agent: Explore # Subagent type (with context: fork)
 ---
 ```
 
@@ -55,12 +62,12 @@ pr-review/
 
 Claude Code discovers Skills from four locations, in priority order:
 
-| Priority | Location | Scope |
-|----------|----------|-------|
-| 1 | Enterprise managed settings | All org users |
-| 2 | `~/.claude/skills/{name}/SKILL.md` | All your projects |
-| 3 | `.claude/skills/{name}/SKILL.md` | Current project |
-| 4 | Plugin marketplace installs | Where plugin is enabled |
+| Priority | Location                           | Scope                   |
+| -------- | ---------------------------------- | ----------------------- |
+| 1        | Enterprise managed settings        | All org users           |
+| 2        | `~/.claude/skills/{name}/SKILL.md` | All your projects       |
+| 3        | `.claude/skills/{name}/SKILL.md`   | Current project         |
+| 4        | Plugin marketplace installs        | Where plugin is enabled |
 
 In monorepos, Claude also discovers Skills from nested directories. Editing a file in `packages/frontend/` triggers discovery of Skills in `packages/frontend/.claude/skills/`.
 
@@ -101,11 +108,11 @@ The tradeoff: dynamic context runs on every invocation. If `gh pr diff` returns 
 
 Two frontmatter fields determine who can trigger a Skill:
 
-| Configuration | User types `/name` | Claude auto-invokes |
-|--------------|-------------------|---------------------|
-| Default (both true) | Yes | Yes |
-| `disable-model-invocation: true` | Yes | No |
-| `user-invocable: false` | No | Yes |
+| Configuration                    | User types `/name` | Claude auto-invokes |
+| -------------------------------- | ------------------ | ------------------- |
+| Default (both true)              | Yes                | Yes                 |
+| `disable-model-invocation: true` | Yes                | No                  |
+| `user-invocable: false`          | No                 | Yes                 |
 
 Use `disable-model-invocation: true` for destructive operations (database migrations, deployments) where you want explicit user control. Use `user-invocable: false` for background knowledge that Claude should apply automatically — coding standards, project conventions, error handling patterns.
 
@@ -177,7 +184,6 @@ skills:
   - error-handling-patterns
   - database-patterns
 ---
-
 Build API endpoints using the preloaded team patterns.
 Always follow the conventions in the loaded Skills.
 ```
@@ -217,11 +223,11 @@ The open standard defines a minimal required schema:
 
 ```yaml
 ---
-name: my-skill          # Required: max 64 chars
-description: What it does and when to use it  # Required: max 1024 chars
-license: MIT            # Optional
-compatibility: "Requires git, node >= 18"     # Optional: max 500 chars
-metadata:               # Optional: arbitrary key-value pairs
+name: my-skill # Required: max 64 chars
+description: What it does and when to use it # Required: max 1024 chars
+license: MIT # Optional
+compatibility: 'Requires git, node >= 18' # Optional: max 500 chars
+metadata: # Optional: arbitrary key-value pairs
   author: Dakota Smith
   version: 1.0.0
 ---
@@ -233,36 +239,36 @@ The specification mandates progressive disclosure: metadata (~100 tokens) loads 
 
 As of early 2026, these platforms read the Agent Skills format:
 
-| Platform | Skill Location | Notes |
-|----------|---------------|-------|
-| Claude Code | `.claude/skills/` | Full spec + extensions (hooks, subagents, dynamic context) |
-| Claude.ai | Upload via Settings | ZIP package format |
-| GitHub Copilot | `.github/skills/` or `.claude/skills/` | Personal skills at `~/.copilot/skills/` |
-| Cursor | `.claude/skills/` | Standard format |
-| Gemini CLI | `.claude/skills/` | Standard format |
-| OpenAI Codex CLI | `.claude/skills/` | Standard format |
-| Goose (Block) | `.claude/skills/` | Standard format |
-| Windsurf | `.claude/skills/` | Standard format |
-| Roo Code | `.claude/skills/` | Standard format |
-| Amp | `.claude/skills/` | Standard format |
+| Platform         | Skill Location                         | Notes                                                      |
+| ---------------- | -------------------------------------- | ---------------------------------------------------------- |
+| Claude Code      | `.claude/skills/`                      | Full spec + extensions (hooks, subagents, dynamic context) |
+| Claude.ai        | Upload via Settings                    | ZIP package format                                         |
+| GitHub Copilot   | `.github/skills/` or `.claude/skills/` | Personal skills at `~/.copilot/skills/`                    |
+| Cursor           | `.claude/skills/`                      | Standard format                                            |
+| Gemini CLI       | `.claude/skills/`                      | Standard format                                            |
+| OpenAI Codex CLI | `.claude/skills/`                      | Standard format                                            |
+| Goose (Block)    | `.claude/skills/`                      | Standard format                                            |
+| Windsurf         | `.claude/skills/`                      | Standard format                                            |
+| Roo Code         | `.claude/skills/`                      | Standard format                                            |
+| Amp              | `.claude/skills/`                      | Standard format                                            |
 
 The key distinction: Claude Code extends the standard with platform-specific features. These extensions work only in Claude Code and degrade gracefully elsewhere — other platforms ignore unknown frontmatter fields.
 
 ### What's Portable vs. What's Not
 
-| Feature | Open Standard | Claude Code Only |
-|---------|--------------|------------------|
-| `name`, `description` | Yes | Yes |
-| Markdown body instructions | Yes | Yes |
-| Supporting files (scripts, references) | Yes | Yes |
-| `license`, `compatibility`, `metadata` | Yes | Ignored by Claude Code |
-| `disable-model-invocation` | No | Yes |
-| `user-invocable` | No | Yes |
-| `context: fork`, `agent` | No | Yes |
-| `hooks` | No | Yes |
-| `allowed-tools` | Experimental | Yes |
-| `` !`command` `` dynamic context | No | Yes |
-| `$ARGUMENTS` substitution | No | Yes |
+| Feature                                | Open Standard | Claude Code Only       |
+| -------------------------------------- | ------------- | ---------------------- |
+| `name`, `description`                  | Yes           | Yes                    |
+| Markdown body instructions             | Yes           | Yes                    |
+| Supporting files (scripts, references) | Yes           | Yes                    |
+| `license`, `compatibility`, `metadata` | Yes           | Ignored by Claude Code |
+| `disable-model-invocation`             | No            | Yes                    |
+| `user-invocable`                       | No            | Yes                    |
+| `context: fork`, `agent`               | No            | Yes                    |
+| `hooks`                                | No            | Yes                    |
+| `allowed-tools`                        | Experimental  | Yes                    |
+| `` !`command` `` dynamic context       | No            | Yes                    |
+| `$ARGUMENTS` substitution              | No            | Yes                    |
 
 Write the core Skill (name, description, instructions, supporting files) for maximum portability. Add Claude Code extensions knowing they won't break anything on other platforms — unknown fields are ignored, not rejected.
 
@@ -281,12 +287,14 @@ This checks frontmatter requirements, directory naming conventions, and file siz
 If you have existing `.claude/commands/` files, they keep working. But the Skills format offers more capability. Here's the conversion pattern:
 
 **Before** (`.claude/commands/deploy.md`):
+
 ```markdown
 Deploy the current branch to staging.
 Run tests first, then build, then deploy.
 ```
 
 **After** (`.claude/skills/deploy/SKILL.md`):
+
 ```yaml
 ---
 name: deploy
@@ -338,4 +346,4 @@ The Agent Skills standard solved a real problem: AI capabilities locked inside i
 - Use `disable-model-invocation: true` for destructive operations and `user-invocable: false` for background conventions
 - Skill descriptions consume 2% of the context window — monitor with `/context` and keep descriptions specific to avoid budget overflow
 
-*This is Part 3 of a series on Claude Skills. [Part 1](/blog/ai-isnt-just-for-coders-claude-skills) covers what Skills are and why they matter for non-technical teams. [Part 2](/blog/claude-skills-power-user-guide) covers the architecture and advanced patterns for power users.*
+_This is Part 3 of a series on Claude Skills. [Part 1](/blog/ai-isnt-just-for-coders-claude-skills) covers what Skills are and why they matter for non-technical teams. [Part 2](/blog/claude-skills-power-user-guide) covers the architecture and advanced patterns for power users._

@@ -46,7 +46,7 @@ export function Callout({ type = 'info', title, children }: CalloutProps) {
   const v = VARIANTS[type];
 
   return (
-    <div className={`my-8 border-l-4 ${v.border} ${v.bg} p-5`} role="note">
+    <div className={`my-8 border-l ${v.border} ${v.bg} p-5`} role="note">
       <div className="flex items-center gap-2 mb-2">
         {v.icon}
         <span className={`text-xs font-bold uppercase tracking-widest ${v.labelColor}`}>

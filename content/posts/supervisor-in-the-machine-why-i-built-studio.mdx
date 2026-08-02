@@ -1,16 +1,23 @@
 ---
-title: "Why I Built STUDIO: Four Generations of AI Code Supervision"
-date: "2026-02-01"
-excerpt: "Four AI orchestration systems taught me that 19 agents produce more drift than 3 supervised ones. STUDIO adds confidence scoring and preference learning."
-slug: "supervisor-in-the-machine-why-i-built-studio"
-tags: ["ai", "architecture", "automation", "claude-code"]
-thumbnail: "/images/posts/supervisor-in-the-machine-why-i-built-studio/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAQMG/8QAHRAAAgIBBQAAAAAAAAAAAAAAAQIAEQMSITJRgf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AxGkryUiG0MrMVFkn2Rs9wj//2Q=="
-hero: "/images/posts/supervisor-in-the-machine-why-i-built-studio/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAQMG/8QAHBABAAIBBQAAAAAAAAAAAAAAAQACAxESITGR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDD7WvdUhDJZTlfZLWEf//Z"
+title: 'Why I Built STUDIO: Four Generations of AI Code Supervision'
+date: '2026-02-01'
+excerpt: 'Four AI orchestration systems taught me that 19 agents produce more drift than 3 supervised ones. STUDIO adds confidence scoring and preference learning.'
+slug: 'supervisor-in-the-machine-why-i-built-studio'
+tags: ['ai', 'architecture', 'automation', 'claude-code']
+thumbnail: '/images/posts/supervisor-in-the-machine-why-i-built-studio/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAECBv/EABoQAAMAAwEAAAAAAAAAAAAAAAABAgMRUSL/xAAVAQEBAAAAAAAAAAAAAAAAAAABAv/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/ANtV2siSnz0vb4MCS//Z'
+hero: '/images/posts/supervisor-in-the-machine-why-i-built-studio/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAEDBv/EABkQAAMBAQEAAAAAAAAAAAAAAAABAhFRMf/EABUBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A2t3auUp1P18Ka+DAkv/Z'
 published: true
-author: "Dakota Smith"
-keywords: ["AI coding supervision", "AI code drift", "LLM orchestration", "autonomous coding validation", "claude code plugin"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'AI coding supervision',
+    'AI code drift',
+    'LLM orchestration',
+    'autonomous coding validation',
+    'claude code plugin',
+  ]
 ---
 
 19 agents produced worse code than 3.
@@ -49,7 +56,7 @@ More agents didn't mean better code. It meant more complexity and more coordinat
 
 ALLOY tried to split the difference—three core agents that could summon specialists when needed. Hybrid approach. Less overhead than ORC, more capability than APL.
 
-The problem moved: deciding *when* to summon specialists became its own source of drift. The system would skip consultation to move faster, then produce work that needed specialist review anyway. When it did consult, the specialist's recommendation sometimes conflicted with what the core agent had already started building.
+The problem moved: deciding _when_ to summon specialists became its own source of drift. The system would skip consultation to move faster, then produce work that needed specialist review anyway. When it did consult, the specialist's recommendation sometimes conflicted with what the core agent had already started building.
 
 ALLOY proved something important: the problem wasn't capability. It was accountability. No amount of agent architecture fixes drift if the system can bypass its own quality gates. The moment an agent can skip a check to "move faster," it will—and the drift compounds from there.
 

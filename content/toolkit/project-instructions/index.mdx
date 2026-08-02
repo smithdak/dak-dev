@@ -1,0 +1,44 @@
+---
+title: 'Project Instructions Across Claude Code, Codex, and Copilot'
+topic: 'project-instructions'
+order: 1
+description: 'Design persistent repository instructions across CLAUDE.md, AGENTS.md, and GitHub Copilot instruction surfaces without mistaking guidance for enforcement.'
+relatedPatterns: ['convention-file', 'context-priming']
+relatedTopics: ['hooks', 'skills', 'memory']
+published: true
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-memory', 'codex-agents-md', 'copilot-instructions-cli', 'copilot-instructions-support']
+keywords:
+  ['project instructions', 'CLAUDE.md', 'AGENTS.md', 'Copilot instructions', 'agent configuration']
+---
+
+# Project Instructions
+
+Project instructions give an agent durable context about how a repository works: architecture, commands, constraints, and the evidence required before work is considered complete. The filenames differ, but the capability is now common across Claude Code, OpenAI Codex, and GitHub Copilot.
+
+The mechanism is advisory context. An instruction file can improve decisions; it cannot prove that a rule was followed. Put non-negotiable controls in executable policy, permissions, tests, or release gates.
+
+## The Portable Model
+
+Separate the instruction system into three layers:
+
+1. **Organization or user baseline** — durable preferences and policies that apply across repositories.
+2. **Repository contract** — architecture, toolchain, commands, and completion criteria for the whole project.
+3. **Scoped guidance** — rules that apply only to a subtree, language, or file pattern.
+
+Prefer the product's native filename, but keep the information architecture portable. A team supporting multiple agents can generate vendor entrypoints from one reviewed source or keep one canonical file and small product-specific adapters.
+
+## Where the Products Diverge
+
+- Claude Code centers `CLAUDE.md`, scoped rules, and auto memory.
+- Codex centers hierarchical `AGENTS.md` files.
+- Copilot supports several instruction formats, and the exact formats consumed vary across CLI, IDE, code review, and cloud-agent surfaces.
+
+That surface variance is the reason this guide treats “Copilot support” as an incomplete statement unless the surface is named.
+
+## Decision Rule
+
+Put stable facts every contributor needs in repository instructions. Put task-specific procedures in skills. Put deterministic checks in hooks or CI. Put accumulated, revisable context in memory. If violating a rule would create security, compliance, or release risk, instructions are the wrong enforcement layer.
+
+The deeper lenses retain concrete Claude Code implementation examples. Use them as one product realization of this capability, not as a universal file-format specification.

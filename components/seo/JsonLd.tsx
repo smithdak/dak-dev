@@ -1,3 +1,5 @@
+import { serializeJsonLd } from '@/lib/json-ld';
+
 /**
  * JsonLd Component
  * Injects Schema.org JSON-LD structured data into the page head
@@ -11,7 +13,7 @@ export function JsonLd({ data }: JsonLdProps) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }}
     />
   );
 }

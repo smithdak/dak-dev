@@ -1,6 +1,6 @@
 // Security Engineering — the trust and privacy surface of building with AI.
 // Fourth peer pillar of Learn, alongside Patterns (portable techniques),
-// Toolkit (Claude Code features), and Harness (the runtime). This module is
+// Toolkit (cross-vendor agent capabilities), and Harness (the runtime). This module is
 // client-safe (no fs).
 //
 // FLAT-ONLY CONSTRAINT: this section is intentionally flat — routes are

@@ -1,375 +1,44 @@
 ---
-title: "Memory: Playbook"
-topic: "memory"
-subPage: "playbook"
+title: 'Persistent Memory: Playbook'
+topic: 'memory'
+subPage: 'playbook'
 order: 3
-description: "Production memory strategies — taxonomy design, effective descriptions, maintenance cadence, team patterns, and cross-project strategies."
-relatedPatterns: ["memory-layer", "convention-file", "example-driven-spec"]
-relatedTopics: ["claude-md", "agents", "skills"]
+description: 'Build a governed memory practice across local and hosted agents with provenance, review, correction, and expiry.'
+relatedPatterns: ['memory-layer', 'context-priming', 'checkpoint-loop']
+relatedTopics: ['project-instructions', 'hooks', 'settings']
 published: true
-keywords: ["memory playbook", "taxonomy design", "memory maintenance", "team memory", "cross-project memory"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-memory', 'codex-memory', 'codex-agents-md', 'copilot-cli-reference']
+keywords:
+  ['agent memory playbook', 'memory governance', 'memory freshness', 'cross-session context']
 ---
 
 # Playbook
 
-Memory works best when structured around retrieval, not organization. The goal is for Claude to find the right file in one hop from the MEMORY.md index. Every strategy here optimizes for that single-hop retrieval pattern.
+## 1. Define Memory Classes
 
-## Memory Taxonomy Design
+Separate durable preferences, repository discoveries, feedback, external references, and temporary project state. Give each class a retention expectation.
 
-### Medium-Sized Projects
+## 2. Require Provenance
 
-Flat structure with type-prefixed filenames. Every file is one index entry away from loading.
+Store origin, scope, observed or reviewed date, and confidence for facts that may drive action. Link to code, documentation, or an external record where possible.
 
-```
-memory/
-  MEMORY.md                          # Index (under 200 lines)
-  user_preferences.md                # Coding style, explanation depth
-  feedback_code_patterns.md          # Corrections: how you want code written
-  feedback_testing.md                # Test patterns, frameworks, anti-patterns
-  project_current_sprint.md          # What's in flight right now
-  project_architecture_decisions.md  # ADRs, tech choices, rationale
-  reference_infrastructure.md        # URLs, dashboards, deploy info
-  reference_external_apis.md         # Third-party API quirks, rate limits
-```
+## 3. Keep Team Rules Elsewhere
 
-### Larger Projects
+Put required behavior in version-controlled instructions or policy. Memory can route to that source; it should not become the only copy.
 
-Subdirectories by type. All `.md` files are discovered recursively, so this works without configuration changes.
+## 4. Review by Volatility
 
-```
-memory/
-  MEMORY.md
-  feedback/
-    code-style.md
-    testing.md
-    review-preferences.md
-  project/
-    auth-migration.md
-    api-v2.md
-    performance-budget.md
-  reference/
-    infrastructure.md
-    external-apis.md
-    team-contacts.md
-```
+Expire active project state quickly. Review tooling and product behavior on a dated cadence. Retain stable preferences longer, with easy correction.
 
-### Naming Convention
+## 5. Test Retrieval
 
-```bash
-# Pattern: {type}_{domain}_{specifics}.md
-feedback_testing_patterns.md
-project_auth_migration.md
-reference_deploy_urls.md
-user_code_style.md
+Verify what loads automatically, what is recalled on demand, how scope changes across repositories or worktrees, and what survives resume or compaction.
 
-# For larger projects: {domain}/{specifics}.md in typed subdirectories
-feedback/
-  testing.md
-  code-review.md
-project/
-  sprint-2026-q2.md
-  architecture-decisions.md
-```
+## 6. Provide User Control
 
-Avoid generic names like `notes.md`, `misc.md`, `stuff.md`. Every filename should tell you what's inside without opening it.
+Make memory inspectable, editable, exportable, and deletable. A correction should supersede or remove the old claim rather than append another contradiction.
 
-### Complete Memory File Examples
+## 7. Revalidate Before Consequential Action
 
-A user preferences file:
-
-```markdown
----
-name: user-preferences
-description: Coding style, explanation depth, commit format, tool preferences
-type: user
----
-
-## Communication
-- Senior backend engineer — skip beginner explanations
-- Prefer terse responses with code over long explanations
-- Show diffs, not full files
-
-## Code Style
-- Explicit error handling over try/catch wrappers
-- Named exports only, no default exports
-- Prefer `const` arrow functions for components
-- Use `satisfies` over `as` for type assertions
-
-## Tools
-- Package manager: pnpm
-- Editor: Neovim (don't suggest VS Code extensions)
-- Terminal: Wezterm on macOS
-```
-
-A reference file:
-
-```markdown
----
-name: infrastructure
-description: Deploy URLs, monitoring dashboards, CI pipeline links, runbook locations
-type: reference
----
-
-## Environments
-| Env | URL | Branch |
-|-----|-----|--------|
-| Production | https://app.acme.com | main |
-| Staging | https://staging.acme.com | staging |
-| Preview | https://pr-*.vercel.app | PR branches |
-
-## Monitoring
-- Datadog: https://app.datadoghq.com/dashboard/acme-prod
-- Sentry: https://sentry.io/organizations/acme/issues/
-- Vercel Analytics: https://vercel.com/acme/analytics
-
-## Runbooks
-- Incident response: docs/runbooks/incident-response.md
-- Database failover: docs/runbooks/db-failover.md
-- Feature flag rollback: docs/runbooks/feature-flags.md
-```
-
-## Writing Effective Descriptions
-
-The `description` field in frontmatter — and the corresponding line in MEMORY.md — is the single most important factor in whether Claude loads a file at the right time.
-
-**Bad descriptions:**
-
-```markdown
-- [notes.md] -- Various notes
-- [stuff.md] -- Things I learned
-- [debug.md] -- Debugging info
-```
-
-**Good descriptions:**
-
-```markdown
-- [auth_session_bugs.md] -- Session cookie expiry edge cases, Redis TTL mismatch fixes
-- [api_rate_limiting.md] -- Stripe and Twilio rate limit patterns, retry backoff config
-- [deploy_rollback.md] -- Vercel rollback procedure, feature flag disable sequence
-```
-
-### Rules for Descriptions
-
-| Rule | Why |
-|------|-----|
-| Include the **domain** (auth, API, deploy) and **specifics** (what kind of info) | Claude matches descriptions against the current task |
-| Use terms Claude will see in your prompts | If you'll ask about "session bugs," write "session bugs" in the description |
-| Keep under 150 characters | Longer descriptions waste MEMORY.md line budget |
-| Front-load the most discriminating words | Claude scans left to right; put the unique terms first |
-
-## Memory Maintenance
-
-### Weekly Review Cadence
-
-1. Open `~/.claude/projects/<project>/memory/` in your editor
-2. Check project-type memories — are they still current?
-3. Look for contradictions (e.g., "uses PostgreSQL" in one file, "migrated to MySQL" in another)
-4. Delete memories about files or features that no longer exist
-5. Verify MEMORY.md is under 200 lines
-
-**Project memories need the most frequent review.** They describe temporal state — what's in flight, what's blocked. A two-week-old project memory about an initiative that already shipped actively harms Claude's understanding.
-
-### Auto Dream Consolidation
-
-Auto Dream runs automatically when 24+ hours have elapsed since last consolidation and there's been sufficient session activity. It handles four phases:
-
-| Phase | Action |
-|-------|--------|
-| **Orient** | Reads current memory directory |
-| **Gather Signal** | Scans recent session transcripts (JSONL) for corrections, preferences, decisions |
-| **Consolidate** | Merges new findings, deletes contradicted facts, deduplicates |
-| **Prune & Index** | Rebuilds MEMORY.md as a lean index under 200 lines |
-
-Auto Dream converts relative dates to absolute ("yesterday's deploy" becomes "2026-04-15 deploy"), removes references to nonexistent files, merges overlapping entries, and resolves contradictions.
-
-**Trigger manually:** Tell Claude "dream", "auto dream", or "consolidate my memory files."
-
-A maintenance script for CI or cron:
-
-```bash
-#!/bin/bash
-# scripts/memory-audit.sh — Weekly memory health check
-set -euo pipefail
-
-MEMORY_DIR="$HOME/.claude/projects"
-
-for project_dir in "$MEMORY_DIR"/*/memory; do
-  [ -d "$project_dir" ] || continue
-  PROJECT=$(basename "$(dirname "$project_dir")")
-  INDEX="$project_dir/MEMORY.md"
-
-  echo "=== $PROJECT ==="
-
-  # Check MEMORY.md line count
-  if [ -f "$INDEX" ]; then
-    LINES=$(wc -l < "$INDEX")
-    if [ "$LINES" -gt 150 ]; then
-      echo "  WARNING: MEMORY.md is $LINES lines (limit: 200, target: <150)"
-    else
-      echo "  MEMORY.md: $LINES lines — OK"
-    fi
-  else
-    echo "  No MEMORY.md found"
-    continue
-  fi
-
-  # Check for orphaned topic files (not in index)
-  for topic in "$project_dir"/*.md; do
-    [ "$(basename "$topic")" = "MEMORY.md" ] && continue
-    BASENAME=$(basename "$topic")
-    if ! grep -q "$BASENAME" "$INDEX" 2>/dev/null; then
-      echo "  ORPHAN: $BASENAME not referenced in MEMORY.md"
-    fi
-  done
-
-  # Check for stale project memories (older than 14 days)
-  find "$project_dir" -name "project_*.md" -mtime +14 -exec \
-    echo "  STALE: {} (not modified in 14+ days)" \;
-
-  echo ""
-done
-```
-
-### Maintenance Decision Matrix
-
-| Situation | Action |
-|-----------|--------|
-| MEMORY.md over 150 lines | Consolidate entries, move detail to topic files |
-| Topic file references deleted code | Delete the file or update it |
-| Two files cover the same domain | Merge into one, update MEMORY.md |
-| Project memory older than 2 weeks | Review — still relevant? |
-| Feedback memory contradicts CLAUDE.md | Update one or the other; pick a single source of truth |
-
-## Team Memory Patterns
-
-### Shared Context: CLAUDE.md
-
-Team conventions belong in committed CLAUDE.md files. Every team member and every Claude session gets the same baseline.
-
-```markdown
-# CLAUDE.md (project root, committed)
-## Conventions
-- TypeScript strict mode, no implicit any
-- Named exports only, no default exports
-- Tests use Vitest, not Jest
-- All API routes return { data, error } envelope
-
-## Architecture
-- App Router with SSG
-- MDX content in /content/posts
-- Shiki for code highlighting
-```
-
-### Personal Context: CLAUDE.local.md
-
-Individual preferences stay in `CLAUDE.local.md`, which is gitignored by default.
-
-```markdown
-# CLAUDE.local.md (gitignored)
-## My Setup
-- I use pnpm, not npm
-- My editor is Neovim -- don't suggest VS Code extensions
-- I prefer terse commit messages
-```
-
-### Team Onboarding Pattern
-
-When a new developer joins:
-
-1. Committed CLAUDE.md + `.claude/rules/` provides immediate project context
-2. Subagents with `memory: project` scope store accumulated knowledge in `.claude/agent-memory/<name>/`
-3. That directory can be committed and inherited by new contributors
-4. The new developer's personal preferences go in CLAUDE.local.md and user-scoped auto memory
-
-This creates a two-tier knowledge system: shared institutional knowledge (committed) and personal workflow preferences (local).
-
-## Cross-Project Memory Strategies
-
-Claude Code memory is strictly project-scoped. Four workarounds exist:
-
-| Strategy | Mechanism | Best For |
-|----------|-----------|----------|
-| **User-level CLAUDE.md** | `~/.claude/CLAUDE.md` | Personal coding preferences across all projects |
-| **Additional directories** | `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` env var | Shared team conventions across repos |
-| **Symlinks** | Symlink specific memory files across projects | Fragile, not officially supported |
-| **Starter memory** | Copy a template memory directory into new projects | Bootstrapping consistent structure |
-
-The user-level CLAUDE.md is the most reliable. It applies to every project without configuration. Put your universal preferences there: explanation depth, commit style, testing philosophy.
-
-The `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` env var loads CLAUDE.md from additional directories. Set it in your shell profile to share conventions across a monorepo or team:
-
-```bash
-export CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD="/path/to/team-conventions"
-```
-
-## Memory as Living Documentation
-
-Memory files naturally capture decisions and rationale that traditional documentation misses:
-
-```markdown
----
-name: architecture-decisions
-description: Key technical decisions, rationale, and alternatives considered
-type: project
----
-
-## 2026-04-10: Switched from gray-matter to next-mdx-remote
-- Reason: gray-matter couldn't handle nested frontmatter in MDX 3.0
-- Alternative considered: mdx-bundler (rejected: too heavy for SSG)
-- Impact: Changed content pipeline in lib/posts.ts
-
-## 2026-04-05: Chose Shiki over Prism for syntax highlighting
-- Reason: Shiki supports VS Code themes natively, better diff highlighting
-- Tradeoff: Larger initial bundle, mitigated by SSG pre-rendering
-```
-
-This is institutional knowledge that survives developer turnover when stored in project-scoped subagent memory (committed to VCS). Standard documentation captures *what*; memory captures *why* and *what else was considered*.
-
-## Starter MEMORY.md Template
-
-Use this as a starting point when setting up memory for a new project:
-
-```markdown
-# Memory Index
-
-## User
-- [user_preferences.md] -- Coding style, explanation depth, communication preferences
-
-## Feedback
-- [feedback_code_style.md] -- Code patterns, naming conventions, anti-patterns to avoid
-- [feedback_testing.md] -- Test framework preferences, coverage expectations, mock policies
-
-## Project
-- [project_current.md] -- Active work, blockers, recent decisions
-
-## Reference
-- [reference_infrastructure.md] -- Deploy URLs, CI/CD config, monitoring dashboards
-```
-
-Start lean. Let memory grow organically through usage. Force-filling memory files before Claude has learned anything defeats the purpose.
-
-A more detailed MEMORY.md showing the 200-line index format in practice:
-
-```markdown
-# Memory Index
-
-## User
-- [user_preferences.md] -- Senior backend eng, terse responses, pnpm, Neovim, explicit error handling
-- [user_communication.md] -- Show diffs not full files, skip beginner explanations
-
-## Feedback
-- [feedback_code_style.md] -- Named exports, const arrows, satisfies over as, no default exports
-- [feedback_testing.md] -- Vitest + Testing Library, real DB in integration tests, no mocking boundaries
-- [feedback_git_workflow.md] -- Conventional commits, atomic commits, always rebase, never merge main
-- [feedback_review_patterns.md] -- Check N+1 queries, verify error envelopes, flag any console.log
-
-## Project
-- [project_auth_migration.md] -- JWT to session cookies, Phase 2/3 complete, Redis TLS blocker
-- [project_api_v2.md] -- Breaking changes: removed /users/search, renamed /items to /products
-- [project_performance.md] -- LCP regression on /dashboard fixed 2026-04-10, CLS budget 0.05
-
-## Reference
-- [reference_infrastructure.md] -- Deploy URLs, Datadog dashboards, Sentry project, Vercel analytics
-- [reference_external_apis.md] -- Stripe 100 req/s limit, Twilio webhook retry at 5s/30s/300s
-- [reference_team.md] -- Alice owns auth, Bob owns payments, Carol owns infra
-```
+Check current code, configuration, production state, or primary documentation. Memory accelerates discovery; it does not authorize release or external mutation.

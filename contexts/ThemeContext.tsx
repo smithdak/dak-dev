@@ -22,7 +22,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'theme-preference';
 const THEME_EVENT = 'theme-preference-change';
-let fallbackTheme: Theme = 'dark';
+let fallbackTheme: Theme = 'light';
 let forceFallbackTheme = false;
 
 function isTheme(value: string | null): value is Theme {
@@ -30,7 +30,7 @@ function isTheme(value: string | null): value is Theme {
 }
 
 function getThemeSnapshot(): Theme {
-  if (typeof window === 'undefined') return 'dark';
+  if (typeof window === 'undefined') return 'light';
   if (forceFallbackTheme) return fallbackTheme;
 
   try {
@@ -42,7 +42,7 @@ function getThemeSnapshot(): Theme {
 }
 
 function getServerThemeSnapshot(): Theme {
-  return 'dark';
+  return 'light';
 }
 
 function subscribeToTheme(onStoreChange: () => void) {
@@ -62,18 +62,18 @@ function subscribeToTheme(onStoreChange: () => void) {
 
 /**
  * Detects the system's preferred color scheme
- * Returns 'dark' as default if matchMedia is unavailable
+ * Returns the canonical editorial light theme if matchMedia is unavailable.
  */
 function getSystemTheme(): ResolvedTheme {
   if (typeof window === 'undefined') {
-    return 'dark';
+    return 'light';
   }
 
   try {
     const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     return isDark ? 'dark' : 'light';
   } catch {
-    return 'dark';
+    return 'light';
   }
 }
 

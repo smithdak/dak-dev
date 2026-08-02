@@ -1,17 +1,25 @@
 ---
-title: "Durable Agent Orchestration with Claude Managed Agents"
-date: "2026-06-09"
-excerpt: "Learn why I moved agent orchestration into durable workflow steps instead of a coordinator agent, and the model, safety-gate, and cost tradeoffs it carried."
-slug: "durable-agent-orchestration-claude-managed-agents"
-tags: ["ai", "claude", "agents", "orchestration"]
-thumbnail: "/images/posts/durable-agent-orchestration-claude-managed-agents/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQIDBv/EAB0QAAICAQUAAAAAAAAAAAAAAAABAhESITJBYZH/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMSoy5gxa6DnK9z9Itu3qwj/2Q=="
-hero: "/images/posts/durable-agent-orchestration-claude-managed-agents/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAgMG/8QAHRAAAgIBBQAAAAAAAAAAAAAAAAECERIhQVJhkf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AxCjLeDDXQspcn6RbdvUI/9k="
+title: 'Durable Agent Orchestration with Claude Managed Agents'
+date: '2026-06-09'
+excerpt: 'Learn why I moved agent orchestration into durable workflow steps instead of a coordinator agent, and the model, safety-gate, and cost tradeoffs it carried.'
+slug: 'durable-agent-orchestration-claude-managed-agents'
+tags: ['ai', 'claude', 'agents', 'orchestration']
+thumbnail: '/images/posts/durable-agent-orchestration-claude-managed-agents/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAMG/8QAFxABAQEBAAAAAAAAAAAAAAAAAAISUf/EABUBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A2264atQSX//Z'
+hero: '/images/posts/durable-agent-orchestration-claude-managed-agents/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAMG/8QAFxABAAMAAAAAAAAAAAAAAAAAAAISUf/EABUBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A21pYXligkv/Z'
 published: true
-featured: true
-author: "Dakota Smith"
-keywords: ["agent orchestration", "claude managed agents", "durable workflows", "multi-agent pipeline", "vercel workflow", "ai agent architecture"]
+featured: false
+author: 'Dakota Smith'
+keywords:
+  [
+    'agent orchestration',
+    'claude managed agents',
+    'durable workflows',
+    'multi-agent pipeline',
+    'vercel workflow',
+    'ai agent architecture',
+  ]
 ---
 
 The most important agent orchestration decision I made on my last build was to keep the orchestration out of the agents. The tool turns a plain-language request — "audit our analytics tags against the measurement plan and flag duplicate events" — into a validated, installable Claude Code plugin, run by a pipeline of four Claude Managed Agents. The control flow that drives them lives in durable workflow steps I own, not inside a coordinator agent.
@@ -34,14 +42,14 @@ I chose durable steps because my routing was fixed. A six-stage assembly line do
 
 The run moves through six surfaces. Only four of them are Managed Agents.
 
-| Stage | Surface | Job |
-|---|---|---|
-| 0 · Intake | Messages API (structured output) | Parse the request into a normalized intent spec; ask up to three clarifying questions if it is underspecified |
-| 1 · Design | Managed Agent | Turn the intent into a platform-agnostic plugin design |
-| 2 · Optimize | Managed Agent | Rewrite the design into buildable, checkable rules plus an annotated diff |
-| 3 · Scaffold | Managed Agent | Generate the real Claude Code plugin file tree |
-| 4 · Validate | Reuses the Scaffold session | Assert the bundle is correct; failure blocks handoff |
-| 5 · Review | Managed Agent | Independent critique and risk flags; verdict `ship` / `ship-with-fixes` / `do-not-ship` |
+| Stage        | Surface                          | Job                                                                                                           |
+| ------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 0 · Intake   | Messages API (structured output) | Parse the request into a normalized intent spec; ask up to three clarifying questions if it is underspecified |
+| 1 · Design   | Managed Agent                    | Turn the intent into a platform-agnostic plugin design                                                        |
+| 2 · Optimize | Managed Agent                    | Rewrite the design into buildable, checkable rules plus an annotated diff                                     |
+| 3 · Scaffold | Managed Agent                    | Generate the real Claude Code plugin file tree                                                                |
+| 4 · Validate | Reuses the Scaffold session      | Assert the bundle is correct; failure blocks handoff                                                          |
+| 5 · Review   | Managed Agent                    | Independent critique and risk flags; verdict `ship` / `ship-with-fixes` / `do-not-ship`                       |
 
 Stage 0 is the first design lesson. Intake is not a Managed Agent — it is one structured-output Messages API call. Parsing free text into a typed JSON spec needs no container, no tools, and no file output, so a session would add startup latency and cost for nothing. The rule I now follow: reserve Managed Agents for stages that need a sandbox, tools, and a written artifact. Everything else stays a Messages call.
 
@@ -73,7 +81,7 @@ Because each stage is its own durable step, the run survives a deploy, a cold st
 
 This is the part that cost me a day. **Managed Agent sessions start idle.** The naive check waits until the session is idle, then downloads the output. It fires on that initial idle state, before the agent has done any work, and downloads a file that does not exist.
 
-The fix is to detect a *true* finish: the session reports idle *after* doing work (its stop reason is not `requires_action`), or it reports terminated. I poll newest-event-first and gate on both signals:
+The fix is to detect a _true_ finish: the session reports idle _after_ doing work (its stop reason is not `requires_action`), or it reports terminated. I poll newest-event-first and gate on both signals:
 
 ```typescript
 const POLL_INTERVAL_MS = 3000;
@@ -93,7 +101,7 @@ async function waitForArtifact(sessionId: string, file: string) {
 }
 ```
 
-Downloading the artifact has its own trap. The Files API indexes a session's outputs one to three seconds *after* the session goes idle, so an immediate listing comes back empty. The download needs a short retry loop, and every Files call needs **both** beta headers or the listing fails intermittently:
+Downloading the artifact has its own trap. The Files API indexes a session's outputs one to three seconds _after_ the session goes idle, so an immediate listing comes back empty. The download needs a short retry loop, and every Files call needs **both** beta headers or the listing fails intermittently:
 
 ```typescript
 const FILE_BETAS = ['managed-agents-2026-04-01', 'files-api-2025-04-14'];
@@ -163,7 +171,7 @@ The portable lesson is about where agent orchestration logic belongs. If your ro
 **Key Takeaways:**
 
 - Put fixed routing in durable workflow steps, not a coordinator agent — you get determinism, resumability, and orchestration you can unit-test
-- Detect a Managed Agent's *true* completion (idle-after-work or terminated), because sessions start idle and a naive check downloads an empty artifact
+- Detect a Managed Agent's _true_ completion (idle-after-work or terminated), because sessions start idle and a naive check downloads an empty artifact
 - Reserve Managed Agents for stages that need a sandbox, tools, and file output; a structured-output Messages call is faster and cheaper for parsing
 - Model tier is a latency decision too — I reversed an Opus stage to Sonnet after six-to-nine-minute runs threatened timeouts
 - When the output runs on other machines, end the pipeline at a human-reviewed gate with an independent verdict and a deterministic security scan

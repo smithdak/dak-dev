@@ -1,37 +1,42 @@
 ---
-title: "Agents & Subagents: Expert's Guide"
-topic: "agents"
+title: 'Agents and Subagents Across Claude Code, Codex, and Copilot'
+topic: 'agents'
 order: 1
-description: "Master Claude Code's agent delegation system — isolation strategies, worktree workflows, and production delegation patterns."
-relatedPatterns: ["parallel-fan-out", "scope-fence", "vertical-slice"]
-relatedTopics: ["agent-teams", "hooks", "skills", "settings"]
+description: 'Compare delegated agents, isolated context, specialization, tool policy, and coordinator boundaries across the three major coding-agent products.'
+relatedPatterns: ['scope-fence', 'parallel-fan-out', 'context-priming']
+relatedTopics: ['agent-teams', 'skills', 'settings']
 published: true
-keywords: ["claude code agents", "subagents", "delegation patterns", "worktree isolation"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-subagents', 'codex-subagents', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords:
+  [
+    'coding subagents',
+    'Claude Code subagents',
+    'Codex subagents',
+    'Copilot custom agents',
+    'delegation',
+  ]
 ---
 
 # Agents & Subagents
 
-Subagents are Claude Code's delegation primitive. When you spawn one, Claude creates a separate instance with its own 200K-token context window, its own tool set, and zero knowledge of the parent conversation. The only data that crosses the boundary is the prompt you send in and the final message that comes back.
+Subagents are isolated model-and-tool loops delegated by a primary agent. Their value is not simply parallelism. They protect the main context from noisy exploration, let a role use narrower tools and instructions, and create a reviewable boundary around one unit of work.
 
-## Why Subagents Matter
+Claude Code, Codex, and Copilot all document built-in or custom subagents. The differences that matter are configuration scope, nesting, communication, result handoff, model choice, and how much of the child run the operator can inspect.
 
-Inline work hits a wall at scale. A single context window juggling test output, code review, and implementation fragments compresses useful context into noise. Subagents solve this by offloading bounded tasks into isolated containers — each with full tool access, fresh context, and a defined return contract.
+## Use a Subagent When
 
-The cost model is real: each subagent burns tokens independently. Five parallel Opus subagents cost 5x. The payoff comes from context isolation, not raw throughput.
+- The task has a bounded objective and can return a concise artifact.
+- Exploration or test output would pollute the main decision context.
+- A specialist needs different tools, instructions, or model economics.
+- Independent reviewers can reduce anchoring on one hypothesis.
 
-## When to Delegate vs. Work Inline
+Do not delegate a tightly sequential step whose output must be reasoned over continuously by the main agent. The handoff cost can exceed the context saved.
 
-| Delegate | Stay Inline |
-|----------|-------------|
-| Task produces verbose output (test suites, log analysis) | Task takes fewer than 30 seconds |
-| You need tool restrictions (read-only reviewer) | Frequent back-and-forth with the user |
-| Work is self-contained with a clear return contract | Multiple phases share significant context |
-| 10+ files to explore or 3+ independent work items | Quick, targeted single-file change |
-| You want unbiased "fresh eyes" without conversation history | Latency is the primary concern |
+## The Control Model
 
-## What's Inside
+Treat the parent as coordinator, not as an infallible authority. Define the child contract explicitly: objective, allowed scope, inputs, output shape, verification, and stop condition. If agents can write to the same checkout, allocate file ownership or isolate worktrees before they run.
 
-- **Mental Model** — How subagents work internally: context isolation, the 5 built-in types, inheritance rules, and worktree mechanics
-- **Playbook** — Production delegation patterns: the briefing pattern, foreground vs. background, worktree agents, and parallel execution
-- **Compositions** — Agents combined with skills, hooks, MCP, CLAUDE.md, and memory: what crosses the boundary and what doesn't
-- **Pitfalls** — Context exhaustion, over-delegation, poor briefing, worktree cleanup, cost multiplication, and race conditions
+Claude Code supports custom subagent definitions and nested delegation. Codex surfaces coordinator-managed subagent threads across local clients. Copilot custom agents run as subagents with role-specific toolsets. Those are documented capabilities; they do not establish equivalent runtime quality, reliability, or cost.
+
+The deeper lenses retain Claude Code configuration examples. The delegation mechanics transfer; product syntax and nesting limits do not.

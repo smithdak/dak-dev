@@ -1,220 +1,36 @@
 ---
-title: "Skills: Mental Model"
-topic: "skills"
-subPage: "mental-model"
+title: 'Reusable Skills: Mental Model'
+topic: 'skills'
+subPage: 'mental-model'
 order: 2
-description: "How skills are loaded, matched, and injected — the three-stage progressive disclosure system and context window implications."
-relatedPatterns: ["progressive-disclosure", "context-priming"]
-relatedTopics: ["claude-md", "commands", "settings"]
+description: 'Understand skills as progressively disclosed capability packages with portable cores and product-specific activation controls.'
+relatedPatterns: ['progressive-disclosure', 'context-priming']
+relatedTopics: ['commands', 'agents', 'project-instructions']
 published: true
-keywords: ["skills mental model", "progressive disclosure", "skill loading", "context injection"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-skills', 'codex-skills', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords:
+  ['Agent Skills mental model', 'progressive disclosure', 'skill activation', 'skill portability']
 ---
 
 # Mental Model
 
-Skills follow a three-stage progressive disclosure model that controls when and how instructions enter Claude's context window. Understanding this model is the difference between skills that activate reliably and skills that sit dormant.
+A skill is a capability package the agent can discover and load when a task needs specialized knowledge or procedure. It moves long, conditional guidance out of the always-present prompt.
 
-## What a Skill Actually Is
+## Three Layers
 
-A skill is a directory containing a `SKILL.md` file. The file has two parts: YAML frontmatter (metadata Claude uses to decide relevance) and a markdown body (instructions Claude follows when invoked). That's it. No runtime, no compilation, no API.
+1. **Registry metadata** — name and description used to decide relevance.
+2. **Instruction body** — the workflow, decision points, and completion contract loaded on invocation.
+3. **Resources** — scripts, references, templates, and assets loaded or executed only when required.
 
-```
-.claude/skills/deploy/
-├── SKILL.md              # Required. Frontmatter + instructions.
-├── references/           # Optional. Large reference docs, API specs.
-│   └── api-spec.md
-├── scripts/              # Optional. Executable code Claude can run.
-│   └── validate.sh
-└── assets/               # Optional. Templates, config samples.
-    └── config.template
-```
+This progressive-disclosure shape is portable across Claude Code, Codex, and Copilot. Discovery paths, precedence, arguments, allowed-tool syntax, model controls, and compaction behavior are not.
 
-The path must be `<root>/skills/<name>/SKILL.md`. Nesting deeper (e.g., `skills/a/b/SKILL.md`) does not work.
+## Activation Is a Routing Decision
 
-## Skill Scopes
+Model-invoked skills trade operator effort for probabilistic routing. User-invoked skills provide timing but still depend on the model to execute the procedure. A skill description should discriminate when the workflow is required; the body should state observable completion criteria.
 
-| Scope | Path | Use Case |
-|-------|------|----------|
-| Project | `.claude/skills/<name>/SKILL.md` | Team standards, repo-specific workflows |
-| Personal | `~/.claude/skills/<name>/SKILL.md` | Your global workflows across all repos |
-| Enterprise | Deployed via `managed-settings.json` | Org-wide enforcement |
-| Plugin | `skills/` directory inside a published plugin | Distributed skill packages |
-| Legacy | `.claude/commands/<name>.md` | Still works, but prefer `.claude/skills/` |
+## Capability, Not Authority
 
-## The Three-Stage Lifecycle
+A skill can teach, scaffold, inspect, or orchestrate. It should not grant itself new authority. External writes, destructive changes, publication, and spend remain subject to the surrounding product permissions and human decision boundary.
 
-### Stage 1: Metadata Loading
-
-At session start, Claude Code reads the `name` and `description` fields from every discoverable skill's frontmatter. These are injected into the system prompt as a skill registry. The full `SKILL.md` content is NOT loaded yet.
-
-What the system prompt registry looks like internally:
-
-```
-Available skills:
-- deploying-to-staging: Deployment expert for staging environments. ALWAYS invoke when...
-- reviewing-code: Structured code review process. Invoke when reviewing PRs...
-- fixing-issues: Fix a GitHub issue by number. ALWAYS invoke when the user says...
-```
-
-**Cost:** ~100 tokens per skill. Twenty skills = ~2,000 tokens always present in every turn. This is the overhead you pay just for having skills available.
-
-### Stage 2: Invocation Decision
-
-Claude decides whether to invoke a skill. Two paths exist:
-
-**Manual invocation:** User types `/skill-name [args]`. Always works. Bypasses description matching entirely. This is the guaranteed path.
-
-**Auto-invocation:** Claude reads the skill descriptions in its system prompt, reasons about relevance to the current task, and calls the `Skill` tool. This is a language model decision, not algorithmic matching. The description is the only input Claude uses to decide.
-
-### Stage 3: Content Injection
-
-Once invoked, the rendered `SKILL.md` content enters the conversation as a single message. It stays there for the rest of the session. Claude does NOT re-read the skill file on later turns.
-
-Supporting files in the skill directory are NOT auto-loaded. Claude must explicitly read them using `Read` or `Bash` tools. A skill that references its own assets:
-
-```markdown
-# API Scaffolding
-
-## Step 1: Load the route template
-Read the template file:
-`cat ${CLAUDE_SKILL_DIR}/assets/route.template.ts`
-
-## Step 2: Check the API spec
-Read the OpenAPI spec for endpoint definitions:
-`cat ${CLAUDE_SKILL_DIR}/references/openapi.yaml`
-
-## Step 3: Generate the endpoint
-Use the template and spec to create the new route handler.
-```
-
-This is intentional — it keeps the initial injection lean.
-
-## Skill Resolution Order
-
-When naming conflicts occur, precedence from highest to lowest:
-
-1. **Enterprise skills** (`managed-settings.json`) — override everything
-2. **Personal skills** (`~/.claude/skills/`) — your global preferences
-3. **Project skills** (`.claude/skills/`) — team/repo standards
-4. **Plugin skills** (plugin `skills/` directory) — lowest priority
-
-If a skill and a legacy command share the same name, the skill takes precedence.
-
-**Known issue (April 2026):** When a project has `.claude/skills/`, skills from `~/.claude/skills/` may not load. This contradicts documented behavior where both should be discovered.
-
-## Context Window Implications
-
-Understanding the token budget is non-negotiable for skill design:
-
-| Content | When Loaded | Token Budget |
-|---------|-------------|--------------|
-| CLAUDE.md | Every turn | ~2,000 tokens recommended max |
-| Skill descriptions (name + description) | Session start, every turn | ~100 tokens each |
-| Invoked skill body | On invocation, stays until compaction | No hard limit, but 500 lines recommended max |
-| Re-attached skill (after compaction) | After auto-compaction | 5,000 tokens per skill, 25,000 combined max |
-| MCP tool schemas | Session start, every turn | 5,000-10,000 tokens per server |
-
-### The Compaction Cycle
-
-When the context window fills up, Claude Code triggers auto-compaction. During compaction:
-
-1. Conversation history is summarized
-2. The most recent invocation of each skill is re-attached
-3. Each re-attached skill gets up to 5,000 tokens (first 5,000 of the original)
-4. Re-attached skills share a combined budget of 25,000 tokens
-5. The budget fills starting from the most recently invoked skill
-
-This means long skills lose their tail content after compaction. Front-load the critical instructions in the first 5,000 tokens of your `SKILL.md`.
-
-## SKILL.md Frontmatter Reference
-
-All fields are optional, but `description` is strongly recommended.
-
-```yaml
----
-# Identity
-name: deploying-to-staging      # Max 64 chars. Lowercase, numbers, hyphens.
-                                 # No reserved words ("anthropic", "claude").
-                                 # If omitted, uses directory name.
-                                 # Gerund form recommended (verb + -ing).
-
-# Trigger
-description: |                   # Max 1,024 chars. What + when.
-  Deployment expert for staging environments.
-  ALWAYS invoke this skill when the user asks about deploying,
-  releasing, or pushing to staging.
-
-# Execution control
-context: fork                    # Runs in isolated subagent. No conversation history.
-agent: Explore                   # Which agent type executes.
-model: claude-sonnet-4-6         # Override model for this skill.
-
-# Security
-allowed-tools: Read,Grep,Glob   # Only listed tools permitted.
-                                 # Supports Bash scoping: Bash(git:*), Bash(npm:*)
-disable-model-invocation: true   # Only manual /slash-command. Hidden from auto-invocation.
-
-# Metadata (Agent Skills Standard)
-license: MIT
-compatibility: "node>=18"       # Max 500 chars.
-metadata:
-  version: "1.2.0"
-  author: "dakota"
----
-```
-
-## How Skills Differ from Everything Else
-
-| Mechanism | Loaded | Purpose | Nature |
-|-----------|--------|---------|--------|
-| CLAUDE.md | Every turn | Global project instructions | Advisory, always in context |
-| Skills | On-demand (description always; body when invoked) | Task-specific workflows | Advisory, loaded when relevant |
-| Hooks | Automatically at lifecycle events | Enforce constraints deterministically | Deterministic, runs regardless of Claude's judgment |
-| Legacy commands | On explicit `/command` invocation | Saved prompts | Same as skills but single-file, no auto-invocation |
-| MCP servers | Tool schemas at startup | External tool connectivity | Infrastructure, provides tools not instructions |
-
-The most common mistake: treating skills as "CLAUDE.md sections that load on demand." Skills are interactive workflows with parameterization, forking, tool restrictions, and model overrides. If your skill is just a paragraph of instructions, it probably belongs in CLAUDE.md.
-
-## Argument Interpolation
-
-Skills support parameter passing through shell-style variables:
-
-| Variable | Expands To |
-|----------|-----------|
-| `$ARGUMENTS` | Everything typed after the slash command |
-| `$0`, `$1`, `$2` | Positional args (shell-style quoting) |
-| `${CLAUDE_SKILL_DIR}` | Absolute path to the skill's directory |
-
-A SKILL.md using all three interpolation types:
-
-```markdown
----
-name: migrate-database
-description: |
-  Database migration runner. ALWAYS invoke when the user asks
-  to create or run a migration. Do not run migration commands directly.
----
-
-# Database Migration
-
-## Target
-Run migration: $ARGUMENTS
-
-## Steps
-1. Identify migration type from first arg: `$0` (create | run | rollback)
-2. Target environment from second arg: `$1` (dev | staging | production)
-3. Load the environment config template:
-   `cat ${CLAUDE_SKILL_DIR}/assets/env-config.template`
-4. Execute the migration using the reference script:
-   `bash ${CLAUDE_SKILL_DIR}/scripts/migrate.sh $0 $1`
-5. Verify the result against the expected schema in:
-   `${CLAUDE_SKILL_DIR}/references/schema-spec.md`
-```
-
-Invocation: `/migrate-database create staging` makes `$0` = "create", `$1` = "staging", and `$ARGUMENTS` = "create staging".
-
-If a skill does not reference `$ARGUMENTS`, Claude Code automatically appends `ARGUMENTS: <input>` so Claude still sees the input.
-
-Multi-word arguments use shell-style quoting: `/my-skill "hello world" second` makes `$0` = "hello world", `$1` = "second".
-
-**Watch out:** Multi-line input passed to `$ARGUMENTS` can break across 16+ commands. Keep arguments to single-line values when possible.
+The crux is simple: if skipping a step would make the result invalid, verify the step's output independently instead of assuming the model followed the skill.

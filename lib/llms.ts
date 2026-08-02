@@ -9,6 +9,7 @@
  */
 
 import { getAllPosts } from './posts';
+import { getToolkitProducts } from './toolkit';
 import { SITE_URL } from './site';
 
 const PILLARS = [
@@ -18,9 +19,9 @@ const PILLARS = [
     note: 'Named, repeatable techniques for working effectively with AI coding agents.',
   },
   {
-    name: 'Claude Code Toolkit',
+    name: 'Agent Tooling',
     path: '/learn/toolkit',
-    note: "Expert deep-dives into Claude Code's features for production agentic engineering.",
+    note: 'Source-backed capability guides comparing Claude Code, OpenAI Codex, and GitHub Copilot.',
   },
   {
     name: 'The Harness',
@@ -46,6 +47,7 @@ function oneLine(text: string): string {
  */
 export function generateLlmsTxt(): string {
   const posts = getAllPosts();
+  const products = getToolkitProducts();
 
   const learnLines = PILLARS.map((p) => `- [${p.name}](${SITE_URL}${p.path}): ${p.note}`).join(
     '\n'
@@ -58,15 +60,26 @@ export function generateLlmsTxt(): string {
     })
     .join('\n');
 
+  const productLines = products
+    .map(
+      (product) =>
+        `- [${product.name} capability guide](${SITE_URL}/learn/toolkit/products/${product.id}): ${oneLine(product.description)}`
+    )
+    .join('\n');
+
   return `# Dakota Smith
 
-> Personal engineering blog and a four-pillar Learn platform on agentic engineering — patterns, the Claude Code toolkit, the agent harness, and security.
+> An independent publication and four-field guide to agentic engineering — patterns, cross-vendor tooling, delivery harnesses, and security.
 
 Dakota Smith is a principal architect focused on agentic systems, governed delivery, and enterprise platforms. This site pairs an engineering blog with structured, expert-level guides for building with AI coding agents. Content is static MDX; full article bodies render server-side without JavaScript.
 
 ## Learn
 
 ${learnLines}
+
+## Product capability guides
+
+${productLines}
 
 ## Blog
 

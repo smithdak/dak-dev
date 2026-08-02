@@ -208,7 +208,7 @@ export function PatternsSidebar({ chapters, patterns }: PatternsSidebarProps) {
             <div key={chapter.number}>
               {/* Chapter header */}
               <div
-                className={`flex items-center border-l-4 transition-colors ${
+                className={`flex items-center border-l transition-colors ${
                   isActiveChapter
                     ? `${BORDER_COLORS[chapter.number]} ${BG_COLORS[chapter.number]}`
                     : 'border-transparent hover:border-text/20'
@@ -269,7 +269,7 @@ export function PatternsSidebar({ chapters, patterns }: PatternsSidebarProps) {
                           href={`/learn/patterns/${pattern.slug}`}
                           className={`group flex min-h-11 items-center gap-2.5 pl-8 pr-3 py-2 text-sm transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent ${
                             isActive
-                              ? `font-bold text-text border-l-4 ${BORDER_COLORS[pattern.chapter]} ${BG_COLORS[pattern.chapter]} -ml-px`
+                              ? `font-bold text-text border-l ${BORDER_COLORS[pattern.chapter]} ${BG_COLORS[pattern.chapter]} -ml-px`
                               : 'text-muted border-l border-text/10 hover:text-text hover:border-l-2 hover:border-text/30 hover:bg-surface/20'
                           }`}
                           aria-current={isActive ? 'page' : undefined}

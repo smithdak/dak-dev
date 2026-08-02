@@ -48,7 +48,10 @@ export default function DecoderPage() {
           </li>
           <li aria-hidden="true">/</li>
           <li>
-            <Link href="/learn/start" className="hover:text-text hover:underline underline-offset-2">
+            <Link
+              href="/learn/start"
+              className="hover:text-text hover:underline underline-offset-2"
+            >
               Start Here
             </Link>
           </li>
@@ -60,11 +63,8 @@ export default function DecoderPage() {
       </nav>
 
       <header className="px-4 sm:px-6 lg:px-0 mb-12 max-w-3xl">
-        <p className="mb-4 inline-block border-4 border-chapter-5 bg-surface px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-chapter-5">
-          Plain English
-        </p>
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">The Decoder</h1>
-        <div className="h-1 bg-chapter-5 mb-6" style={{ maxWidth: '160px' }} aria-hidden="true" />
+        <p className="editorial-kicker mb-5 text-chapter-5">Plain English</p>
+        <h1 className="mb-5 font-display text-5xl tracking-tight md:text-7xl">The Decoder</h1>
         <p className="text-lg md:text-xl text-muted leading-relaxed">
           The words that fly past in a demo, decoded. Each one pairs a familiar analogy with the
           precise meaning — understanding without dumbing it down — plus a real example and a way to

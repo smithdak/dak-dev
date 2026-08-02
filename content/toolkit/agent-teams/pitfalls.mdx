@@ -1,352 +1,53 @@
 ---
-title: "Agent Teams: Pitfalls"
-topic: "agent-teams"
-subPage: "pitfalls"
+title: 'Multi-Agent Coordination: Pitfalls'
+topic: 'agent-teams'
+subPage: 'pitfalls'
 order: 5
-description: "Context exhaustion, cost multiplication, known worktree bugs, race conditions, and when teams are worse than solo agents."
-relatedPatterns: ["scope-fence", "checkpoint-loop"]
-relatedTopics: ["agents", "settings"]
+description: 'Failure modes in team topology, shared state, parallel writes, cost, partial failure, and unverifiable consensus.'
+relatedPatterns: ['parallel-fan-out', 'scope-fence', 'safety-net']
+relatedTopics: ['agents', 'settings', 'hooks', 'memory']
 published: true
-keywords: ["agent teams pitfalls", "context exhaustion", "cost multiplication", "worktree bugs", "race conditions"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-agent-teams', 'codex-subagents', 'copilot-fleet', 'copilot-cli-reference']
+keywords:
+  [
+    'agent team pitfalls',
+    'multi-agent failure',
+    'parallel agent conflicts',
+    'agent coordination cost',
+  ]
 ---
 
 # Pitfalls
 
-Agent teams fail in predictable ways. Every pitfall here has been observed in production use. Know these failure modes before designing your first team.
+## Designing for the Wrong Topology
 
-## Context Window Exhaustion
+Peer-message assumptions fail on coordinator-only products. State the required communication graph before choosing a feature.
 
-Each teammate has its own context window, but the lead's fills fastest. The lead processes every teammate's messages, every task status update, and every synthesis step.
+## Parallelizing Dependencies
 
-Three specific context pressure points:
+Workers waiting on one another add cost without reducing elapsed time. Keep dependent steps sequential.
 
-- **Broadcast messages** multiply consumption. One broadcast to 5 teammates costs 5x the tokens. Use targeted `message` (one-to-one) instead of `broadcast` (one-to-all) whenever possible.
-- **Skill content persists** in context once loaded. After auto-compaction, skills are re-attached but capped at 5,000 tokens each, with a combined budget of 25,000 tokens.
-- **Verbose teammate output** floods the lead. A teammate dumping 200 lines of analysis into a message wastes lead context on raw data.
+## Shared-File Races
 
-### Mitigation
+Agents can overwrite or invalidate each other's work. Allocate files, worktrees, and integration order.
 
-- Keep teams at 3-5 teammates maximum
-- Use targeted messages instead of broadcasts
-- Set explicit output format expectations in spawn prompts: "Summarize findings in 10 lines or fewer with severity ratings and file references"
-- Have teammates write detailed findings to scratch files, then send only a summary to the lead
+## Consensus as Correctness
 
-## Coordination Overhead
+Several agents can share the same wrong premise. Use independent evidence and deterministic checks, not vote count.
 
-The official guidance quantifies the sweet spot:
+## Unbounded Fan-Out
 
-- **Too small tasks**: coordination overhead exceeds the benefit
-- **Too large tasks**: teammates work too long without check-ins, increasing risk of wasted effort
-- **Just right**: self-contained units that produce a clear deliverable
+Recursive spawning hides cost and failure. Set active-worker, depth, retry, and time limits.
 
-Target 5-6 tasks per teammate. Three focused teammates consistently outperform five scattered ones — the coordination cost of teammates 4 and 5 rarely pays for itself.
+## Orphaned Work
 
-| Team Size | Cost Multiplier | When Justified |
-|-----------|----------------|----------------|
-| 1 (solo) | 1x | Most tasks |
-| 3 teammates | ~4x (3 + lead) | Independent parallel work |
-| 5 teammates | ~6x (5 + lead) | Large independent domains |
-| 10 teammates | ~11x | Rarely justified |
+A failed coordinator can leave children running or changes uncollected. Define cancellation and recovery before launch.
 
-## When Single-Agent is Actually Better
+## Falsification Checklist
 
-Teams make these scenarios worse, not better:
-
-**Sequential workflows.** When step N depends entirely on step N-1, there is nothing to parallelize. A team adds coordination overhead to inherently serial work.
-
-**Same-file edits.** Two teammates editing one file without worktree isolation causes silent overwrites. The last writer wins, and the first writer's changes vanish without error.
-
-**Tight coupling.** When changes in area A require immediate knowledge of changes in area B, teammates cannot work independently. They spend more time messaging than implementing.
-
-**Simple tasks.** If a single session handles the task in under 5 minutes, the team setup cost (spawning teammates, creating tasks, waiting for coordination) exceeds the time saved.
-
-**Exploration.** When you don't yet know enough to decompose the task, spawning a team is premature. Use a single session or subagent to explore first, then decide if a team is warranted.
-
-## Worktree Bugs
-
-Known failure modes as of April 2026:
-
-### Silent Failure with team_name (Issue #37549)
-
-`isolation: worktree` silently fails when combined with the `team_name` parameter. The agent runs in the main repo instead of a worktree. No error is raised.
-
-```yaml
-# This combination can silently fail
----
-name: implementer
-isolation: worktree
----
-```
-
-When spawned with a `team_name`, the worktree may not be created. The agent proceeds in the main repo, potentially causing file conflicts with other teammates.
-
-### General Silent Failure (Issue #39886)
-
-`isolation: worktree` can silently fail even without `team_name`. The worktree is not created, no error is raised, and the agent runs in the main repo.
-
-### Stale origin/HEAD
-
-Worktrees branch from `origin/HEAD`. If the local reference is stale, the worktree starts from the wrong commit.
-
-### Mitigation
-
-```bash
-# Sync origin/HEAD before spawning teams with worktrees
-git remote set-head origin -a
-```
-
-Verify worktree creation with a `WorktreeCreate` hook:
-
-```json
-{
-  "hooks": {
-    "WorktreeCreate": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'INPUT=$(cat); WORKTREE_PATH=$(echo \"$INPUT\" | jq -r \".worktree_path\"); if [ ! -d \"$WORKTREE_PATH\" ]; then echo \"Worktree creation failed: $WORKTREE_PATH does not exist\" >&2; exit 1; fi; exit 0'"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-## Cost Multiplication
-
-Token costs scale linearly with active teammates. Each teammate is a full Claude instance consuming tokens independently.
-
-### Cost Control Strategies
-
-**Model selection per role.** Not every teammate needs Opus:
-
-```yaml
-# Researcher needs deep reasoning
----
-name: researcher
-model: opus
----
-```
-
-```yaml
-# Test runner needs execution, not reasoning
----
-name: test-runner
-model: haiku
----
-```
-
-**Keep teams small.** A 3-person team with Opus lead + 2 Sonnet workers costs roughly 60% of an all-Opus team.
-
-**Time-box teammates.** Use `TeammateIdle` hooks to prevent teammates from spinning indefinitely. Set clear completion criteria in task descriptions.
-
-A `TeammateIdle` hook that enforces a maximum active duration per teammate:
-
-```bash
-#!/bin/bash
-# .claude/hooks/time-box-teammate.sh
-INPUT=$(cat)
-TEAMMATE=$(echo "$INPUT" | jq -r '.teammate_name')
-START_FILE="/tmp/claude-team-start-${TEAMMATE}"
-
-# Record start time on first idle check
-if [ ! -f "$START_FILE" ]; then
-  date +%s > "$START_FILE"
-  exit 0  # Allow idle on first check
-fi
-
-START=$(cat "$START_FILE")
-NOW=$(date +%s)
-ELAPSED=$(( NOW - START ))
-MAX_SECONDS=1800  # 30 minutes
-
-if [ "$ELAPSED" -gt "$MAX_SECONDS" ]; then
-  rm -f "$START_FILE"
-  echo "Teammate $TEAMMATE exceeded ${MAX_SECONDS}s time box. Allowing idle." >&2
-  exit 0
-fi
-
-# Check for remaining work before allowing idle
-PENDING=$(find .claude/tasks/ -name "*.json" -exec grep -l "\"assignee\":.*\"$TEAMMATE\"" {} + 2>/dev/null | xargs grep -l '"pending"' 2>/dev/null | wc -l)
-if [ "$PENDING" -gt 0 ]; then
-  echo "$PENDING tasks still assigned to $TEAMMATE -- keep working" >&2
-  exit 2
-fi
-
-exit 0
-```
-
-```json
-{
-  "hooks": {
-    "TeammateIdle": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/time-box-teammate.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-**Prefer subagents for focused work.** If a teammate only needs to return a result (no inter-teammate discussion), a subagent is cheaper — results are summarized back to the caller context instead of maintaining a separate full session.
-
-## Race Conditions and Ordering
-
-### Task Claiming
-
-Task claiming uses file locking to prevent two teammates from claiming the same task. This is handled automatically and works reliably.
-
-### File System Races
-
-Two teammates editing the same file without worktree isolation causes overwrites. This is NOT handled automatically. Design your task decomposition to avoid file overlap, or use worktree isolation.
-
-Prevention strategies:
-
-- Define file ownership in CLAUDE.md
-- Decompose tasks by directory/module
-- Use `isolation: worktree` for implementation teams
-- Add `TaskCompleted` hooks that verify no out-of-scope files were modified
-
-A `TaskCompleted` hook that detects out-of-scope modifications:
-
-```bash
-#!/bin/bash
-# .claude/hooks/check-file-scope.sh
-INPUT=$(cat)
-TASK_ID=$(echo "$INPUT" | jq -r '.task_id')
-TEAMMATE=$(echo "$INPUT" | jq -r '.teammate_name // empty')
-EXPECTED_SCOPE=$(echo "$INPUT" | jq -r '.task_description' | grep -oP '(?<=Domain: ).*' | head -1)
-
-if [ -z "$EXPECTED_SCOPE" ]; then
-  exit 0  # No scope defined in task description
-fi
-
-# Get files modified since task was claimed
-MODIFIED=$(git diff --name-only HEAD~1 2>/dev/null)
-OUTSIDE_SCOPE=$(echo "$MODIFIED" | while read -r file; do
-  MATCH=false
-  for dir in $(echo "$EXPECTED_SCOPE" | tr ',' '\n' | tr -d ' '); do
-    if echo "$file" | grep -q "^$dir"; then
-      MATCH=true
-      break
-    fi
-  done
-  if [ "$MATCH" = false ] && [ -n "$file" ]; then
-    echo "$file"
-  fi
-done)
-
-if [ -n "$OUTSIDE_SCOPE" ]; then
-  echo "Teammate $TEAMMATE modified files outside task scope:" >&2
-  echo "$OUTSIDE_SCOPE" >&2
-  echo "Expected scope: $EXPECTED_SCOPE" >&2
-  exit 2
-fi
-
-exit 0
-```
-
-### Message Ordering
-
-Messages are delivered asynchronously. Do not assume teammates receive messages in any particular order. If ordering matters, use task dependencies instead of messages.
-
-### Dependency Resolution Lag
-
-Task dependency resolution is automatic but can lag. If a teammate marks a task complete but the system does not immediately unblock dependents, the lead may need to nudge. Watch for teammates that appear stuck on "waiting for dependency" status.
-
-## Result Aggregation Failures
-
-The lead must synthesize findings from all teammates. This fails in three ways:
-
-- **Context overflow**: teammates produce verbose output that exceeds the lead's remaining context
-- **Inconsistent formats**: each teammate structures findings differently, making synthesis unreliable
-- **Information loss**: the lead summarizes and misses critical details
-
-### Mitigation
-
-Set explicit output format expectations in the spawn prompt:
-
-```text
-Structure your findings as:
-## Critical (must fix)
-- [file:line] Description
-
-## High (should fix)
-- [file:line] Description
-
-## Low (nit)
-- [file:line] Description
-```
-
-Consistent format across teammates makes the lead's synthesis reliable and reduces context waste.
-
-## Debugging Team Failures
-
-When something goes wrong:
-
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| Teammate stops on error | Unhandled exception in tool use | Check output with Shift+Down or click the pane. Give instructions or spawn replacement |
-| Lead shuts down early | Lead decides team is finished prematurely | Tell it "Wait for teammates to finish before proceeding" |
-| Lead implements instead of delegating | Ambiguous instructions | Explicitly say "Wait for your teammates to complete their tasks" |
-| Tasks stuck in pending | Teammate forgot to mark complete | Check manually, update status |
-| Orphaned tmux sessions | Crash or premature exit | `tmux ls && tmux kill-session -t <name>` |
-
-Transcripts are available at the path in `transcript_path` from hook inputs. These are JSONL files — parse them for post-mortem debugging.
-
-## Session Limitations
-
-Hard constraints as of April 2026:
-
-- **No session resumption** with in-process teammates. `/resume` and `/rewind` do not restore teammates.
-- **One team per session.** Clean up before starting a new one.
-- **No nested teams.** Teammates cannot spawn their own teams (they can use subagents).
-- **Lead is fixed** for the lifetime of the team. Cannot swap leads mid-session.
-- **Shared permission mode.** All teammates start with the lead's permission mode. Cannot set per-teammate permissions at spawn time.
-- **Split panes require tmux or iTerm2.** Not supported in VS Code terminal, Windows Terminal, or Ghostty.
-
-Plan around these constraints rather than discovering them mid-workflow. The one-team-per-session and no-resume limitations are the most impactful — design teams for completion in a single session.
-
-## Cleanup Script
-
-Orphaned tmux sessions and worktrees accumulate across failed team runs. A cleanup script prevents resource leaks:
-
-```bash
-#!/bin/bash
-# scripts/cleanup-teams.sh
-# Kill orphaned tmux sessions from Claude Code teams
-
-echo "=== Orphaned tmux sessions ==="
-tmux ls 2>/dev/null | grep -i claude | while read -r session; do
-  SESSION_NAME=$(echo "$session" | cut -d: -f1)
-  echo "Killing: $SESSION_NAME"
-  tmux kill-session -t "$SESSION_NAME"
-done
-
-echo ""
-echo "=== Orphaned worktrees ==="
-if [ -d ".claude/worktrees" ]; then
-  for wt in .claude/worktrees/*/; do
-    [ -d "$wt" ] || continue
-    WN=$(basename "$wt")
-    # Check if the worktree has uncommitted changes
-    if git -C "$wt" diff --quiet 2>/dev/null && git -C "$wt" diff --cached --quiet 2>/dev/null; then
-      echo "Removing clean worktree: $WN"
-      git worktree remove "$wt" --force 2>/dev/null
-    else
-      echo "Skipping dirty worktree: $WN (has uncommitted changes)"
-    fi
-  done
-fi
-
-echo ""
-echo "=== Git worktree prune ==="
-git worktree prune -v
-```
+- Does the task graph contain real independence?
+- Does the product provide the topology the design requires?
+- Can every write be attributed and reconciled?
+- What happens when one worker stalls or the coordinator fails?
+- Did the team beat a single-agent baseline on outcome, not spectacle?

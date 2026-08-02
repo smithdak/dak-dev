@@ -3,7 +3,7 @@ import { SearchContent } from './SearchContent';
 
 // SEO metadata with noindex
 export const metadata: Metadata = {
-  title: 'Search | Dakota Smith',
+  title: 'Search',
   description: 'Search articles, agent patterns, and technical guides across the site.',
   robots: {
     index: false,

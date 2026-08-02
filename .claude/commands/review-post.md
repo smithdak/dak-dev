@@ -11,6 +11,7 @@ Comprehensive post validation with score breakdown and actionable fixes.
 ## Description
 
 Runs the full validation suite on a blog post, checking:
+
 - **Frontmatter** - Title, excerpt, date, tags, keywords, images
 - **Structure** - Word count, headings, code blocks, conclusion
 - **Brand Voice** - Forbidden phrases, passive voice, sentence length
@@ -21,20 +22,20 @@ Returns a detailed score breakdown with specific issues and suggestions.
 
 ## Scoring System
 
-| Category | Weight | Checks |
-|----------|--------|--------|
-| Technical Depth (Frontmatter) | 25% | Title length, excerpt length, keywords, tags |
-| Voice Alignment | 25% | Forbidden phrases, passive voice, sentence length |
-| Structure | 25% | Word count, H2 headings, conclusion |
-| SEO Readiness | 25% | Keyword in title, first paragraph, H2 |
+| Category                      | Weight | Checks                                            |
+| ----------------------------- | ------ | ------------------------------------------------- |
+| Technical Depth (Frontmatter) | 25%    | Title length, excerpt length, keywords, tags      |
+| Voice Alignment               | 25%    | Forbidden phrases, passive voice, sentence length |
+| Structure                     | 25%    | Word count, H2 headings, conclusion               |
+| SEO Readiness                 | 25%    | Keyword in title, first paragraph, H2             |
 
 ### Score Thresholds
 
-| Score | Status | Action |
-|-------|--------|--------|
-| 80+ | **Publish Ready** | Can be published |
-| 60-79 | **Minor Edits** | Fix warnings, review |
-| 0-59 | **Major Revision** | Significant rewriting needed |
+| Score | Status             | Action                       |
+| ----- | ------------------ | ---------------------------- |
+| 80+   | **Publish Ready**  | Can be published             |
+| 60-79 | **Minor Edits**    | Fix warnings, review         |
+| 0-59  | **Major Revision** | Significant rewriting needed |
 
 ## Output Format
 
@@ -66,7 +67,7 @@ images: 85/100 ✓
   ⚠ [seo] Primary keyword "autonomous AI" not in first paragraph
     → Mention primary keyword early in the content
   ⚠ [images/thumbnailBlur] Missing blur placeholder for thumbnail
-    → Run npm run images:process to generate blur data
+    → Run pnpm images:generate to regenerate deterministic art and blur data
 
 ============================================================
 ```
@@ -74,6 +75,7 @@ images: 85/100 ✓
 ## Validation Rules
 
 ### Frontmatter
+
 - Title: 30-70 characters
 - Excerpt: 140-160 characters
 - Date: ISO 8601 format (YYYY-MM-DD)
@@ -82,12 +84,14 @@ images: 85/100 ✓
 - Thumbnail/Hero paths defined
 
 ### Structure
+
 - Word count: 500-3000 words
 - Minimum 3 H2 headings
 - Conclusion section required
 - Code blocks have language identifiers
 
 ### Brand Voice
+
 - No forbidden phrases (31+ checked, including oversimplification phrases)
 - Passive voice ≤ 20%
 - Sentences ≤ 35 words
@@ -95,11 +99,13 @@ images: 85/100 ✓
 - No oversimplification phrases ("seamlessly", "effortlessly", "perfect solution", "zero overhead", "no downsides")
 
 ### SEO
+
 - Primary keyword in title
 - Primary keyword in first paragraph
 - Primary keyword in at least one H2
 
 ### Images
+
 - Thumbnail exists at specified path (800x450)
 - Hero exists at specified path (1600x900)
 - Blur placeholders generated
@@ -128,6 +134,7 @@ npx tsx scripts/run-validation.ts validate <slug>
 ```
 
 For JSON output:
+
 ```bash
 JSON_OUTPUT=true npx tsx scripts/run-validation.ts validate <slug>
 ```
@@ -135,29 +142,35 @@ JSON_OUTPUT=true npx tsx scripts/run-validation.ts validate <slug>
 ## Common Issues and Fixes
 
 ### "Excerpt too short"
+
 The excerpt must be 140-160 characters exactly. This is used as the meta description.
 
 **Fix:** Expand to include more context about what the reader will learn.
 
 ### "Forbidden phrase found"
+
 AI-generated content often includes hedging language.
 
 **Fix:** Replace with direct, confident statements:
+
 - "I think" → (remove, state directly)
 - "might be" → "is"
 - "just" → (remove entirely)
 
 ### "Primary keyword not in title"
+
 SEO requires the target keyword in the title.
 
 **Fix:** Naturally incorporate the primary keyword from your `keywords` array.
 
 ### "No conclusion section detected"
+
 Posts must end with a conclusion containing takeaways.
 
 **Fix:** Add `## Conclusion` section with bullet-point takeaways.
 
 ### "No tradeoffs or limitations mentioned"
+
 Technical advice posts should address when NOT to use an approach.
 
 **Fix:** Add a section covering what could go wrong, when it doesn't apply, and the complexity cost. Example: "This works for read-heavy APIs under 10K URLs. Beyond that, cache storage costs outweigh the latency gains."

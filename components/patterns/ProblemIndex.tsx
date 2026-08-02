@@ -76,17 +76,17 @@ interface ProblemIndexProps {
 export function ProblemIndex({ className = '', publishedSlugs }: ProblemIndexProps) {
   return (
     <section id="problems" className={`scroll-mt-20 ${className}`}>
-      <div className="border-b-2 border-text/30 pb-4 mb-8">
+      <div className="mb-8 border-b border-text/20 pb-5">
         <div className="flex items-baseline gap-3">
           <span className="text-xs font-mono text-accent uppercase tracking-widest">02</span>
-          <h2 className="text-2xl font-bold tracking-tight">Find by Problem</h2>
+          <h2 className="font-display text-4xl tracking-tight">Find by Problem</h2>
         </div>
         <p className="text-sm text-muted mt-1 ml-8">
           Start from the symptom you&apos;re experiencing.
         </p>
       </div>
 
-      <div className="grid gap-3">
+      <div className="border-y border-text/20">
         {PROBLEMS.map((entry) => {
           const availablePatterns = publishedSlugs
             ? entry.patterns.filter((p) => publishedSlugs.has(p.slug))
@@ -97,12 +97,9 @@ export function ProblemIndex({ className = '', publishedSlugs }: ProblemIndexPro
           return (
             <div
               key={entry.problem}
-              className="group border border-text/20 hover:border-text/50 p-4 bg-surface/30 transition-colors"
+              className="group grid gap-4 border-b border-text/20 py-5 last:border-b-0 md:grid-cols-[minmax(0,1fr)_minmax(14rem,0.8fr)] md:items-start"
             >
-              <p className="text-sm font-medium text-text mb-3 leading-snug">
-                <span className="text-accent/60 mr-1" aria-hidden="true">
-                  &gt;
-                </span>
+              <p className="font-display text-xl leading-snug text-text">
                 &ldquo;{entry.problem}&rdquo;
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -110,7 +107,7 @@ export function ProblemIndex({ className = '', publishedSlugs }: ProblemIndexPro
                   <Link
                     key={pattern.slug}
                     href={`/learn/patterns/${pattern.slug}`}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-text/40 hover:border-text text-xs font-semibold hover:bg-text hover:text-background transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted underline decoration-text/20 underline-offset-4 transition-colors hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent"
                   >
                     <span className="font-mono text-[10px] text-accent">{pattern.number}</span>
                     {pattern.name}

@@ -4,7 +4,7 @@ import sharp from 'sharp';
 
 // Image specifications from brand guidelines
 export const IMAGE_SPECS = {
-  thumbnail: { width: 800, height: 450, maxSizeKB: 500 },
+  thumbnail: { width: 960, height: 640, maxSizeKB: 500 },
   hero: { width: 1600, height: 900, maxSizeKB: 1000 },
 } as const;
 
@@ -129,7 +129,10 @@ export async function getImageMetadata(imagePath: string): Promise<ImageMetadata
 /**
  * Validate image meets specification
  */
-export async function validateImageSpec(imagePath: string, spec: ImageSpec): Promise<ValidationIssue[]> {
+export async function validateImageSpec(
+  imagePath: string,
+  spec: ImageSpec
+): Promise<ValidationIssue[]> {
   const issues: ValidationIssue[] = [];
 
   try {
@@ -142,7 +145,7 @@ export async function validateImageSpec(imagePath: string, spec: ImageSpec): Pro
         category: 'images',
         field: path.basename(imagePath),
         message: `Incorrect dimensions: ${metadata.width}x${metadata.height} (expected ${spec.width}x${spec.height})`,
-        suggestion: `Run npm run images:process to resize to ${spec.width}x${spec.height}`,
+        suggestion: `Run pnpm images:generate to restore ${spec.width}x${spec.height}`,
       });
     }
 
@@ -164,7 +167,7 @@ export async function validateImageSpec(imagePath: string, spec: ImageSpec): Pro
         category: 'images',
         field: path.basename(imagePath),
         message: `Non-JPEG format: ${metadata.format} (JPEG recommended for consistency)`,
-        suggestion: 'Run npm run images:process to convert to JPEG',
+        suggestion: 'Run pnpm images:generate to restore the canonical JPEG',
       });
     }
   } catch (error) {
@@ -193,7 +196,11 @@ export async function processPostImages(
 
   // Process thumbnail
   const thumbnailSpec = IMAGE_SPECS.thumbnail;
-  const thumbnailBuffer = await processImage(sourceBuffer, thumbnailSpec.width, thumbnailSpec.height);
+  const thumbnailBuffer = await processImage(
+    sourceBuffer,
+    thumbnailSpec.width,
+    thumbnailSpec.height
+  );
   const thumbnailPath = path.join(outputDir, 'thumbnail.jpg');
   fs.writeFileSync(thumbnailPath, thumbnailBuffer);
   const thumbnailBlur = await generateBlurPlaceholder(thumbnailBuffer);
@@ -252,8 +259,9 @@ function escapeXml(str: string): string {
 }
 
 /**
- * Generate an SVG overlay with gradient scrim, accent line, title text, and author branding.
- * Uses base64-embedded Space Grotesk font for consistent rendering via librsvg.
+ * Generate a restrained editorial overlay with a readability scrim, green rule,
+ * title text, and author branding. Uses embedded Space Grotesk for deterministic
+ * rendering via librsvg.
  */
 export async function compositeThumbnail(
   imageBuffer: Buffer,
@@ -262,21 +270,21 @@ export async function compositeThumbnail(
   text: string,
   options?: { accentColor?: string }
 ): Promise<Buffer> {
-  const accentColor = options?.accentColor || '#00ff88';
+  const accentColor = options?.accentColor || '#006b4d';
 
   // Load and base64-encode the font for SVG embedding
-  const fontPath = path.join(process.cwd(), 'scripts', 'fonts', 'SpaceGrotesk-Bold.ttf');
+  const fontPath = path.join(process.cwd(), 'assets', 'fonts', 'SpaceGrotesk-Bold.ttf');
   let fontBase64 = '';
   if (fs.existsSync(fontPath)) {
     fontBase64 = fs.readFileSync(fontPath).toString('base64');
   }
 
   // Scale text sizes proportionally
-  const titleFontSize = Math.round(width * 0.05);     // ~40px at 800w, ~80px at 1600w
-  const brandFontSize = Math.round(width * 0.02);     // ~16px at 800w, ~32px at 1600w
-  const accentHeight = Math.round(height * 0.009);    // ~4px at 450h, ~8px at 900h
-  const padding = Math.round(width * 0.05);            // ~40px at 800w, ~80px at 1600w
-  const scrimHeight = Math.round(height * 0.40);       // 40% of image height
+  const titleFontSize = Math.round(width * 0.05); // ~40px at 800w, ~80px at 1600w
+  const brandFontSize = Math.round(width * 0.02); // ~16px at 800w, ~32px at 1600w
+  const accentHeight = Math.round(height * 0.009); // ~4px at 450h, ~8px at 900h
+  const padding = Math.round(width * 0.05); // ~40px at 800w, ~80px at 1600w
+  const scrimHeight = Math.round(height * 0.4); // 40% of image height
 
   // Position calculations (from bottom)
   const brandY = height - padding;
@@ -293,7 +301,7 @@ export async function compositeThumbnail(
 
   const fontFamily = fontBase64
     ? "'Space Grotesk', sans-serif"
-    : "system-ui, -apple-system, sans-serif";
+    : 'system-ui, -apple-system, sans-serif';
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
     <defs>
@@ -314,24 +322,26 @@ export async function compositeThumbnail(
     <!-- Title text -->
     <text x="${padding}" y="${titleY}"
       font-family="${fontFamily}" font-size="${titleFontSize}" font-weight="700"
-      fill="#F5F5F5" letter-spacing="-0.02em">
+       fill="#F7F4EE" letter-spacing="-0.02em">
       ${escapeXml(text)}
     </text>
 
     <!-- Author branding -->
     <text x="${width - padding}" y="${brandY}"
       font-family="${fontFamily}" font-size="${brandFontSize}" font-weight="600"
-      fill="#A9A9A9" text-anchor="end">
-      Dakota Smith
+       fill="#D4CEC2" text-anchor="end">
+      Dakota Smith · Principal Architect · daksmith.dev
     </text>
   </svg>`;
 
   return sharp(imageBuffer)
-    .composite([{
-      input: Buffer.from(svg),
-      top: 0,
-      left: 0,
-    }])
+    .composite([
+      {
+        input: Buffer.from(svg),
+        top: 0,
+        left: 0,
+      },
+    ])
     .jpeg({ quality: 85, mozjpeg: true })
     .toBuffer();
 }
@@ -342,11 +352,51 @@ export async function compositeThumbnail(
  */
 export function shortenTitle(title: string): string {
   const stopWords = new Set([
-    'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-    'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were', 'be', 'been',
-    'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
-    'could', 'should', 'may', 'might', 'can', 'shall', 'my', 'your', 'our',
-    'how', 'why', 'what', 'when', 'where', 'i',
+    'a',
+    'an',
+    'the',
+    'and',
+    'or',
+    'but',
+    'in',
+    'on',
+    'at',
+    'to',
+    'for',
+    'of',
+    'with',
+    'by',
+    'from',
+    'is',
+    'are',
+    'was',
+    'were',
+    'be',
+    'been',
+    'being',
+    'have',
+    'has',
+    'had',
+    'do',
+    'does',
+    'did',
+    'will',
+    'would',
+    'could',
+    'should',
+    'may',
+    'might',
+    'can',
+    'shall',
+    'my',
+    'your',
+    'our',
+    'how',
+    'why',
+    'what',
+    'when',
+    'where',
+    'i',
   ]);
 
   // Remove text after colon (subtitle) and split into words
@@ -354,9 +404,7 @@ export function shortenTitle(title: string): string {
   const words = mainTitle.split(/\s+/);
 
   // Filter stop words but keep first word always
-  const significant = words.filter((w, i) =>
-    i === 0 || !stopWords.has(w.toLowerCase())
-  );
+  const significant = words.filter((w, i) => i === 0 || !stopWords.has(w.toLowerCase()));
 
   // Take first 3-4 significant words
   const maxWords = significant.length <= 4 ? significant.length : 3;

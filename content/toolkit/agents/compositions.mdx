@@ -1,350 +1,39 @@
 ---
-title: "Agents: Compositions"
-topic: "agents"
-subPage: "compositions"
+title: 'Agents and Subagents: Compositions'
+topic: 'agents'
+subPage: 'compositions'
 order: 4
-description: "Agents combined with skills, hooks, MCP, CLAUDE.md, and memory — what subagents inherit and how to control their environment."
-relatedPatterns: ["parallel-fan-out", "safety-net", "convention-file"]
-relatedTopics: ["skills", "hooks", "mcp", "claude-md", "memory"]
+description: 'Compose specialized subagents with skills, worktrees, hooks, MCP, memory, and independent review.'
+relatedPatterns: ['parallel-fan-out', 'scope-fence', 'memory-layer']
+relatedTopics: ['skills', 'agent-teams', 'hooks', 'mcp', 'memory']
 published: true
-keywords: ["agents compositions", "skill injection", "hook scoping", "MCP in subagents"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-subagents', 'codex-subagents', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords: ['subagent composition', 'specialist agents', 'subagents and worktrees', 'agent review']
 ---
 
-# Agents: Compositions
+# Compositions
 
-Subagents become powerful when composed with other Claude Code primitives. Each composition has specific inheritance rules — knowing what crosses the agent boundary and what doesn't prevents subtle failures.
+## Subagents + Skills
 
-## Agents + Skills
+A role defines who should do the work; a skill defines the repeatable procedure. Keep the role lean and reuse the same reviewed skill across compatible agents.
 
-Skills inject domain knowledge into a subagent's context at startup. The critical rule: **subagents do not inherit skills from the parent.** You must list them explicitly in the `skills` field.
+## Subagents + Worktrees
 
-```yaml
----
-name: api-developer
-description: Implement API endpoints following team conventions
-skills:
-  - api-conventions
-  - error-handling-patterns
----
+Worktrees isolate filesystem changes when parallel workers must modify code. Allocate branches and integration ownership before spawning.
 
-Implement API endpoints. Follow the conventions and patterns
-from the preloaded skills.
-```
+## Subagents + Hooks
 
-The full skill content is injected into the subagent's system prompt, not made available for on-demand invocation. The subagent has domain knowledge from turn one.
+Hooks can record child lifecycle events or check scope on completion. Verify that the product actually emits the relevant events for nested agents.
 
-### The Inverse: Skills That Fork Into Agents
+## Subagents + MCP
 
-A skill with `context: fork` runs inside a subagent, with the skill controlling the system prompt:
+Give specialists only the external tools their role needs. A research agent may read documentation; a release agent may inspect deployment state but should not inherit publish authority by default.
 
-```yaml
----
-name: security-audit
-context: fork
----
+## Subagents + Memory
 
-Perform a security audit of the current directory...
-```
+Role-specific memory can preserve useful calibration, but it also fragments context. Put shared team truth in version-controlled instructions or a governed knowledge source.
 
-When triggered, Claude spawns a subagent with this skill as its instructions. The parent conversation continues unblocked.
+## Subagents + Independent Review
 
-### Multi-Agent Orchestration Via Skills
-
-A skill can instruct Claude to spawn multiple subagents in sequence or parallel:
-
-```markdown
-## Workflow
-1. Spawn a research subagent to analyze the codebase structure
-2. Present findings to the user for review
-3. Spawn an implementation subagent with the approved plan
-4. Spawn a review subagent to validate the implementation
-```
-
-This pattern turns a skill into a coordinator — the main conversation manages the pipeline while subagents do the heavy lifting.
-
-## Agents + Hooks
-
-Hooks have two distinct scoping mechanisms for subagents. Mixing them up causes silent failures.
-
-### Frontmatter Hooks (Scoped to the Subagent)
-
-Defined in the agent's YAML. Run only while that subagent is active. Cleaned up when it finishes.
-
-```yaml
----
-name: safe-coder
-description: Writes code with automatic linting
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "./scripts/validate-command.sh"
-  PostToolUse:
-    - matcher: "Edit|Write"
-      hooks:
-        - type: command
-          command: "./scripts/run-linter.sh"
----
-```
-
-**Critical caveat:** Frontmatter hooks fire when the agent is spawned as a subagent (via Agent tool or @-mention). They do **not** fire when running as the main session via `--agent`. This distinction catches people regularly.
-
-### Settings.json Hooks (Lifecycle Events)
-
-These hooks fire in the main session when subagents start or stop:
-
-```json
-{
-  "hooks": {
-    "SubagentStart": [
-      {
-        "matcher": "db-agent",
-        "hooks": [
-          { "type": "command", "command": "./scripts/setup-db-connection.sh" }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          { "type": "command", "command": "./scripts/cleanup-db-connection.sh" }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### Hook Event Reference for Subagents
-
-| Event | Scope | Matcher | When |
-|-------|-------|---------|------|
-| `PreToolUse` | Frontmatter | Tool name | Before subagent uses a tool |
-| `PostToolUse` | Frontmatter | Tool name | After subagent uses a tool |
-| `Stop` | Frontmatter | (none) | When subagent finishes (converted to `SubagentStop` at runtime) |
-| `SubagentStart` | settings.json | Agent type name | When any subagent begins |
-| `SubagentStop` | settings.json | Agent type name | When any subagent completes |
-
-### Preventing Hook Loops
-
-A `UserPromptSubmit` hook that spawns subagents can create infinite recursion. Three mitigations:
-
-1. Check for a subagent indicator in hook input before spawning
-2. Use session state to track if you're inside a subagent
-3. Scope hooks to only run for the top-level agent session
-
-A guard script that prevents recursion:
-
-```bash
-#!/bin/bash
-# scripts/guard-subagent-loop.sh
-# Used as a PreToolUse hook to prevent recursive agent spawning
-
-# The hook receives tool input as JSON on stdin
-INPUT=$(cat)
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
-
-# Only check Agent tool calls
-if [ "$TOOL_NAME" = "Agent" ]; then
-  # Check if we're already inside a subagent
-  if [ -n "$CLAUDE_SUBAGENT" ]; then
-    echo '{"decision": "block", "reason": "Cannot spawn subagents from within a subagent"}'
-    exit 0
-  fi
-fi
-
-echo '{"decision": "allow"}'
-```
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Agent",
-        "hooks": [
-          { "type": "command", "command": "bash scripts/guard-subagent-loop.sh" }
-        ]
-      }
-    ]
-  }
-}
-```
-
-## Agents + CLAUDE.md
-
-CLAUDE.md has special behavior with subagents that differs from every other composition:
-
-- The agent's markdown body **replaces** the default Claude Code system prompt
-- CLAUDE.md files **still load** through the normal message flow (additive)
-- Project memory loads normally
-
-This means your CLAUDE.md instructions about coding style, project conventions, and tool usage reach subagents automatically. You don't need to duplicate them in agent definitions.
-
-**The subtlety:** The subagent sees a *different system prompt* than the main conversation (the agent's markdown body vs. Claude Code's default). Behavior may differ in ways that trace back to this distinction — particularly around tool usage patterns and default behaviors that the Claude Code system prompt establishes.
-
-When running `--agent <name>`, the agent's system prompt replaces Claude Code's default entirely. The agent name shows as `@<name>` in the startup header.
-
-## Agents + MCP
-
-Subagents access MCP servers in two ways:
-
-```yaml
-mcpServers:
-  # Inline definition: scoped to this subagent only
-  # Connected on start, disconnected on finish
-  - playwright:
-      type: stdio
-      command: npx
-      args: ["-y", "@playwright/mcp@latest"]
-  # Reference by name: shares parent session's connection
-  - github
-```
-
-### Inline MCP: Context Isolation Trick
-
-Define an MCP server inline in a subagent to keep its tool descriptions out of the main conversation. The parent never sees those tools, saving context window space.
-
-```yaml
----
-name: browser-tester
-description: Runs browser-based tests using Playwright
-mcpServers:
-  - playwright:
-      type: stdio
-      command: npx
-      args: ["-y", "@playwright/mcp@latest"]
-tools: Read, Grep, Glob, Bash
----
-```
-
-The Playwright MCP tools (30+ tool descriptions) only load when this subagent runs. The main conversation stays lean.
-
-A database agent that connects its own MCP server on startup:
-
-```yaml
----
-name: db-agent
-description: |
-  Database operations agent. Invoke when creating migrations,
-  running queries, or inspecting schema. Do not run SQL directly.
-mcpServers:
-  - postgres:
-      type: stdio
-      command: npx
-      args: ["-y", "@modelcontextprotocol/server-postgres"]
-      env:
-        DATABASE_URL: "postgresql://localhost:5432/mydb"
-tools: Read, Grep, Glob, Bash(npm:*), mcp__postgres__query
-maxTurns: 15
----
-
-You are a database specialist. Use the postgres MCP server to inspect
-schema and run queries. Never modify data in production — read-only
-queries only unless the briefing explicitly says otherwise.
-```
-
-The 30+ postgres MCP tool descriptions only load while this agent runs. The parent conversation never pays the token cost.
-
-### Plugin Subagent Restriction
-
-Plugin-provided subagents **cannot** use `hooks`, `mcpServers`, or `permissionMode` frontmatter fields. These are silently ignored for security — no error, no warning. If you need those features, copy the agent file from the plugin's `agents/` directory to `.claude/agents/`.
-
-## Agents + Memory
-
-Persistent memory lets subagents build institutional knowledge across conversations.
-
-```yaml
----
-name: code-reviewer
-description: Reviews code for quality and best practices
-memory: project
----
-
-Before starting a review, check your agent memory for patterns
-and conventions learned about this codebase. After completing
-a review, save new insights to your memory.
-```
-
-### Memory Scopes
-
-| Scope | Location | Shared via VCS | Use Case |
-|-------|----------|---------------|----------|
-| `user` | `~/.claude/agent-memory/<name>/` | No | Cross-project learnings |
-| `project` | `.claude/agent-memory/<name>/` | Yes | Team-shared project knowledge |
-| `local` | `.claude/agent-memory-local/<name>/` | No | Project-specific, private |
-
-When enabled:
-
-- The first 200 lines or 25KB of `MEMORY.md` is injected into the system prompt
-- Read, Write, Edit tools are auto-enabled for memory management
-- The subagent gets instructions for reading/writing to the memory directory
-
-**Recommended default:** `project` scope. It makes institutional knowledge shareable via version control — when one developer's review agent learns a convention, every team member's agent inherits it on next pull.
-
-### Memory Isolation
-
-Memory directories are agent-scoped. The `code-reviewer` agent's memory is separate from the `api-developer` agent's memory, even at the same scope level. Parent conversations do not see subagent memory, and subagents do not see each other's memory.
-
-The resulting directory structure after several sessions:
-
-```
-.claude/agent-memory/                # project scope (version controlled)
-├── code-reviewer/
-│   └── MEMORY.md                    # "This project uses Result types, not exceptions..."
-├── api-developer/
-│   └── MEMORY.md                    # "All endpoints use zod validation middleware..."
-└── test-writer/
-    └── MEMORY.md                    # "Integration tests use testcontainers for DB..."
-
-~/.claude/agent-memory/              # user scope (private, all projects)
-└── code-reviewer/
-    └── MEMORY.md                    # "Prefer explicit over clever. Flag any use of eval()..."
-```
-
-## Nested Agents: The Hard Limit
-
-Subagents cannot spawn other subagents. This is an architectural constraint, not a configuration option.
-
-**Workarounds:**
-
-- **Chain from the main conversation**: Run subagent A, pass relevant results to subagent B
-- **Use skills**: Orchestrate multi-step workflows from the parent
-- **Use agent teams**: True peer-to-peer coordination with file locking and message passing
-
-Chaining pattern — the parent passes results explicitly:
-
-```markdown
-<!-- Parent conversation orchestrating a pipeline -->
-
-Step 1: "Research the auth module"
-  → Spawns Explore agent → Returns: "Auth uses jose@5.2, session.ts
-    handles JWT creation, middleware.ts validates on each request"
-
-Step 2: "Implement token rotation using this context:
-  - Auth uses jose@5.2
-  - session.ts handles JWT creation
-  - middleware.ts validates on each request
-  Write the implementation in src/auth/rotation.ts"
-  → Spawns api-developer agent → Returns: "Created rotation.ts with
-    rotateKeys() and updated middleware.ts to check key version"
-
-Step 3: "Review the changes in src/auth/rotation.ts and src/auth/middleware.ts
-  for security issues. The implementation adds key rotation support."
-  → Spawns code-reviewer agent → Returns: findings list
-```
-
-Each subagent gets a self-contained briefing. The parent is the only entity that holds the full picture.
-
-The `Agent(agent_type)` syntax in a subagent's `tools` field has no effect — it only applies to agents running as the main thread via `--agent`:
-
-```yaml
----
-name: coordinator
-description: Coordinates specialized agents
-tools: Agent(worker, researcher), Read, Bash
----
-```
-
-This restricts a `--agent coordinator` session to spawning only `worker` and `researcher` subagents.
+One agent implements; another reviews without receiving the implementer's reasoning. The parent resolves findings against code and tests. This reduces anchoring better than asking the same context to critique itself.

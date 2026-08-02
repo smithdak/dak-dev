@@ -57,7 +57,6 @@ export function PatternLanguageGraph({
   height,
   columnCount,
   sidePadding,
-  topPadding,
 }: PatternLanguageGraphProps) {
   const router = useRouter();
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
@@ -86,8 +85,7 @@ export function PatternLanguageGraph({
 
   const isEdgeConnected = useCallback(
     (edge: GraphEdge) =>
-      !connectedSlugs ||
-      connectedSlugs.has(edge.from) && connectedSlugs.has(edge.to),
+      !connectedSlugs || (connectedSlugs.has(edge.from) && connectedSlugs.has(edge.to)),
     [connectedSlugs]
   );
 
@@ -101,7 +99,7 @@ export function PatternLanguageGraph({
   }, [nodes]);
 
   return (
-    <div className="border-4 border-text bg-surface/30 p-4 mb-10">
+    <div className="mb-10 border-y border-text/20 py-5">
       <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-muted mb-4">
         Pattern Language Map
       </h2>
@@ -223,15 +221,6 @@ export function PatternLanguageGraph({
                 if (e.key === 'Enter') router.push(`/learn/patterns/${node.slug}`);
               }}
             >
-              {/* Shadow */}
-              <rect
-                x={node.x - NODE_W / 2 + 4}
-                y={node.y - NODE_H / 2 + 4}
-                width={NODE_W}
-                height={NODE_H}
-                fill="var(--color-text)"
-                opacity={0.15}
-              />
               {/* Background */}
               <rect
                 x={node.x - NODE_W / 2}
@@ -240,7 +229,7 @@ export function PatternLanguageGraph({
                 height={NODE_H}
                 fill="var(--color-background)"
                 stroke={isHovered ? 'var(--color-text)' : color}
-                strokeWidth={isHovered ? 3 : 2}
+                strokeWidth={isHovered ? 2 : 1}
               />
               {/* Number */}
               <text
@@ -285,9 +274,7 @@ export function PatternLanguageGraph({
                 strokeDasharray={EDGE_DASH[type] || undefined}
               />
             </svg>
-            <span className="text-xs font-mono text-muted uppercase tracking-wider">
-              {type}
-            </span>
+            <span className="text-xs font-mono text-muted uppercase tracking-wider">{type}</span>
           </div>
         ))}
       </div>

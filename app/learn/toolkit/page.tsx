@@ -2,136 +2,206 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { LearnSectionHero } from '@/components/learn/LearnSectionHero';
-import { SectionCard } from '@/components/learn/SectionCard';
 import { SectionConnects } from '@/components/learn/SectionConnects';
-import { ToolkitLensLegend } from '@/components/learn/ToolkitLensLegend';
-import { ScrollReveal, ScrollRevealItem } from '@/components/ui/ScrollReveal';
+import { EvidenceStandard } from '@/components/toolkit/EvidenceStandard';
+import { ToolkitCapabilityIndex } from '@/components/toolkit/ToolkitCapabilityIndex';
 import {
+  TOOLKIT_LENSES,
+  TOOLKIT_REVIEWED_AT,
   TOOLKIT_TOPICS,
+  getToolkitCoverageForTopic,
   getToolkitPage,
+  getToolkitProducts,
   getToolkitTopicPages,
-  getAllToolkitPages,
-  SUB_PAGE_META,
 } from '@/lib/toolkit';
-
 import { SITE_URL as siteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Claude Code Toolkit',
+  title: 'Coding Agent Toolkit',
   description:
-    "Expert's guide to agentic engineering with Claude Code — 9 deep-dives into hooks, skills, agents, MCP, and more.",
+    'A source-backed capability comparison of Claude Code, OpenAI Codex, and GitHub Copilot, with implementation guidance for production agentic engineering.',
   openGraph: {
-    title: "Claude Code Toolkit — Expert's Guide",
+    title: 'Coding Agent Toolkit — Capability, Evidence, and Practice',
     description:
-      '9 deep-dives into Claude Code features for expert agentic engineering.',
+      'Compare nine coding-agent capabilities across Claude Code, OpenAI Codex, and GitHub Copilot.',
     url: `${siteUrl}/learn/toolkit`,
   },
   alternates: { canonical: '/learn/toolkit' },
 };
 
-// Every topic is a Claude Code feature that implements a portable pattern.
-// Mirrors the Patterns ↔ Toolkit pairs on the Learn connections map so the
-// four pillars stay one system (condition: integrate, don't graft).
+// Toolkit routing invariant: capability slugs are stable public concepts. Vendor
+// pages are generated projections of the same evidence registry, never a second
+// prose tree. The legacy claude-md slug redirects to project-instructions.
 const CONNECTS = [
   { label: 'Convention File', href: '/learn/patterns/convention-file', kind: 'Pattern' },
   { label: 'Safety Net', href: '/learn/patterns/safety-net', kind: 'Pattern' },
   { label: 'Memory Layer', href: '/learn/patterns/memory-layer', kind: 'Pattern' },
   { label: 'Parallel Fan-Out', href: '/learn/patterns/parallel-fan-out', kind: 'Pattern' },
-  { label: 'Progressive Disclosure', href: '/learn/patterns/progressive-disclosure', kind: 'Pattern' },
-  { label: 'Agent-Friendly Architecture', href: '/learn/patterns/agent-friendly-architecture', kind: 'Pattern' },
+  {
+    label: 'Progressive Disclosure',
+    href: '/learn/patterns/progressive-disclosure',
+    kind: 'Pattern',
+  },
+  {
+    label: 'Agent-Friendly Architecture',
+    href: '/learn/patterns/agent-friendly-architecture',
+    kind: 'Pattern',
+  },
 ];
 
 export default function ToolkitIndexPage() {
+  const products = getToolkitProducts();
   const topics = TOOLKIT_TOPICS.map((topic) => ({
     ...topic,
-    hasContent: getToolkitPage(topic.slug) !== null,
-    chips: getToolkitTopicPages(topic.slug)
-      .map((p) => p.frontmatter.subPage)
-      .filter((s): s is NonNullable<typeof s> => Boolean(s))
-      .map((s) => SUB_PAGE_META[s].label),
+    available: getToolkitPage(topic.slug) !== null,
+    lensCount: getToolkitTopicPages(topic.slug).length,
+    coverage: getToolkitCoverageForTopic(topic.slug),
   }));
 
-  const totalPages = getAllToolkitPages().length;
-
   return (
-    <PageTransition className="min-h-screen pb-16">
+    <PageTransition className="min-h-screen pb-20">
       <LearnSectionHero
         section="Toolkit"
         color="cyan"
-        eyebrow={`Reference · ${TOOLKIT_TOPICS.length} Deep-Dives`}
-        title="Claude Code Toolkit"
-        description="Expert's guide to agentic engineering. Not documentation — mental models, production architectures, and the pitfalls the docs don't warn about."
+        eyebrow={`Comparative reference · reviewed ${TOOLKIT_REVIEWED_AT}`}
+        title="Coding Agent Toolkit"
+        description="Nine durable capabilities. Three fast-moving products. One evidence model that separates documented behavior from operational proof."
       />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0">
-        {/* Quick-jump — same idiom as the Patterns section, kept consistent */}
-        <nav
-          aria-label="Jump to section"
-          className="flex flex-wrap gap-4 mb-12"
-        >
-          {[
-            { num: '01', label: 'Topics', href: '#topics' },
-            { num: '02', label: 'How to Read', href: '#how-to-read' },
-            { num: '03', label: 'Connections', href: '#connects' },
-          ].map((j) => (
-            <Link
-              key={j.href}
-              href={j.href}
-              className="inline-flex items-center gap-3 px-6 py-3 border-2 border-text/30 bg-transparent text-muted font-bold text-sm uppercase tracking-wider hover:border-text hover:text-text hover:bg-surface hover:shadow-[4px_4px_0_0_var(--color-text)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background"
-            >
-              <span className="text-accent/60 font-mono" aria-hidden="true">
-                {j.num}
-              </span>
-              {j.label}
-            </Link>
-          ))}
+        <nav aria-label="Toolkit sections" className="mb-10 border-y border-text/20 py-4">
+          <ul className="flex flex-wrap gap-x-7 gap-y-3 text-xs font-semibold uppercase tracking-[0.12em]">
+            <li>
+              <a href="#capabilities" className="text-muted hover:text-text">
+                Capabilities
+              </a>
+            </li>
+            <li>
+              <a href="#products" className="text-muted hover:text-text">
+                Products
+              </a>
+            </li>
+            <li>
+              <a href="#evidence-standard" className="text-muted hover:text-text">
+                Evidence standard
+              </a>
+            </li>
+            <li>
+              <a href="#lenses" className="text-muted hover:text-text">
+                Implementation lenses
+              </a>
+            </li>
+          </ul>
         </nav>
 
-        <ToolkitLensLegend className="mb-16" />
+        <EvidenceStandard />
 
         <section
-          id="topics"
-          aria-labelledby="topics-heading"
-          className="scroll-mt-20"
+          id="products"
+          aria-labelledby="products-heading"
+          className="scroll-mt-20 py-12 md:py-16"
         >
-          <div className="border-l-8 border-l-chapter-2 border-b-2 border-text/30 pl-5 pb-4 mb-8">
+          <div className="mb-8 max-w-3xl">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
+              Product projections
+            </p>
             <h2
-              id="topics-heading"
-              className="text-2xl md:text-3xl font-bold tracking-tight"
+              id="products-heading"
+              className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl"
             >
-              The Nine Topics
+              Follow a product without creating three competing taxonomies.
             </h2>
-            <p className="text-sm text-muted mt-2 max-w-3xl leading-relaxed">
-              Each is a self-contained deep-dive. Independent — start anywhere.
+            <p className="mt-4 leading-relaxed text-muted">
+              Each product view is generated from the same capability and source registry used
+              below. Product names never become the information architecture.
             </p>
           </div>
+          <div className="border-t border-text/25">
+            {products.map((product) => (
+              <Link
+                key={product.id}
+                href={`/learn/toolkit/products/${product.id}`}
+                className="group flex flex-col gap-3 border-b border-text/20 py-6 transition-colors hover:bg-surface/20 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent sm:flex-row sm:items-center sm:justify-between sm:px-2"
+              >
+                <span>
+                  <span className="block text-xl font-semibold tracking-tight group-hover:underline group-hover:underline-offset-4">
+                    {product.name}
+                  </span>
+                  <span className="mt-1 block text-sm text-muted">{product.description}</span>
+                </span>
+                <span className="shrink-0 font-mono text-xs uppercase tracking-[0.12em] text-muted">
+                  {product.surfaces.join(' · ')}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
 
-          <ScrollReveal stagger>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {topics.map((topic) => (
-                <ScrollRevealItem key={topic.slug} className="h-full">
-                  <SectionCard
-                    href={`/learn/toolkit/${topic.slug}`}
-                    number={String(topic.order).padStart(2, '0')}
-                    name={topic.name}
-                    description={topic.description}
-                    icon={topic.icon}
-                    color="cyan"
-                    available={topic.hasContent}
-                    cta="Explore"
-                    chips={topic.chips}
-                  />
-                </ScrollRevealItem>
-              ))}
-            </div>
-          </ScrollReveal>
+        <section
+          id="capabilities"
+          aria-labelledby="capabilities-heading"
+          className="scroll-mt-20 pb-12 md:pb-16"
+        >
+          <div className="mb-8 max-w-3xl">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
+              Capability index
+            </p>
+            <h2
+              id="capabilities-heading"
+              className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl"
+            >
+              The nine durable decisions
+            </h2>
+            <p className="mt-4 leading-relaxed text-muted">
+              Start with the problem you need to solve, then compare product behavior at the exact
+              CLI, IDE, web, or cloud surface where the work will run.
+            </p>
+          </div>
+          <ToolkitCapabilityIndex topics={topics} products={products} />
+        </section>
+
+        <section
+          id="lenses"
+          aria-labelledby="lenses-heading"
+          className="scroll-mt-20 border-y border-text/20 py-10"
+        >
+          <div className="mb-8 max-w-3xl">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
+              Implementation depth
+            </p>
+            <h2
+              id="lenses-heading"
+              className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl"
+            >
+              Four lenses, with product scope stated explicitly
+            </h2>
+            <p className="mt-4 leading-relaxed text-muted">
+              Every lens is capability-first and current across the reviewed product corpus. Product
+              classifications remain documentation findings until independently runtime-tested.
+            </p>
+          </div>
+          <ol className="divide-y divide-text/15 border-t border-text/20">
+            {TOOLKIT_LENSES.map((lens, index) => (
+              <li key={lens.slug} className="flex gap-5 py-5">
+                <span className="w-8 shrink-0 font-mono text-xs text-muted">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span>
+                  <span className="font-semibold">{lens.label}</span>
+                  <span className="mt-1 block text-sm leading-relaxed text-muted">
+                    {lens.blurb}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
         </section>
 
         <SectionConnects
           id="connects"
           color="cyan"
           heading="Where This Connects"
-          intro="Every topic here is a Claude Code feature — and each one implements a portable pattern. This is where the toolkit grounds out in technique."
+          intro="Products change faster than the engineering problems. The Patterns library names the portable techniques that these capabilities implement."
           links={CONNECTS}
         />
       </div>

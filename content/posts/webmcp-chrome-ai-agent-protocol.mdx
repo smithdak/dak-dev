@@ -23,10 +23,8 @@ keywords:
   - Figma MCP
   - MCP servers
   - browser AI API
-thumbnailBlur: >-
-  data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQMFBv/EAB4QAAIBAwUAAAAAAAAAAAAAAAERAAIDBBIUITEy/8QAFQEBAQAAAAAAAAAAAAAAAAAAAgP/xAAXEQEAAwAAAAAAAAAAAAAAAAAAERJh/9oADAMBAAIRAxEAPwDL0nHNvkjW2oo7d+jJ5JfcDilOmv/Z
-heroBlur: >-
-  data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAMFBv/EAB4QAAIBAwUAAAAAAAAAAAAAAAERAAIDBBIUITEy/8QAFQEBAQAAAAAAAAAAAAAAAAAAAgP/xAAXEQEAAwAAAAAAAAAAAAAAAAAAERJh/9oADAMBAAIRAxEAPwDL0nHNvkjW2oo7d+jJxJfcHFKdNf/Z
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAIG/8QAFxABAAMAAAAAAAAAAAAAAAAAAAISUf/EABUBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A29pYWlixJf/Z'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAECBv/EABcQAQADAAAAAAAAAAAAAAAAAAACElH/xAAVAQEBAAAAAAAAAAAAAAAAAAABAv/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/ANtaWHaWLCS//9k='
 ---
 
 Chrome 145 shipped WebMCP — a browser-native protocol that lets websites expose structured tools to AI agents through typed APIs instead of DOM scraping. Released as an early preview on February 10, 2026, and backed by Google and Microsoft, WebMCP replaces the brittle screenshot-and-scrape pattern with schema-validated tool interfaces that agents call directly.
@@ -52,14 +50,10 @@ WebMCP provides two ways to expose tools: a declarative HTML approach for forms,
 The declarative approach requires zero JavaScript. Standard HTML forms gain three new attributes that make them visible to AI agents:
 
 ```html
-<form toolname="book_table"
-      tooldescription="Creates a dining reservation at the restaurant">
-  <input name="email"
-         toolparamdescription="Customer email for confirmation" />
-  <input name="date" type="date"
-         toolparamdescription="Reservation date in YYYY-MM-DD format" />
-  <input name="party_size" type="number"
-         toolparamdescription="Number of guests, 1-12" />
+<form toolname="book_table" tooldescription="Creates a dining reservation at the restaurant">
+  <input name="email" toolparamdescription="Customer email for confirmation" />
+  <input name="date" type="date" toolparamdescription="Reservation date in YYYY-MM-DD format" />
+  <input name="party_size" type="number" toolparamdescription="Number of guests, 1-12" />
   <button type="submit">Reserve</button>
 </form>
 ```
@@ -72,26 +66,26 @@ For single-page applications and dynamic interactions, the imperative API provid
 
 ```javascript
 navigator.modelContext.registerTool({
-  name: "search_flights",
-  description: "Search available flights between two airports",
+  name: 'search_flights',
+  description: 'Search available flights between two airports',
   inputSchema: {
-    type: "object",
+    type: 'object',
     properties: {
-      origin: { type: "string", description: "IATA airport code" },
-      destination: { type: "string", description: "IATA airport code" },
-      departure_date: { type: "string", format: "date" },
-      passengers: { type: "integer", minimum: 1, maximum: 9 }
+      origin: { type: 'string', description: 'IATA airport code' },
+      destination: { type: 'string', description: 'IATA airport code' },
+      departure_date: { type: 'string', format: 'date' },
+      passengers: { type: 'integer', minimum: 1, maximum: 9 },
     },
-    required: ["origin", "destination", "departure_date"]
+    required: ['origin', 'destination', 'departure_date'],
   },
   outputSchema: {
-    type: "string",
-    description: "JSON array of matching flights with prices"
+    type: 'string',
+    description: 'JSON array of matching flights with prices',
   },
   execute: async (params) => {
     const results = await flightAPI.search(params);
     return JSON.stringify(results);
-  }
+  },
 });
 ```
 
@@ -100,18 +94,18 @@ This gives developers full control over schemas, validation, and execution logic
 ```javascript
 useEffect(() => {
   navigator.modelContext.registerTool(flightSearchTool);
-  return () => navigator.modelContext.unregisterTool("search_flights");
+  return () => navigator.modelContext.unregisterTool('search_flights');
 }, []);
 ```
 
 ### Which API to Use
 
-| Scenario | Approach | Why |
-|----------|----------|-----|
-| Contact forms, search bars | Declarative | Static HTML, no JS needed |
-| Multi-step checkout flows | Imperative | Dynamic state, conditional logic |
-| Content filtering | Declarative | Standard form behavior |
-| Real-time data queries | Imperative | API integration, async execution |
+| Scenario                   | Approach    | Why                              |
+| -------------------------- | ----------- | -------------------------------- |
+| Contact forms, search bars | Declarative | Static HTML, no JS needed        |
+| Multi-step checkout flows  | Imperative  | Dynamic state, conditional logic |
+| Content filtering          | Declarative | Standard form behavior           |
+| Real-time data queries     | Imperative  | API integration, async execution |
 
 The declarative API covers the 80% case — most web interactions are form submissions. The imperative API handles the remaining 20% where JavaScript execution is unavoidable.
 

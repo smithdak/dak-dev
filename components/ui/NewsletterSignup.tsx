@@ -3,11 +3,11 @@
 import { useState, FormEvent } from 'react';
 
 /**
- * NewsletterSignup — free-content -> free-newsletter capture (the top of the
- * funnel). Provider-agnostic: when NEXT_PUBLIC_NEWSLETTER_ENDPOINT is set, the
- * email is POSTed to that endpoint (Buttondown / ConvertKit / beehiiv embed,
- * etc.); when it is unset, it gracefully falls back to a mailto: link so the
- * form is never dead.
+ * Provider-agnostic publication follow-up. When
+ * NEXT_PUBLIC_NEWSLETTER_ENDPOINT is set, the email is POSTed to that endpoint
+ * (Buttondown / ConvertKit / beehiiv embed, etc.). Without a provider, the UI
+ * offers the RSS feed and direct email instead of presenting a non-functional
+ * subscription form.
  *
  * SSG-safe: this is a client island that uses fetch() (governed by the CSP
  * connect-src — NOT a native form POST, which form-action 'self' would block).
@@ -15,7 +15,7 @@ import { useState, FormEvent } from 'react';
  */
 
 const ENDPOINT = process.env.NEXT_PUBLIC_NEWSLETTER_ENDPOINT;
-const FALLBACK_EMAIL = 'dakota@twofold.tech';
+const CONTACT_EMAIL = 'dakota@twofold.tech';
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -25,19 +25,9 @@ export function NewsletterSignup() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!email || !email.includes('@')) return;
+    if (!ENDPOINT || !email || !email.includes('@')) return;
 
     setStatus('submitting');
-
-    // No provider configured → fall back to opening the user's mail client.
-    if (!ENDPOINT) {
-      const subject = encodeURIComponent('Newsletter Signup');
-      const body = encodeURIComponent(`I'd like to subscribe to blog updates.\n\nEmail: ${email}`);
-      window.location.href = `mailto:${FALLBACK_EMAIL}?subject=${subject}&body=${body}`;
-      setStatus('success');
-      setEmail('');
-      return;
-    }
 
     try {
       // Opaque (no-cors) POST: most embed endpoints accept a urlencoded `email`
@@ -56,73 +46,101 @@ export function NewsletterSignup() {
     }
   };
 
+  if (!ENDPOINT) {
+    return (
+      <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end lg:gap-16">
+        <div>
+          <p className="font-serif text-3xl font-medium leading-tight tracking-[-0.03em] text-text sm:text-4xl">
+            Follow the publication.
+          </p>
+          <p className="mt-3 max-w-md text-base leading-relaxed text-muted">
+            Every published essay is available through RSS. For a direct professional conversation,
+            email Dakota.
+          </p>
+        </div>
+
+        <nav aria-label="Publication follow options" className="flex flex-wrap gap-x-8 gap-y-3">
+          <a
+            href="/feed.xml"
+            className="editorial-link inline-flex min-h-11 items-center text-sm font-semibold text-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-3 focus:ring-offset-background"
+          >
+            Open the RSS feed
+          </a>
+          <a
+            href={`mailto:${CONTACT_EMAIL}`}
+            className="editorial-link inline-flex min-h-11 items-center text-sm font-semibold text-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-3 focus:ring-offset-background"
+          >
+            Email Dakota
+          </a>
+        </nav>
+      </div>
+    );
+  }
+
   if (status === 'success') {
     return (
-      <div className="flex items-center gap-3" role="status" aria-live="polite">
-        <svg
-          className="h-5 w-5 flex-shrink-0 text-accent"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-        <p className="text-sm font-semibold text-text">
-          {ENDPOINT
-            ? "You're in. Check your inbox to confirm the subscription."
-            : 'Your email client should open — send the email to complete signup.'}
+      <div className="border-y border-rule py-8" role="status" aria-live="polite">
+        <p className="font-serif text-3xl font-medium tracking-[-0.03em] text-text">
+          Check your inbox.
+        </p>
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
+          The subscription request was sent. Complete any confirmation step from your email
+          provider.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 md:flex-row md:items-center md:gap-10">
-      {/* Left — copy */}
-      <div className="flex-shrink-0">
-        <p className="mb-1 text-sm font-bold uppercase tracking-widest text-muted">
-          The agentic engineering brief
+    <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end lg:gap-16">
+      <div>
+        <p className="font-serif text-3xl font-medium leading-tight tracking-[-0.03em] text-text sm:text-4xl">
+          Notes on accountable AI systems.
         </p>
-        <p className="max-w-xs text-sm text-muted">
-          New patterns, harness teardowns, and the occasional deep-dive. Free, no spam, unsubscribe
-          anytime.
+        <p className="mt-3 max-w-md text-base leading-relaxed text-muted">
+          New essays and field notes on building, governing, and delivering agentic systems.
         </p>
       </div>
 
-      {/* Right — form */}
-      <form onSubmit={handleSubmit} className="flex max-w-md flex-1 gap-0">
-        <label htmlFor="newsletter-email" className="sr-only">
-          Email address
-        </label>
-        <input
-          id="newsletter-email"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (status === 'error') setStatus('idle');
-          }}
-          placeholder="your@email.com"
-          disabled={status === 'submitting'}
-          aria-invalid={status === 'error'}
-          className="min-w-0 flex-1 border-2 border-text/20 bg-background px-4 py-3 text-sm text-text transition-colors placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
-        />
-        <button
-          type="submit"
-          disabled={status === 'submitting'}
-          className="border-2 border-accent bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wider text-background transition-all duration-150 hover:-translate-y-px hover:shadow-[3px_3px_0_0_var(--color-text)] focus:outline-none focus:ring-2 focus:ring-text focus:ring-offset-2 focus:ring-offset-background active:translate-y-px active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {status === 'submitting' ? 'Sending…' : 'Subscribe'}
-        </button>
-      </form>
+      <div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
+          <label htmlFor="newsletter-email" className="sr-only">
+            Email address
+          </label>
+          <input
+            id="newsletter-email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (status === 'error') setStatus('idle');
+            }}
+            placeholder="Email address"
+            disabled={status === 'submitting'}
+            aria-invalid={status === 'error'}
+            aria-describedby={status === 'error' ? 'newsletter-error' : undefined}
+            className="min-h-12 min-w-0 flex-1 border border-rule bg-background px-4 py-3 text-base text-text transition-colors placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-50"
+          />
+          <button
+            type="submit"
+            disabled={status === 'submitting'}
+            className="min-h-12 bg-accent px-7 py-3 text-base font-semibold text-background transition-colors hover:bg-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-3 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {status === 'submitting' ? 'Sending…' : 'Subscribe'}
+          </button>
+        </form>
 
-      {status === 'error' && (
-        <p className="text-sm font-semibold text-chapter-6" role="alert">
-          Something went wrong. Try again, or email {FALLBACK_EMAIL}.
-        </p>
-      )}
+        {status === 'error' && (
+          <p
+            id="newsletter-error"
+            className="mt-3 text-sm font-semibold text-chapter-6"
+            role="alert"
+          >
+            The request could not be sent. Try again, or email {CONTACT_EMAIL}.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

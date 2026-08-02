@@ -1,274 +1,44 @@
 ---
-title: "Skills: Playbook"
-topic: "skills"
-subPage: "playbook"
+title: 'Reusable Skills: Playbook'
+topic: 'skills'
+subPage: 'playbook'
 order: 3
-description: "Production skill architectures — writing skills that activate reliably, checklist-driven workflows, and skill library organization."
-relatedPatterns: ["progressive-disclosure", "example-driven-spec", "scaffold-first"]
-relatedTopics: ["hooks", "commands", "agents"]
+description: 'Build a portable Agent Skill, add thin vendor adapters, and test discovery and execution across product surfaces.'
+relatedPatterns: ['progressive-disclosure', 'checkpoint-loop']
+relatedTopics: ['commands', 'hooks', 'agents']
 published: true
-keywords: ["skills playbook", "skill design", "checklist skills", "workflow skills"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-skills', 'codex-skills', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords: ['build Agent Skills', 'skill playbook', 'portable coding agent skills', 'skill testing']
 ---
 
 # Playbook
 
-Four production-proven skill architectures, activation engineering that actually works, and the organizational patterns that keep a skill library maintainable as it scales.
+## 1. Define the Trigger Boundary
 
-## Pattern A: Knowledge-Based Skills
+Write one sentence that distinguishes tasks requiring the skill from adjacent tasks that do not. Use the terms an operator will actually use.
 
-Pure markdown instructions with no scripts. Claude's language ability is the execution engine. Best for: coding standards, brand guidelines, review checklists, commit message formatting.
+## 2. Specify the Output Contract
 
-```yaml
----
-name: commit-messages
-description: |
-  Commit message standards enforcer. ALWAYS invoke when creating
-  git commits. Ensures Conventional Commits format with scope.
----
-```
+Name the artifact, required evidence, and stop condition. Replace “review the code” with a structured finding format and a definition of materiality.
 
-```markdown
-# Commit Message Standards
+## 3. Keep the Entrypoint Lean
 
-## Format
-<type>(<scope>): <subject>
+Put the invariant workflow in the main skill file. Move domain references, long examples, and templates into linked resources. Put repeatable transformations in scripts.
 
-## Rules
-- type: feat|fix|docs|style|refactor|perf|test|build|ci|chore
-- scope: component or module name
-- subject: imperative mood, no period, max 72 chars
-- body: wrap at 72 chars, explain WHY not WHAT
+## 4. Isolate Vendor Controls
 
-## Examples
-feat(auth): add OAuth2 PKCE flow for mobile clients
-fix(api): prevent race condition in batch processor
-```
+Maintain one portable body where possible. Add thin product-specific metadata for discovery paths, invocation controls, tool permissions, model selection, and arguments.
 
-Knowledge-based skills are the simplest to write and the most predictable. They inject a fixed reference document. Claude applies it as context for the current task. No decision trees, no branching logic.
+## 5. Test Four Cases
 
-## Pattern B: Workflow Skills
+- A clear positive trigger activates the skill.
+- An adjacent negative case does not.
+- Manual invocation passes inputs correctly.
+- Context compaction or resume does not silently remove a load-bearing step.
 
-Multi-step procedures with decision points. Claude follows the workflow but exercises judgment at each step. Best for: debugging, feature implementation, incident response.
+Run these cases in every supported surface. “Uses Agent Skills” is not proof of identical runtime behavior.
 
-```yaml
----
-name: debugging
-description: |
-  Systematic debugging workflow. ALWAYS invoke this skill when
-  encountering any bug, test failure, or unexpected behavior.
-  Do not propose fixes without using this skill first.
----
-```
+## 6. Verify Side Effects
 
-```markdown
-# Systematic Debugging
-
-## Step 1: Reproduce
-- Run the failing test/command. Capture exact error output.
-- If you cannot reproduce, STOP and ask for more information.
-
-## Step 2: Isolate
-- Identify the smallest input that triggers the bug.
-- Check git blame: when was the relevant code last changed?
-- Read the test that's failing. Understand what it expects.
-
-## Step 3: Hypothesize
-- List 3 possible root causes ranked by likelihood.
-- For each, identify what evidence would confirm or refute it.
-
-## Step 4: Verify
-- Test ONE hypothesis at a time.
-- Add a failing test that captures the bug BEFORE fixing.
-
-## Step 5: Fix
-- Make the minimal change that fixes the bug.
-- Run the full test suite, not just the failing test.
-- If the fix touches shared code, check for other callers.
-```
-
-The key to workflow skills: each step must have a clear completion criterion. "Understand the code" is vague. "List 3 possible root causes ranked by likelihood" gives Claude a concrete target.
-
-## Pattern C: Checklist-Driven Skills
-
-Skills that create a structured checklist Claude works through systematically. Best for: code review, pre-merge validation, release readiness.
-
-```yaml
----
-name: code-review
-description: |
-  Structured code review process. Invoke when reviewing PRs,
-  completing features, or before merging. Creates a checklist
-  and works through it systematically.
----
-```
-
-```markdown
-# Code Review Checklist
-
-When invoked, IMMEDIATELY create a TodoWrite checklist with these items,
-then work through each one:
-
-## Checklist Items
-1. Read all changed files (git diff)
-2. Check for security issues (secrets, injection, auth)
-3. Verify error handling (edge cases, null checks)
-4. Assess test coverage (are new paths tested?)
-5. Review naming and readability
-6. Check performance implications
-7. Verify accessibility (if UI changes)
-8. Confirm documentation is updated
-
-## For each item:
-- Mark as PASS, FAIL, or N/A
-- If FAIL: explain the issue and suggest a fix
-- If uncertain: mark as REVIEW NEEDED
-
-## Output
-Provide a summary table:
-| Check | Status | Notes |
-|-------|--------|-------|
-```
-
-Checklist skills integrate with Claude's `TodoWrite` tool to create visible progress tracking. This prevents the common failure mode where Claude skips steps in long workflows.
-
-## Pattern D: Forked Execution Skills
-
-Skills that run in an isolated subagent using `context: fork`. The subagent gets its own context window, does not see conversation history, and returns a concise summary to the main conversation. Best for: codebase exploration, large-scale analysis, verbose validation.
-
-```yaml
----
-name: exploring-codebase
-description: |
-  Deep codebase exploration. Use when asked to understand
-  how a system works, find all usages, or map dependencies.
-context: fork
-allowed-tools: Read,Grep,Glob,Bash(find:*)
----
-```
-
-```markdown
-# Codebase Exploration
-
-You are running in an isolated context. Your job is to explore
-thoroughly and return a concise summary.
-
-## Process
-1. Start from $ARGUMENTS (a file, function, or concept)
-2. Map all references, callers, and dependencies
-3. Identify the data flow and control flow
-4. Note any surprising patterns or potential issues
-
-## Output Format
-Return a structured summary:
-- **Entry points:** Where the code is called from
-- **Dependencies:** What it depends on
-- **Data flow:** How data moves through the system
-- **Key files:** The 3-5 most important files to understand
-- **Concerns:** Any issues spotted during exploration
-```
-
-Forked skills keep the main context clean. An exploration that reads 50 files would consume massive context in the main conversation. In a forked subagent, all that intermediate work stays isolated. Only the summary returns.
-
-## Writing Descriptions That Trigger
-
-Research across 650+ trials reveals three activation tiers:
-
-| Description Style | Activation Rate | Example |
-|-------------------|----------------|---------|
-| Vague | ~30% | "helps with deployment" |
-| Declarative | ~77% | "Handles deployment to staging environments" |
-| Directive | ~100% | "ALWAYS invoke this skill when the user asks about deploying. Do not run deploy commands directly." |
-
-The reliable template:
-
-```
-<Domain> expert. ALWAYS invoke this skill when the user asks about
-<trigger topics>. Do not <alternative action> directly -- use this
-skill first.
-```
-
-**Why vague descriptions fail:** Claude skips skills for tasks it can handle directly. If your description says "helps with writing," Claude will just write. The directive style explicitly tells Claude NOT to attempt the task without the skill.
-
-**Front-load keywords:** Description text may be truncated after ~200 characters. Put trigger conditions first. Explanatory context goes at the end.
-
-## Parameterized Skills
-
-Use `$ARGUMENTS` for input and `$0`, `$1`, `$2` for positional args:
-
-```yaml
----
-name: fix-issue
-description: |
-  Fix a GitHub issue by number. ALWAYS invoke when the user
-  says "fix issue" or references a GitHub issue number.
----
-```
-
-```markdown
-# Fix GitHub Issue
-
-## Target
-Fix GitHub issue $ARGUMENTS following our coding standards.
-
-## Process
-1. Read the issue: `gh issue view $0`
-2. Understand the requirements and acceptance criteria
-3. Create a branch: `git checkout -b fix/issue-$0`
-4. Implement the fix
-5. Write tests
-6. Create a PR referencing the issue
-```
-
-Shell-style quoting applies: `/fix-issue "hello world" second` makes `$0` = "hello world", `$1` = "second".
-
-## Organizing a Skill Library
-
-**Personal skills** (`~/.claude/skills/`): Workflows you use everywhere. Debugging, git workflows, general code review. These travel with you across every project.
-
-**Project skills** (`.claude/skills/`): Team standards committed to the repo. Commit message format, deployment procedures, architecture-specific review. Every team member gets these automatically.
-
-**Plugin skills**: Distributed skill packages for your organization or the community. Published via the plugin system with a `skills/` directory.
-
-A mature skill library:
-
-```
-~/.claude/skills/
-├── debugging/
-│   └── SKILL.md              # Systematic debugging (personal, all repos)
-├── reviewing-code/
-│   └── SKILL.md              # General code review checklist
-└── writing-commits/
-    └── SKILL.md              # Commit message formatting
-
-.claude/skills/                # (project repo)
-├── deploying-to-staging/
-│   ├── SKILL.md              # Team deployment workflow
-│   ├── scripts/
-│   │   └── deploy.sh
-│   └── references/
-│       └── runbook.md
-├── api-conventions/
-│   ├── SKILL.md              # Endpoint patterns for this project
-│   └── assets/
-│       └── route.template.ts
-└── running-e2e-tests/
-    └── SKILL.md              # E2E test runner with environment setup
-```
-
-### Naming Conventions
-
-- Use gerund form: `deploying-to-staging`, `reviewing-code`, `fixing-issues`
-- Max 64 characters, lowercase, numbers, and hyphens only
-- No reserved words: `anthropic`, `claude`
-- If `name` is omitted from frontmatter, the directory name is used
-
-### Size Guidelines
-
-| Content | Recommended Max |
-|---------|----------------|
-| SKILL.md body | 500 lines |
-| Description | 1,024 chars (front-load the first 200) |
-| Reference files | No limit, but Claude reads them on demand |
-| Scripts directory | Keep scripts focused and single-purpose |
-
-If your `SKILL.md` exceeds 500 lines, split the overflow into `references/` files that Claude reads explicitly. After compaction, only the first 5,000 tokens of the skill body survive re-attachment.
+Scripts validate their inputs, quote paths, avoid ambient secrets, and produce reviewable output. Any external mutation requires the same authority it would require outside the skill.

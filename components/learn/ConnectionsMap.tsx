@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ScrollReveal, ScrollRevealItem } from '@/components/ui/ScrollReveal';
 
 interface Pair {
   left: { name: string; href: string };
@@ -7,24 +6,16 @@ interface Pair {
 }
 
 interface RelationshipBlock {
+  index: string;
   eyebrow: string;
   thesis: string;
-  /** Static literals so Tailwind's class extraction keeps them. */
-  leftBorder: string;
-  arrowColor: string;
-  /** Single-path 24x24 stroke icon, matches the site's SVG convention. */
-  arrow: string;
   pairs: Pair[];
 }
 
-const ARROW_BIDIRECTIONAL = 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4';
-const ARROW_UP = 'M5 10l7-7m0 0l7 7m-7-7v18';
-
-// Patterns and toolkit topics that reinforce each other.
 const PATTERN_TOOLKIT: Pair[] = [
   {
     left: { name: 'Convention File', href: '/learn/patterns/convention-file' },
-    right: { name: 'CLAUDE.md', href: '/learn/toolkit/claude-md' },
+    right: { name: 'Project instructions', href: '/learn/toolkit/project-instructions' },
   },
   {
     left: { name: 'Safety Net', href: '/learn/patterns/safety-net' },
@@ -32,11 +23,11 @@ const PATTERN_TOOLKIT: Pair[] = [
   },
   {
     left: { name: 'Memory Layer', href: '/learn/patterns/memory-layer' },
-    right: { name: 'Memory System', href: '/learn/toolkit/memory' },
+    right: { name: 'Memory', href: '/learn/toolkit/memory' },
   },
   {
     left: { name: 'Parallel Fan-Out', href: '/learn/patterns/parallel-fan-out' },
-    right: { name: 'Agent Teams', href: '/learn/toolkit/agent-teams' },
+    right: { name: 'Multi-agent orchestration', href: '/learn/toolkit/agent-teams' },
   },
   {
     left: { name: 'Progressive Disclosure', href: '/learn/patterns/progressive-disclosure' },
@@ -47,12 +38,10 @@ const PATTERN_TOOLKIT: Pair[] = [
       name: 'Agent-Friendly Architecture',
       href: '/learn/patterns/agent-friendly-architecture',
     },
-    right: { name: 'MCP Servers', href: '/learn/toolkit/mcp' },
+    right: { name: 'MCP', href: '/learn/toolkit/mcp' },
   },
 ];
 
-// Harness Engineering spans runtime execution beneath the model and delivery
-// control above it. Each pair shows where another pillar meets that boundary.
 const HARNESS_LINKS: Pair[] = [
   {
     left: { name: 'Context Window Economics', href: '/learn/harness/context-economics' },
@@ -60,7 +49,7 @@ const HARNESS_LINKS: Pair[] = [
   },
   {
     left: { name: 'Compaction & Continuity', href: '/learn/harness/compaction-continuity' },
-    right: { name: 'Memory System', href: '/learn/toolkit/memory' },
+    right: { name: 'Memory', href: '/learn/toolkit/memory' },
   },
   {
     left: { name: 'Tool Result Curation', href: '/learn/harness/tool-result-curation' },
@@ -79,8 +68,6 @@ const HARNESS_LINKS: Pair[] = [
   },
 ];
 
-// Security is the trust surface cutting across all three pillars. Each chapter
-// hardens an idea the other pillars already established.
 const SECURITY_LINKS: Pair[] = [
   {
     left: { name: 'Prompt Injection', href: '/learn/security/prompt-injection' },
@@ -105,29 +92,24 @@ const SECURITY_LINKS: Pair[] = [
 
 const BLOCKS: RelationshipBlock[] = [
   {
-    eyebrow: 'Patterns ↔ Toolkit',
-    thesis: 'Each portable pattern has a Claude Code feature that implements it.',
-    leftBorder: 'border-l-chapter-2',
-    arrowColor: 'text-chapter-2',
-    arrow: ARROW_BIDIRECTIONAL,
+    index: '01',
+    eyebrow: 'Patterns and product capabilities',
+    thesis:
+      'Portable techniques stay stable while Claude Code, Codex, and GitHub Copilot implement them differently.',
     pairs: PATTERN_TOOLKIT,
   },
   {
-    eyebrow: 'Harness · Below and Above the Loop',
+    index: '02',
+    eyebrow: 'Harness and the agent loop',
     thesis:
-      'Harness Engineering controls execution inside the runtime and accountable acceptance above it.',
-    leftBorder: 'border-l-chapter-4',
-    arrowColor: 'text-chapter-4',
-    arrow: ARROW_UP,
+      'Harness Engineering connects runtime behavior beneath the model to accountable acceptance above it.',
     pairs: HARNESS_LINKS,
   },
   {
-    eyebrow: 'Security · Cuts Across',
+    index: '03',
+    eyebrow: 'Security across the system',
     thesis:
-      'Security is not a fourth silo — each chapter hardens an idea the other pillars already established.',
-    leftBorder: 'border-l-chapter-6',
-    arrowColor: 'text-chapter-6',
-    arrow: ARROW_UP,
+      'Security is not a separate silo; it hardens the same context, tool, permission, and delivery boundaries.',
     pairs: SECURITY_LINKS,
   },
 ];
@@ -136,94 +118,73 @@ export function ConnectionsMap() {
   return (
     <section
       aria-labelledby="learn-connections-heading"
-      className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-4 md:mt-8"
+      className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 md:pb-28 lg:px-8"
     >
-      <ScrollReveal>
-        <div className="mb-10 border-b-4 border-text pb-6">
-          <h2 id="learn-connections-heading" className="text-3xl md:text-4xl font-bold mb-2">
-            How It Connects
+      <div className="grid gap-10 border-t border-text/20 pt-10 lg:grid-cols-[minmax(15rem,0.65fr)_minmax(0,1.35fr)] lg:gap-20">
+        <div>
+          <p className="editorial-kicker mb-3">System map</p>
+          <h2
+            id="learn-connections-heading"
+            className="font-display text-4xl leading-tight sm:text-5xl"
+          >
+            The fields connect. The boundaries matter.
           </h2>
-          <p className="text-lg text-muted">The four pillars are one system, not four silos.</p>
+          <p className="mt-5 max-w-md leading-7 text-muted">
+            Follow the cross-references to move from a portable idea to its implementation,
+            operating boundary, and security consequence.
+          </p>
+          <Link
+            href="/learn/patterns/graph"
+            className="mt-8 inline-flex min-h-11 items-center border-b border-text pb-1 text-sm font-semibold uppercase tracking-[0.14em] transition-colors hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+          >
+            Open the language map
+          </Link>
         </div>
-      </ScrollReveal>
 
-      <ScrollReveal stagger>
-        <div className="space-y-6">
+        <div>
           {BLOCKS.map((block) => (
-            <ScrollRevealItem key={block.eyebrow}>
-              <div
-                className={`border-4 border-text border-l-8 ${block.leftBorder} bg-surface/20 p-6 md:p-8`}
-              >
-                <p className="text-xs font-bold uppercase tracking-widest text-muted mb-1">
-                  {block.eyebrow}
-                </p>
-                <p className="text-text font-semibold mb-6 max-w-3xl">{block.thesis}</p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {block.pairs.map((pair) => (
-                    <div
-                      key={pair.left.href}
-                      className="flex items-center gap-3 border-2 border-text/30 bg-surface/40 px-4 py-3 transition-all duration-150 hover:border-text hover:-translate-x-0.5 hover:shadow-[3px_3px_0_0_var(--color-text)]"
-                    >
+            <section
+              key={block.index}
+              className="border-b border-text/20 py-8 first:pt-0 last:border-b-0"
+            >
+              <div className="grid gap-3 sm:grid-cols-[2.5rem_minmax(0,1fr)] sm:gap-5">
+                <span className="font-mono text-xs text-muted" aria-hidden="true">
+                  {block.index}
+                </span>
+                <div>
+                  <h3 className="text-xl font-semibold tracking-tight">{block.eyebrow}</h3>
+                  <p className="mt-2 max-w-2xl leading-7 text-muted">{block.thesis}</p>
+                </div>
+              </div>
+              <dl className="mt-6 sm:ml-[4.5rem]">
+                {block.pairs.map((pair) => (
+                  <div
+                    key={pair.left.href}
+                    className="grid gap-1 border-t border-text/10 py-3 first:border-t-0 sm:grid-cols-2 sm:gap-6"
+                  >
+                    <dt>
                       <Link
                         href={pair.left.href}
-                        className="text-sm font-semibold truncate hover:text-accent transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
+                        className="font-medium underline decoration-text/20 underline-offset-4 transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
                         {pair.left.name}
                       </Link>
-                      <svg
-                        className={`w-5 h-5 shrink-0 ${block.arrowColor}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d={block.arrow}
-                        />
-                      </svg>
+                    </dt>
+                    <dd>
                       <Link
                         href={pair.right.href}
-                        className="text-sm font-semibold truncate hover:text-accent transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
+                        className="text-muted underline decoration-text/15 underline-offset-4 transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
                         {pair.right.name}
                       </Link>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </ScrollRevealItem>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
           ))}
         </div>
-      </ScrollReveal>
-
-      <ScrollReveal>
-        <div className="mt-8">
-          <Link
-            href="/learn/patterns/graph"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-text transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="3" strokeWidth={2} />
-              <circle cx="4" cy="6" r="2" strokeWidth={2} />
-              <circle cx="20" cy="6" r="2" strokeWidth={2} />
-              <circle cx="4" cy="18" r="2" strokeWidth={2} />
-              <circle cx="20" cy="18" r="2" strokeWidth={2} />
-              <path strokeWidth={1.5} d="M6 7l4 3M18 7l-4 3M6 17l4-3M18 17l-4-3" />
-            </svg>
-            See the full language map
-          </Link>
-        </div>
-      </ScrollReveal>
+      </div>
     </section>
   );
 }

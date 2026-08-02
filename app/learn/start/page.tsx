@@ -72,7 +72,7 @@ const CONNECTS = [
   { label: 'Security: The Real Risks', href: '/learn/security/the-real-risks', kind: 'Security' },
   { label: 'MCP', href: '/learn/toolkit/mcp', kind: 'Toolkit' },
   { label: 'Patterns', href: '/learn/patterns', kind: 'Pillar' },
-  { label: 'Claude Code Toolkit', href: '/learn/toolkit', kind: 'Pillar' },
+  { label: 'Agent Tooling', href: '/learn/toolkit', kind: 'Pillar' },
 ];
 
 export default function StartHerePage() {
@@ -99,17 +99,19 @@ export default function StartHerePage() {
 
   return (
     <PageTransition className="min-h-screen pb-16">
-      <LearnSectionHero
-        section="Start Here"
-        color="amber"
-        eyebrow="On-ramp · Plain English"
-        title="Start Here"
-        description={ONRAMP_BOUNDARY}
-      />
+      <div className="learn-standalone-shell">
+        <LearnSectionHero
+          section="Start Here"
+          color="amber"
+          eyebrow="On-ramp · Plain English"
+          title="Start Here"
+          description={ONRAMP_BOUNDARY}
+        />
+      </div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0">
-        <section aria-labelledby="who-heading" className="mb-16 max-w-3xl">
-          <h2 id="who-heading" className="text-2xl md:text-3xl font-bold tracking-tight mb-4">
+      <div className="learn-standalone-shell px-4 sm:px-6 lg:px-0">
+        <section aria-labelledby="who-heading" className="mb-20 max-w-3xl">
+          <h2 id="who-heading" className="mb-5 font-display text-4xl tracking-tight md:text-5xl">
             Saw the demo. Want to understand it.
           </h2>
           <p className="text-muted leading-relaxed mb-4">
@@ -127,8 +129,8 @@ export default function StartHerePage() {
         </section>
 
         <section aria-labelledby="path-heading" className="mb-16">
-          <div className="border-l-8 border-l-chapter-5 border-b-2 border-text/30 pl-5 pb-4 mb-8">
-            <h2 id="path-heading" className="text-2xl md:text-3xl font-bold tracking-tight">
+          <div className="mb-8 grid gap-4 border-b border-text/20 pb-6 md:grid-cols-[minmax(0,1fr)_minmax(18rem,1fr)] md:items-end">
+            <h2 id="path-heading" className="font-display text-4xl tracking-tight md:text-5xl">
               The path
             </h2>
             <p className="text-sm text-muted mt-2 max-w-3xl leading-relaxed">
@@ -138,32 +140,25 @@ export default function StartHerePage() {
           </div>
 
           <ScrollReveal stagger>
-            <div className="grid gap-5 md:grid-cols-3">
+            <div className="border-y border-text/20">
               {PATH.map((s) => (
                 <ScrollRevealItem key={s.n}>
-                  <div className="h-full flex flex-col border-2 border-text/60 border-t-4 border-t-chapter-5 bg-surface/40 p-6">
+                  <div className="grid gap-5 border-b border-text/20 py-6 last:border-b-0 md:grid-cols-[4rem_minmax(0,1fr)_minmax(10rem,auto)] md:items-start">
                     <span
-                      className="font-mono font-bold text-4xl text-chapter-5 opacity-20 leading-none tabular-nums mb-4"
+                      className="font-display text-3xl leading-none tabular-nums text-chapter-5"
                       aria-hidden="true"
                     >
                       {s.n}
                     </span>
-                    <h3 className="text-xl font-bold mb-2 tracking-tight">{s.title}</h3>
-                    <p className="text-sm text-muted leading-relaxed flex-1 mb-5">{s.body}</p>
+                    <div>
+                      <h3 className="font-display text-2xl tracking-tight">{s.title}</h3>
+                      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{s.body}</p>
+                    </div>
                     <Link
                       href={s.href}
-                      className="group inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-chapter-5 hover:underline decoration-2 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
+                      className="inline-flex min-h-11 items-center text-xs font-semibold uppercase tracking-[0.12em] text-chapter-5 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
                     >
                       {s.cta}
-                      <svg
-                        className="w-4 h-4 group-hover:translate-x-1 transition-transform"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                      </svg>
                     </Link>
                   </div>
                 </ScrollRevealItem>
@@ -173,8 +168,8 @@ export default function StartHerePage() {
         </section>
 
         <section aria-labelledby="ways-heading" className="mb-4">
-          <div className="border-l-8 border-l-chapter-5 border-b-2 border-text/30 pl-5 pb-4 mb-8">
-            <h2 id="ways-heading" className="text-2xl md:text-3xl font-bold tracking-tight">
+          <div className="mb-8 grid gap-4 border-b border-text/20 pb-6 md:grid-cols-[minmax(0,1fr)_minmax(18rem,1fr)] md:items-end">
+            <h2 id="ways-heading" className="font-display text-4xl tracking-tight md:text-5xl">
               Two ways in
             </h2>
             <p className="text-sm text-muted mt-2 max-w-3xl leading-relaxed">
@@ -183,7 +178,7 @@ export default function StartHerePage() {
           </div>
 
           <ScrollReveal stagger>
-            <div className="grid gap-6 md:grid-cols-2">
+            <div>
               {cards.map((c) => (
                 <ScrollRevealItem key={c.href}>
                   <SectionCard
@@ -203,8 +198,8 @@ export default function StartHerePage() {
         </section>
 
         <section aria-labelledby="ideas-heading" id="ideas" className="scroll-mt-20 mt-16 mb-4">
-          <div className="border-l-8 border-l-chapter-5 border-b-2 border-text/30 pl-5 pb-4 mb-8">
-            <h2 id="ideas-heading" className="text-2xl md:text-3xl font-bold tracking-tight">
+          <div className="mb-8 grid gap-4 border-b border-text/20 pb-6 md:grid-cols-[minmax(0,1fr)_minmax(18rem,1fr)] md:items-end">
+            <h2 id="ideas-heading" className="font-display text-4xl tracking-tight md:text-5xl">
               Understand the ideas
             </h2>
             <p className="text-sm text-muted mt-2 max-w-3xl leading-relaxed">
@@ -214,7 +209,7 @@ export default function StartHerePage() {
           </div>
 
           <ScrollReveal stagger>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div>
               {EXPLAINERS.map((e) => (
                 <ScrollRevealItem key={e.slug}>
                   <SectionCard

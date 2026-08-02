@@ -1,37 +1,44 @@
 ---
-title: "Hooks: Expert's Guide"
-topic: "hooks"
+title: 'Lifecycle Hooks Across Claude Code, Codex, and Copilot'
+topic: 'hooks'
 order: 1
-description: "Master Claude Code hooks — lifecycle automation, validation pipelines, and agent guardrails for production workflows."
-relatedPatterns: ["safety-net", "convention-file"]
-relatedTopics: ["skills", "agents", "claude-md"]
+description: 'Compare agent lifecycle hooks, their surface-specific semantics, and the boundary between useful automation and enforceable policy.'
+relatedPatterns: ['safety-net', 'convention-file']
+relatedTopics: ['skills', 'agents', 'project-instructions']
 published: true
-keywords: ["claude code hooks", "lifecycle automation", "validation pipeline", "agent guardrails"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-hooks', 'codex-hooks', 'copilot-hooks']
+keywords:
+  ['agent hooks', 'Claude Code hooks', 'Codex hooks', 'Copilot hooks', 'lifecycle automation']
 ---
 
-# Hooks
+# Lifecycle Hooks
 
-Hooks are Claude Code's lifecycle automation system. They fire shell commands at precise moments — before or after tool calls — giving you programmatic control over agent behavior without touching the agent itself.
+Hooks attach deterministic programs or product-defined handlers to moments in an agent run: before a tool executes, after it completes, when a session changes state, or when work is declared complete.
 
-## Why Hooks Matter
+The strongest use of hooks is not “make the model behave.” It is to move repeatable checks out of probabilistic instructions and into an inspectable execution path.
 
-Most developers discover hooks when they want auto-formatting. That's the tip of the iceberg. Hooks are the mechanism for building **deterministic guardrails** around non-deterministic agent behavior. They're how you enforce invariants that prompts alone can't guarantee.
+## What Hooks Are Good For
 
-## When to Use Hooks vs. Alternatives
+- Rejecting or rewriting a proposed tool action when the product exposes a blocking event.
+- Running fast validation after edits.
+- Recording an audit event with the action, result, and causal run identifier.
+- Loading narrowly scoped context at a defined lifecycle point.
+- Triggering a review or completion check before work leaves the agent loop.
 
-| Need | Use |
-|------|-----|
-| Enforce a rule on every tool call | **Hook** |
-| Teach the agent a reusable workflow | Skill |
-| Give the agent a one-time instruction | CLAUDE.md |
-| Block dangerous operations | **Hook** (PreToolUse) |
-| Format code after edits | **Hook** (PostToolUse) |
+## The Enforcement Boundary
 
-## What's Inside
+Hook existence does not imply hard enforcement. Products differ in event coverage, timeout behavior, exit-code semantics, configuration scope, and whether cloud execution uses the same hook runtime as local execution.
 
-Explore the sub-pages for deep expertise:
+OpenAI describes Codex hooks as guardrails rather than complete enforcement. GitHub documents fail-open timeout behavior for Copilot hooks. Claude Code exposes a broad event and handler model, but its hooks still run inside the product's configured execution boundary. For a release-critical invariant, verify the actual event path and keep the final gate outside the model-controlled workflow.
 
-- **Mental Model** — How hooks fit into Claude Code's execution lifecycle
-- **Playbook** — Production-ready hook configurations with rationale
-- **Compositions** — Hooks combined with skills, agents, and MCP
-- **Pitfalls** — Silent failures, ordering surprises, and performance traps
+## A Defensible Design
+
+1. Identify the exact lifecycle event and surface.
+2. Define the input contract and the action that a handler may take.
+3. Make failure behavior explicit: block, warn, retry, or record.
+4. Bound runtime and output size.
+5. Test bypasses, timeouts, malformed output, and nested-agent behavior.
+6. Keep the authoritative release decision in CI or another independently controlled gate.
+
+The deeper lenses retain Claude Code configuration examples. Translate the mechanism, not the JSON shape, when applying them to Codex or Copilot.

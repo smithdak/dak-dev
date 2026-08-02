@@ -4,7 +4,7 @@
  * Article-class JSON-LD references this as the publisher (Twofold) logo. The
  * 600x60 dimensions match Google's recommended Article publisher logo box
  * (max 600px wide, ~60px tall). Generated with next/og to stay in the same
- * idiom as app/icon.tsx and app/api/og/route.tsx — no binary asset to drift.
+ * idiom as the generated application icons — no binary asset to drift.
  */
 
 import { ImageResponse } from 'next/og';
@@ -22,39 +22,37 @@ const CACHE_HEADERS = {
 
 export function GET() {
   const response = new ImageResponse(
-    (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        backgroundColor: '#0A0A0A',
+        padding: '0 20px',
+        fontFamily: 'monospace',
+      }}
+    >
+      {/* Accent block */}
       <div
         style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          backgroundColor: '#0A0A0A',
-          padding: '0 20px',
-          fontFamily: 'monospace',
+          width: '32px',
+          height: '32px',
+          backgroundColor: '#00FF88',
+        }}
+      />
+      <div
+        style={{
+          fontSize: '34px',
+          fontWeight: 700,
+          color: '#F5F5F5',
+          letterSpacing: '0.04em',
         }}
       >
-        {/* Accent block */}
-        <div
-          style={{
-            width: '32px',
-            height: '32px',
-            backgroundColor: '#00FF88',
-          }}
-        />
-        <div
-          style={{
-            fontSize: '34px',
-            fontWeight: 700,
-            color: '#F5F5F5',
-            letterSpacing: '0.04em',
-          }}
-        >
-          Twofold
-        </div>
+        Twofold
       </div>
-    ),
+    </div>,
     { width: WIDTH, height: HEIGHT }
   );
 

@@ -13,13 +13,16 @@ interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
 }
 
 const buttonStyles = {
-  base: 'inline-flex items-center justify-center font-semibold transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-offset-4 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed',
+  base: 'inline-flex items-center justify-center font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-4 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed',
 
   variants: {
-    primary: 'bg-text text-background border-4 border-text hover:bg-background hover:text-text shadow-[4px_4px_0_0_var(--color-text)] hover:shadow-[6px_6px_0_0_var(--color-accent)] focus:ring-accent',
-    secondary: 'bg-surface text-text border-4 border-text hover:bg-text hover:text-background shadow-[4px_4px_0_0_var(--color-text)] hover:shadow-[6px_6px_0_0_var(--color-accent)] focus:ring-accent',
-    ghost: 'bg-transparent text-text border-2 border-text hover:bg-text hover:text-background focus:ring-accent',
-    accent: 'bg-transparent text-accent border-4 border-accent hover:bg-accent hover:text-background shadow-[4px_4px_0_0_var(--color-accent)] hover:shadow-[6px_6px_0_0_var(--color-accent)] focus:ring-accent',
+    primary:
+      'bg-text text-background border border-text hover:bg-accent hover:border-accent focus:ring-accent',
+    secondary: 'bg-transparent text-text border border-text/35 hover:border-text focus:ring-accent',
+    ghost:
+      'bg-transparent text-text border border-transparent hover:border-text/25 hover:bg-surface/60 focus:ring-accent',
+    accent:
+      'bg-accent text-background border border-accent hover:bg-text hover:border-text focus:ring-accent',
   },
 
   sizes: {
@@ -52,8 +55,7 @@ export function Button({
       type={type}
       className={classNames}
       disabled={disabled}
-      whileHover={disabled ? {} : { scale: 1.02 }}
-      whileTap={disabled ? {} : { scale: 0.98 }}
+      whileTap={disabled ? {} : { scale: 0.985 }}
       {...props}
     >
       {icon && iconPosition === 'left' && <span className="flex-shrink-0">{icon}</span>}

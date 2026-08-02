@@ -13,45 +13,52 @@ on-demand documents. This file is the map and the rule set for that system.
 after every compaction. Every token there is a token unavailable for the
 actual task, and a long instruction file buries the rules that matter. The
 project's own reference (`docs/research/claude-md-expert-reference.md`) records
-Anthropic's guidance: **keep `CLAUDE.md` under 200 lines**, and *"the test for
+Anthropic's guidance: **keep `CLAUDE.md` under 200 lines**, and _"the test for
 every line: would removing this cause Claude to make mistakes? If not, delete
-it."*
+it."_
 
 So knowledge is **tiered by how often it is needed**, and only Tier 0 is always
 loaded.
 
 ## The tiers
 
-| Tier | What | Loaded | Examples |
-|------|------|--------|----------|
-| **0 — Spine** | Rules/constraints needed every session; pointers to everything else | Always (survives compaction) | `CLAUDE.md` |
-| **1 — Reference** | Deep knowledge read when a task touches the area | On demand, by path | `DESIGN.md`, `docs/*.md`, `.content/*` |
-| **2 — Procedural** | Repeatable multi-step workflows | On demand, when invoked | `.claude/commands/*` (slash-command skills) |
+| Tier               | What                                                                | Loaded                       | Examples                                    |
+| ------------------ | ------------------------------------------------------------------- | ---------------------------- | ------------------------------------------- |
+| **0 — Spine**      | Rules/constraints needed every session; pointers to everything else | Always (survives compaction) | `CLAUDE.md`                                 |
+| **1 — Reference**  | Deep knowledge read when a task touches the area                    | On demand, by path           | `DESIGN.md`, `docs/*.md`, `.content/*`      |
+| **2 — Procedural** | Repeatable multi-step workflows                                     | On demand, when invoked      | `.claude/commands/*` (slash-command skills) |
 
 **Progressive disclosure is the whole design.** `CLAUDE.md` names a document and
-says *"read this when X."* The model pulls it only when X happens. Reference
+says _"read this when X."_ The model pulls it only when X happens. Reference
 docs are **never `@import`-ed** into `CLAUDE.md` — an `@import` embeds the entire
 file into every session and re-creates the bloat we are removing.
 
 ## Knowledge base — the map
 
 ### Engineering
+
 - **`DESIGN.md`** — canonical architecture reference: the "why," the decision
   ledger, the risk register. Read for any structural or architectural change.
   Anchored to `path:line`; update it in the same PR as the code it describes.
 
 ### Operating manuals (`docs/`)
+
 - **`docs/content-ops.md`** — content, brand-voice, and SEO operating manual.
   Orients the work; defers to `.content/` for the actual data.
-- **`docs/ui-workflow.md`** — the Pencil.dev MCP visual-UI workflow and the
-  neo-brutalist verification checklist.
+- **`docs/ui-workflow.md`** — the tool-neutral implementation and verification
+  workflow for the executive-editorial UI, including responsive, theme, and
+  accessibility proof.
 - **`docs/project-history.md`** — archived origin, the 6-epic build plan, and
   original product clarifications. History, **not** session instructions.
 
 ### Existing libraries (indexed here, not relocated)
-- **`docs/research/*-expert-reference.md`** — deep references on Claude Code
-  mechanics: `claude-md`, `skills`, `hooks`, `commands`, `agents`, `agent-teams`,
-  `mcp-servers`, `memory-system`, `settings`. Read when configuring the harness.
+
+- **`docs/research/*-expert-reference.md`** — vendor-specific research snapshots
+  on Claude Code mechanics: `claude-md`, `skills`, `hooks`, `commands`,
+  `agents`, `agent-teams`, `mcp-servers`, `memory-system`, `settings`. These are
+  retained research inputs, not the canonical cross-vendor Toolkit taxonomy or
+  evidence registry. Check each document's date before treating a product claim
+  as current.
 - **`docs/plans/*`** — per-feature design and plan documents. Naming convention:
   `YYYY-MM-DD-<feature>-design.md` (the "what/why") and
   `YYYY-MM-DD-<feature>-plan.md` (the "how/steps"). Add new ones here; do not
@@ -60,17 +67,22 @@ file into every session and re-creates the bloat we are removing.
   brand voice (`brand/voice.md`), machine-readable validation rules
   (`brand/guidelines.json`), templates, calendar, SEO strategy, linking
   strategy. Docs and `CLAUDE.md` point here; they never restate it.
+- **`content/toolkit/_data/`** — the dated Toolkit product, official-source,
+  and capability-coverage registries. `lib/toolkit.ts` validates this evidence
+  model and the full capability/lens corpus; run `pnpm validate:toolkit` after
+  any Toolkit product or coverage change.
 
 ### Procedural (skills)
+
 - **`.claude/commands/*.md`** — slash-command skills: `/write-post`,
   `/review-post`, `/brand-check`, `/content-calendar`, `/content-strategist`,
   `/frontend-design`, `/product-owner`. Zero context cost until invoked.
 
 ## Where does new material go? (decision boundary)
 
-From `docs/research/claude-md-expert-reference.md`: *"If an instruction applies
+From `docs/research/claude-md-expert-reference.md`: _"If an instruction applies
 to every session, put it in `CLAUDE.md`. If it is a multi-step procedure or only
-matters for one part of the codebase, make it a skill."* Extending that:
+matters for one part of the codebase, make it a skill."_ Extending that:
 
 ```
 Is it a rule/constraint needed on essentially every session?
@@ -85,7 +97,7 @@ Is it content data (voice, rules, templates, calendar)?
 ```
 
 **Skills vs. knowledge base, decided:** the repeatable content workflows are
-*already* skills. The gap this restructure fills is **reference knowledge plus a
+_already_ skills. The gap this restructure fills is **reference knowledge plus a
 navigable index**, not more skills. New procedures become skills; new
 explanation becomes a doc; new always-true rules become a `CLAUDE.md` line.
 
@@ -102,8 +114,13 @@ explanation becomes a doc; new always-true rules become a `CLAUDE.md` line.
    removed in this restructure is the cautionary example (see
    `docs/project-history.md`).
 5. **One source of truth.** Brand/content data lives only in `.content/`;
-   architecture rationale only in `DESIGN.md`. Other files point, not copy.
+   Toolkit evidence lives in `content/toolkit/_data/`; architecture rationale
+   only in `DESIGN.md`. Other files point, not copy.
+6. **Preserve decision history.** `docs/project-history.md` and
+   `docs/plans/*` are historical records. Do not rewrite them to make old plans
+   sound current; describe the implemented replacement in `DESIGN.md` and leave
+   the original decision context intact.
 
 ---
 
-*Entry point: start at `CLAUDE.md`; it routes here.*
+_Entry point: start at `CLAUDE.md`; it routes here._

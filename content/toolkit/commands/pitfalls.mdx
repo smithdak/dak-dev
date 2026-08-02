@@ -1,317 +1,48 @@
 ---
-title: "Commands: Pitfalls"
-topic: "commands"
-subPage: "pitfalls"
+title: 'Commands and Workflows: Pitfalls'
+topic: 'commands'
+subPage: 'pitfalls'
 order: 5
-description: "Autocomplete failures, commands vs skills confusion, context bloat, silent YAML errors, and platform-specific issues."
-relatedPatterns: ["scope-fence"]
-relatedTopics: ["skills", "claude-md", "settings"]
+description: 'Failure modes in slash-command portability, ambiguous inputs, hidden authority, duplicate procedures, and unverifiable completion.'
+relatedPatterns: ['scope-fence', 'safety-net', 'progressive-disclosure']
+relatedTopics: ['skills', 'settings', 'hooks']
 published: true
-keywords: ["commands pitfalls", "autocomplete failures", "context bloat", "YAML errors", "debugging commands"]
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-commands', 'claude-skills', 'codex-commands', 'codex-skills', 'copilot-cli-reference']
+keywords: ['command pitfalls', 'slash command portability', 'command safety', 'workflow drift']
 ---
 
 # Pitfalls
 
-Commands fail in ways that produce no error messages. Claude silently follows outdated instructions, autocomplete drops your command from the list, YAML frontmatter breaks parsing without any warning. This page catalogs every known failure mode and the fix for each.
+## Assuming Slash-Name Portability
 
-## Commands That Don't Appear in Autocomplete
+The same command may be absent or mean something different in another product. Port the workflow contract.
 
-The most common support request. Your command file exists, the syntax looks correct, but typing `/` shows nothing.
+## Ambiguous Arguments
 
-### Known Causes
+Natural-language destinations can select the wrong environment or scope. Resolve and echo exact targets before acting.
 
-| Cause | Symptoms | Fix |
-|-------|----------|-----|
-| IDE-specific regression | Works in terminal, not in editor | Downgrade Claude Code version (e.g., v2.1.89 to v2.1.87 fixed Zed autocomplete) |
-| Desktop/mobile app | Autocomplete never appears | Type full command name manually — autocomplete is not supported on these platforms |
-| Plugin skills | Plugin commands missing from list | Type the full name — plugin skills execute correctly even without autocomplete |
-| Filter bug | Characters after `/` don't narrow results | Known issue (#26307). Type full name and press Enter. |
-| Wrong directory | File exists but in wrong location | Must be in `.claude/commands/` or `.claude/skills/name/SKILL.md` |
-| Wrong extension | File saved as `.markdown` | Must be `.md` — no other extension is recognized |
+## Hidden Authority Expansion
 
-### Diagnostic Steps
+A command called `ship` does not imply permission to push, deploy, message customers, or spend. Require confirmation at each material boundary.
 
-```bash
-# Check installation health
-claude doctor
+## Duplicated Command and Skill Logic
 
-# List all discovered commands
-# Type /help inside Claude Code
+Two procedures drift. Make the command a thin adapter to one reviewed workflow.
 
-# Verbose logging shows discovery
-claude --verbose
-```
+## Session-State Dependence
 
-If `/help` lists your command but autocomplete does not show it, the issue is in the autocomplete UI, not in command discovery. Type the full name as a workaround.
+A workflow that relies on unrecorded prior conversation cannot be reproduced or audited. Declare required inputs.
 
-## Commands vs. Skills Confusion
+## Success Without Evidence
 
-Choosing the wrong abstraction creates friction that compounds over time. Four symptoms indicate a mismatch.
+Require artifact paths, test output, external identifiers, and failures. Narrative confidence is not completion.
 
-| Symptom | Problem | Solution |
-|---------|---------|----------|
-| You built a skill but always invoke it manually | The skill never auto-invokes because you always type `/name` | Move to `.claude/commands/` or add `disable-model-invocation: true` |
-| Claude auto-invokes your deploy command | Missing safety flag | Add `disable-model-invocation: true` to frontmatter |
-| Command needs 10 supporting template files | Commands are single-file only | Convert to a skill in `.claude/skills/name/` |
-| Claude never uses your knowledge base skill | Description does not match task patterns | Rewrite the `description` field to match how Claude evaluates relevance |
+## Falsification Checklist
 
-The decision is straightforward:
-- **User-triggered, single file, no auto-invocation needed:** command
-- **Needs supporting files, or should auto-invoke:** skill
-
-## Context Window Bloat
-
-The silent killer of command effectiveness. Commands inject their full content into context on invocation and it stays there.
-
-### The Math
-
-- A 500-line command file consumes ~2,000 tokens on injection
-- Claude Code's system prompt uses ~50 of the ~150-200 instruction slots frontier models follow reliably
-- Your CLAUDE.md takes more slots. Every loaded skill takes more. Every invoked command takes more.
-- At some point, instructions start getting dropped — silently, with no error
-
-### After Compaction
-
-`/compact` summarizes the conversation including your command instructions. What survives:
-
-| Content Type | Survival Rate |
-|-------------|---------------|
-| High-level intent ("deploy to staging") | High |
-| Specific variable names and paths | Low |
-| Edge case handling instructions | Low |
-| Nuanced constraints ("warn if not on main") | Low |
-| Safety instructions (last 5 lines) | Medium-high |
-
-The first 5 lines and last 5 lines of a command file are most reliably retained. Middle content degrades first.
-
-### Mitigation
-
-- Keep commands under 200 lines
-- Use `/clear` between unrelated tasks to reset context
-- Front-load critical instructions in the first 5 lines
-- Place safety constraints in the last 5 lines
-- Reference external files (`Read .content/brand/guidelines.json`) instead of inlining reference material
-- Use progressive disclosure: brief instructions in the command body, detailed reference in files Claude reads on demand
-
-## Silent YAML Errors
-
-Malformed frontmatter breaks command parsing without any error message. Claude Code silently ignores the frontmatter and treats the entire file as markdown content — including the YAML block rendered as text.
-
-### Common Silent Failures
-
-```yaml
-# BROKEN: tabs instead of spaces
----
-name:	deploy
-description:	Deploy to production
----
-
-# BROKEN: missing closing ---
----
-name: deploy
-description: Deploy to production
-
-# Deploy steps here...
-
-# BROKEN: uppercase in name
----
-name: Deploy
----
-
-# BROKEN: description over 1024 characters
----
-name: deploy
-description: "A very long description that exceeds..."
----
-```
-
-### Validation Checklist
-
-| Check | Requirement |
-|-------|-------------|
-| Indentation | Spaces only, no tabs |
-| Frontmatter delimiters | Opening and closing `---` on their own lines |
-| `name` field | Lowercase, numbers, hyphens only. Max 64 chars. |
-| `description` field | Max 1024 characters |
-| File extension | `.md` only — not `.markdown`, `.mdx`, `.txt` |
-| File encoding | UTF-8 without BOM |
-| Boolean values | `true` / `false` (not `yes` / `no`, not quoted) |
-
-There is no built-in validator. Run `claude doctor` for general health checks, but it does not validate individual command files. For team projects, add a CI script that parses frontmatter and checks these constraints:
-
-```bash
-#!/bin/bash
-# scripts/validate-commands.sh — Run in CI to catch broken command files
-set -euo pipefail
-
-ERRORS=0
-
-for file in .claude/commands/*.md .claude/skills/*/SKILL.md; do
-  [ -f "$file" ] || continue
-
-  # Check for BOM
-  if head -c3 "$file" | grep -qP '\xef\xbb\xbf'; then
-    echo "ERROR: $file has UTF-8 BOM — remove it"
-    ERRORS=$((ERRORS + 1))
-  fi
-
-  # Check frontmatter delimiters
-  if head -1 "$file" | grep -q '^---$'; then
-    if ! sed -n '2,/^---$/p' "$file" | tail -1 | grep -q '^---$'; then
-      echo "ERROR: $file has unclosed frontmatter"
-      ERRORS=$((ERRORS + 1))
-    fi
-
-    # Check name field format
-    NAME=$(sed -n '/^---$/,/^---$/p' "$file" | grep '^name:' | awk '{print $2}')
-    if [ -n "$NAME" ] && ! echo "$NAME" | grep -qE '^[a-z0-9-]{1,64}$'; then
-      echo "ERROR: $file name '$NAME' must be lowercase/numbers/hyphens, max 64 chars"
-      ERRORS=$((ERRORS + 1))
-    fi
-  fi
-done
-
-if [ "$ERRORS" -gt 0 ]; then
-  echo "Found $ERRORS command validation errors"
-  exit 1
-fi
-echo "All command files valid"
-```
-
-## Commands That Become Stale
-
-Commands reference file paths, tool names, API endpoints, and project structure. When the project evolves, commands break silently — Claude follows outdated instructions and produces wrong results without any indication that something changed.
-
-### Staleness Indicators
-
-- Command references `npm run test:unit` but the script was renamed to `npm run test:integration`
-- Command hardcodes a file path that was moved during refactoring
-- Command references an API endpoint that changed versions
-- Command assumes a directory structure that no longer exists
-
-### Prevention
-
-**Reference dynamically instead of hardcoding:**
-
-```markdown
-# Bad — hardcoded script name
-Run `npm run test:unit` to verify changes.
-
-# Good — dynamic discovery
-Read package.json to find the appropriate test script, then run it.
-```
-
-**Add version comments:**
-
-```markdown
----
-name: deploy
-# Last updated: 2026-03-15 — verified against Vercel CLI v35
----
-```
-
-**CI validation:** Add a script to your pipeline that checks command files reference existing paths and scripts. Parse each command file, extract referenced file paths and npm scripts, verify they exist in the current project state.
-
-```yaml
-# .github/workflows/validate-commands.yml
-name: Validate Claude Commands
-on:
-  pull_request:
-    paths:
-      - '.claude/commands/**'
-      - '.claude/skills/**'
-
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Validate command files
-        run: bash scripts/validate-commands.sh
-      - name: Check for stale references
-        run: |
-          for file in .claude/commands/*.md; do
-            # Extract npm script references
-            grep -oP 'npm run \K[a-z:_-]+' "$file" 2>/dev/null | while read script; do
-              if ! jq -e ".scripts[\"$script\"]" package.json > /dev/null 2>&1; then
-                echo "WARNING: $file references missing script 'npm run $script'"
-              fi
-            done
-          done
-```
-
-**Review cadence:** Include command files in sprint retrospectives. A 5-minute scan of `.claude/commands/` catches drift before it causes problems.
-
-## Platform-Specific Issues
-
-### Windows
-
-Shell commands in command files use Unix syntax. Claude Code on Windows runs bash through WSL or Git Bash, but path handling has edge cases:
-
-- Use forward slashes in paths: `src/components/`, not `src\components\`
-- `$ARGUMENTS` expansion works identically across platforms
-- Some npm scripts may need `cross-env` for environment variables
-
-### Symlinks
-
-Commands in symlinked directories may not be discovered. Use actual paths, not symlinks, for `.claude/commands/`.
-
-### File Encoding
-
-Command files must be UTF-8. BOM (Byte Order Mark) characters at the start of the file can break YAML frontmatter parsing. Many Windows editors add BOM by default — configure your editor to save as UTF-8 without BOM.
-
-## Anti-Patterns
-
-Seven patterns that look reasonable but cause problems at scale.
-
-### 1. The Kitchen-Sink Command
-
-A single 400-line command that handles every deployment scenario with conditional logic for staging, production, preview, and rollback. Split into focused commands: `/deploy-staging`, `/deploy-prod`, `/rollback`.
-
-### 2. The Copy-Paste README
-
-Dumping an entire README or documentation page into a command file. This wastes ~2,000+ tokens of context permanently. Instruct Claude to read the file when needed instead:
-
-```markdown
-# Good — read on demand
-Read the API documentation at docs/api-reference.md before proceeding.
-
-# Bad — inlined
-[400 lines of API documentation pasted here]
-```
-
-### 3. No Failure Handling
-
-If step 2 of 5 fails, what should Claude do? Without explicit failure instructions, Claude improvises — often poorly. Always specify:
-
-```markdown
-## On failure
-
-- If tests fail: fix the failures and re-run. Abort after 3 attempts.
-- If build fails: report the error and stop. Do NOT attempt to fix build errors.
-- If deployment fails: report the error with logs. Do NOT retry automatically.
-```
-
-### 4. Expecting Command Chaining
-
-Assuming Claude will invoke `/review` after `/write-post` completes. Commands do not chain automatically. Either build a meta-command that inlines both workflows, or document the chain in CLAUDE.md so Claude suggests the next step.
-
-### 5. Over-Constraining allowed-tools
-
-Setting `allowed-tools: Bash(npm test:*)` too narrowly. Claude may need Read to check test configuration, Grep to find test files, and Glob to discover test patterns. Start permissive, observe what Claude actually uses, then restrict based on evidence.
-
-### 6. Verbatim Community Commands
-
-Commands from GitHub repositories encode assumptions about project structure, naming conventions, and tooling. A `/deploy` command from a Next.js monorepo will not work for your Express API. Use community commands as inspiration, then rewrite for your codebase.
-
-### 7. Ignoring the Description Field
-
-For skills that Claude should auto-invoke, the `description` is the ONLY signal Claude uses to decide relevance. A vague description like "helpful utilities" means Claude either never invokes it or invokes it when you are doing something completely unrelated. Write descriptions that match the task patterns you want to trigger invocation:
-
-```yaml
-# Bad
-description: "Useful development tools"
-
-# Good
-description: "Review TypeScript code changes for security vulnerabilities, performance issues, and style violations"
-```
+- Does invocation resolve exact inputs and scope?
+- Is the workflow identical across adapters?
+- Can interruption or duplicate invocation cause damage?
+- Are material side effects separately approved?
+- Can another person verify the result without the conversation?

@@ -24,20 +24,17 @@ export function ReadingProgress({ className = '' }: ReadingProgressProps) {
 
   return (
     <div
-      className={`fixed top-16 left-0 right-0 z-40 ${className}`}
+      className={`fixed left-0 right-0 top-[var(--layout-header-height)] z-40 ${className}`}
       role="progressbar"
       aria-label="Reading progress"
       aria-valuenow={Math.round(progress)}
       aria-valuemin={0}
       aria-valuemax={100}
     >
-      {/* Progress bar fill - Neo-brutalist style */}
       <div
-        className="h-[6px] origin-left transition-transform will-change-transform motion-reduce:transition-none"
+        className="h-0.5 origin-left bg-accent transition-transform will-change-transform motion-reduce:transition-none"
         style={{
-          backgroundColor: 'var(--color-accent)',
           transform: `scaleX(${progress / 100})`,
-          boxShadow: '0 4px 0 0 var(--color-accent)',
         }}
       />
 

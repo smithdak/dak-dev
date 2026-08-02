@@ -1,11 +1,12 @@
-# Frontend Engineering Design
+# Dakota Smith — Product and Engineering Design
 
 > The architecture, the constraints that shaped it, and the decisions behind it.
 
-**Status:** Living document — reflects `security-hardening` and `main`
+**Status:** Living document — reflects the implemented 2026 modernization
 **Audience:** Engineers contributing to this codebase
 **Owner:** Dakota Smith
-**Last reconciled with code:** 2026-05-19
+**Public identity:** Dakota Smith · Principal Architect · `daksmith.dev`
+**Last reconciled with code:** 2026-08-02
 
 ---
 
@@ -16,15 +17,25 @@ architecture reference. `CLAUDE.md` is the lean operational spine (rules,
 constraints, commands, pointers); the original build plan and product
 clarifications are archived in `docs/project-history.md`; `docs/README.md` maps
 the whole documentation system. Where any of these disagree with the code, the
-code is the source of truth. Two stack decisions diverged from the initial spec
-during implementation and are called out here because they change the
-_implemented_ architecture, not just a value:
+code is the source of truth. Five implemented decisions supersede the original
+build plan and older visual guidance:
 
 - **Tailwind v4, not v3.** There is no `tailwind.config.ts`. Configuration is
   CSS-first in `app/globals.css` (`@import "tailwindcss"` + `@theme inline`).
   See §6.
-- **The accent color is decided** — `#00ff88` (dark) / `#00cc6a` (light), no
-  longer the `TBD` of the original spec. See §6.
+- **The visual direction is executive editorial, not neo-brutalist.** Warm
+  ivory is the default canvas; deep forest ink, fine rules, restrained green,
+  serif display type, and generous negative space establish authority without
+  implying a title Dakota does not hold. See §6.
+- **The public identity is personal and precise.** The wordmark is `Dakota
+Smith`; `daksmith.dev` is the domain signature; `Principal Architect` is the
+  current professional position. “Head of AI Innovation” is an aspiration, not
+  a claim made by the product.
+- **Toolkit is capability-first and cross-vendor.** Durable engineering
+  capabilities are the taxonomy; Claude Code, OpenAI Codex, and GitHub Copilot
+  are evidence-backed product projections. See §4.
+- **The default Open Graph image is a checked-in static artifact.** Metadata
+  points to `public/og-default.png`; there is no dynamic OG route. See §11.
 
 Every claim here is anchored to a file path. When you change the
 behavior, change the anchor's neighbor — and update this section's date. A
@@ -34,18 +45,26 @@ design doc that drifts from the code is worse than no design doc.
 
 ## 1. The problem and the constraints
 
-This is a content-heavy personal site — a blog plus a four-pillar learning
-corpus on agentic engineering (~90 MDX documents across five content types).
-It is not a generic blog. Three forcing functions shape every decision:
+This is Dakota Smith's professional publication — a blog plus a four-pillar
+learning corpus on accountable AI systems and agentic engineering (114 MDX
+documents across six content areas as of 2026-08-01). It must read as the work
+of a principal architect operating toward AI innovation leadership, not as a
+hobby portfolio or a generic developer blog. Four forcing functions shape
+every decision:
 
 1. **A hard performance/accessibility bar.** Lighthouse Accessibility, Best
    Practices, and SEO must score **100** (enforced as `1.0` in
-   `lighthouserc.json:16-18`). Performance must clear **0.90**. These are not
-   aspirations; they are merge gates (§12).
-2. **A real security posture.** This site teaches AI security; shipping a weak
-   header set would be self-refuting. The `security-hardening` branch makes the
-   trust surface a first-class deliverable, not an afterthought (§10).
-3. **A static deployment target.** Vercel, SSG, free `*.vercel.app` domain, no
+   `lighthouserc.json:21-29`) on every collected run. Performance must clear
+   **0.90** on the representative median run (`lighthouserc.json:20`). These
+   are not aspirations; they are merge gates (§12).
+2. **Professional credibility without title inflation.** Authority comes from
+   the quality of the work, the specificity of the writing, and the product's
+   editorial discipline. The site says `Principal Architect`; it does not claim
+   `Head of AI Innovation`.
+3. **A real security posture.** This site teaches AI security; shipping a weak
+   header set would be self-refuting. The trust surface is a first-class
+   deliverable, not an afterthought (§10).
+4. **A static deployment target.** Vercel, SSG, `daksmith.dev`, no
    application backend. Anything that forces dynamic rendering (per-request
    middleware, server data fetching) is in tension with the performance budget
    and is rejected unless it pays for itself.
@@ -83,10 +102,18 @@ decision the same way the existing ones were made.
    (Drives §9, §12.)
 6. **Security decisions are documented at the point of the weakness.** Where we
    accept a weaker control, the `next.config.ts` comment explains why, the
-   alternative, and the revisit condition (e.g. `next.config.ts:8-15`,
-   `:112-114`). (Drives §10.)
+   alternative, and the revisit condition (e.g. `next.config.ts:8-17`,
+   `next.config.ts:148-150`). (Drives §10.)
 7. **Voice and structure are part of the product.** The content system enforces
    brand voice; the engineering should match it — direct, specific, no filler.
+8. **Professional authority is shown, not titled into existence.** Identity,
+   typography, information hierarchy, source discipline, and production proof
+   must do the positioning work. Never imply that Dakota currently holds the
+   Head of AI Innovation title.
+9. **Capabilities outlive products; evidence expires.** Toolkit information
+   architecture is capability-first. Product classifications always carry a
+   review date and sources, and documented behavior is never represented as
+   runtime-conformance evidence. (Drives §4, §12.)
 
 ---
 
@@ -94,7 +121,7 @@ decision the same way the existing ones were made.
 
 ### 3.1 Rendering model
 
-Next.js 16 App Router (`next@^16.1.4`, `react@^19.2.3`), **SSG end to end**.
+Next.js 16 App Router (`next@^16.2.12`, `react@^19.2.8`), **SSG end to end**.
 There is no `middleware.ts` and no per-request server work. The lifecycle is:
 
 ```
@@ -103,7 +130,7 @@ build time:  content/*.mdx ──► lib/*.ts (fs + gray-matter) ──► gener
                                                                       ▼
              Server Components render ──► MDXRemote compiles MDX ──► static HTML
                                                                       │
-request time: Vercel Edge serves prerendered HTML + immutable static assets
+request time: Vercel's CDN serves prerendered HTML + cache-policy static assets
                                                                       │
                                                                       ▼
              Client Components hydrate (interaction, theme, motion only)
@@ -115,28 +142,38 @@ strategy (§3.3), and the cost model for every feature.
 
 ### 3.2 Route surface
 
-Five content types, one app. Routes under `app/`:
+Seven content areas, one app. Routes under `app/`:
 
-- **Blog** — `app/blog/page.tsx`, `app/blog/[slug]/page.tsx`,
+- **Writing** — `app/blog/page.tsx`, `app/blog/[slug]/page.tsx`,
   `app/blog/page/[page]/page.tsx`, `app/blog/tags/[tag]/page.tsx`.
-- **Learn** — shared chrome in `app/learn/layout.tsx`; four pillars below (§4).
-- **Static** — `app/page.tsx` (home), `app/about/page.tsx`.
+- **Learn** — field-level navigation in `app/learn/layout.tsx`, a full-width hub,
+  and route-local pillar shells below (§4).
+- **Work** — `app/work/page.tsx`, an evidence-bounded projection of
+  `content/products.json`; filtering is a small client leaf.
+- **Static** — `app/page.tsx` (home), `app/about/page.tsx` (practice profile).
 - **Generated endpoints** — `app/sitemap.ts`, `app/robots.ts`,
-  `app/feed.xml/route.ts`, `app/llms.txt/route.ts`, `app/api/og/route.tsx`,
-  `app/api/search/route.ts`, `app/icon.tsx`, `app/apple-icon.tsx`,
-  `app/twofold-logo/route.tsx` (publisher logo).
-- **Redirects** — consolidation rules in `next.config.ts:152-175`
-  (`/patterns/*` → `/learn/patterns/*`, `/tools` → `/about#tools`,
-  `/contact` → `/about#contact`). Redirects are config, not pages, so they
+  `app/feed.xml/route.ts`, `app/llms.txt/route.ts`,
+  `app/api/search/route.ts`, `app/icon.tsx`, `app/apple-icon.tsx`, and
+  `app/twofold-logo/route.tsx` (publisher logo). All are build-time/static.
+- **Static social asset** — `public/og-default.png`, generated deliberately via
+  `pnpm generate:og` (`scripts/generate-default-og.ts`) and checked in. There is
+  no `app/api/og` route and no request-time image rendering.
+- **Redirects** — consolidation rules in `next.config.ts:188-211`
+  (`/patterns/*` → `/learn/patterns/*`, `/tools` → `/work`,
+  `/blog/page/1` → `/blog`, `/contact` → `/about#contact`). Redirects are
+  config, not pages, so they
   cost nothing at runtime and preserve link equity (`permanent: true`).
 
 ### 3.3 Caching
 
-Set entirely via response headers in `next.config.ts:70-149`, because there is
+Set entirely via response headers in `next.config.ts:99-186`, because there is
 no server to cache _in_:
 
-- Immutable static assets (`svg|jpg|png|webp|avif|woff|woff2`) and
-  `/_next/static/*`: `public, max-age=31536000, immutable`.
+- Fingerprinted `/_next/static/*` assets use Next.js-owned immutable caching;
+  application config must not override it.
+- Replaceable editorial files under `/images/*`: `public, max-age=0,
+must-revalidate`. Stable filenames must not be cached as immutable across a
+  later publication.
 - HTML: `public, max-age=0, must-revalidate` — the CDN holds the prerendered
   document; the browser always revalidates. Correct for a site that redeploys
   on content change.
@@ -151,14 +188,22 @@ erode, so it gets its own section.
 `Learn` has four **peer** pillars, each a content type with its own `lib/`
 loader and types module:
 
-| Pillar   | Concept                        | Loader            | Types / constants       | Routing   |
-| -------- | ------------------------------ | ----------------- | ----------------------- | --------- |
-| Patterns | Portable techniques            | `lib/patterns.ts` | (chaptered, 6 chapters) | nested    |
-| Toolkit  | Claude Code features           | `lib/toolkit.ts`  | `lib/toolkit-types.ts`  | topic/sub |
-| Harness  | Runtime and delivery machinery | `lib/harness.ts`  | `lib/harness-types.ts`  | flat      |
-| Security | The trust & privacy surface    | `lib/security.ts` | `lib/security-types.ts` | flat      |
+| Pillar   | Concept                                | Loader            | Types / constants       | Routing                    |
+| -------- | -------------------------------------- | ----------------- | ----------------------- | -------------------------- |
+| Patterns | Portable techniques                    | `lib/patterns.ts` | (chaptered, 6 chapters) | nested                     |
+| Toolkit  | Cross-vendor coding-agent capabilities | `lib/toolkit.ts`  | `lib/toolkit-types.ts`  | topic/lens + product views |
+| Harness  | Runtime and delivery machinery         | `lib/harness.ts`  | `lib/harness-types.ts`  | flat                       |
+| Security | The trust & privacy surface            | `lib/security.ts` | `lib/security-types.ts` | flat                       |
 
-Two engineering patterns hold this together:
+The root Learn layout exposes only field-level destinations: Overview, Start,
+Patterns, Capability Index, Harness, and Security. It does not load the full
+corpus. Each pillar owns a route-local layout that loads only its syllabus and
+hands client-safe navigation records to `LearnSectionShell`. The rail begins at
+`xl`; smaller viewports retain a compact disclosure so it never collides with a
+detail-page table of contents. The `/learn` hub remains full width and leads
+with decisions rather than document taxonomy.
+
+Two engineering patterns hold the content model together:
 
 **Boundary statements.** Each pillar exports a prose constant defining what it
 _is not_ (`HARNESS_BOUNDARY` in `lib/harness-types.ts:33-34`,
@@ -189,6 +234,29 @@ icons, and boundary text contain no `fs` access, so Client Components
 bundle. Server loaders (`lib/harness.ts`, `lib/security.ts`) own the filesystem
 and re-export the types module so callers have one import site.
 
+**Toolkit's evidence contract is stronger than the other pillar loaders.** Its
+nine stable capability topics each publish an overview plus four implementation
+lenses: Mental Model, Playbook, Compositions, and Pitfalls. Product routes at
+`/learn/toolkit/products/{claude-code,openai-codex,github-copilot}` are generated
+projections of the same corpus; product names do not create three competing
+taxonomies. `content/toolkit/_data/products.json` defines products and surfaces,
+`sources.json` is the official-source register, and `coverage.json` records
+dated capability classifications by product and surface. The server loader
+fails closed on malformed IDs, dates, source references, status values, and the
+complete 9 × 5 public content contract (`lib/toolkit.ts`).
+
+Coverage status means what the reviewed official material documented, not what
+a product can theoretically do and not what was independently measured in a
+live runtime. The allowed vocabulary — `native`, `partial`, `external`,
+`no-documented-equivalent`, and `unknown` — keeps absence of evidence distinct
+from evidence of absence. `basis: documented | observed` makes provenance
+explicit. The current 2026-08-01 registry contains documentation evidence only.
+
+The former Claude-specific `claude-md` URL remains link-safe through explicit
+static redirect pages at `app/learn/toolkit/claude-md/`; it canonicalizes to the
+capability name `project-instructions`, including lens subroutes. Do not restore
+`claude-md` as a second taxonomy.
+
 ### 4.1 The on-ramp layer (a non-pillar front door)
 
 `/learn/start` is a fifth Learn area that is **deliberately not a pillar**. It is
@@ -214,11 +282,10 @@ invariant. Its identity colour is `amber` (chapter-5) — a fifth entry in
 `SECTION_THEME` (`components/learn/sectionTheme.ts`) chosen so the four-pillar
 colour contract (green/cyan/purple/red) stays intact.
 
-**It is excluded from the four-pillar sidebar/active-slug parsing on purpose.**
-`LearnSidebar` and `LearnMobileNav` key off `/learn/{patterns,toolkit,harness,
-security}`; `/learn/start` matches none and renders inside the Learn chrome with
-no pillar active. Discovery is via a CTA band on the `/learn` index, not the
-pillar nav. Wiring the on-ramp into that nav means revisiting both components.
+**It is excluded from every pillar syllabus on purpose.** The field-level
+`LearnPrimaryNav` identifies Start directly; route-local `LearnSidebar` and
+`LearnMobileNav` receive only one pillar's shaped navigation records. Start
+therefore remains visible without pretending to be a fifth peer syllabus.
 
 ---
 
@@ -226,16 +293,18 @@ pillar nav. Wiring the on-ramp into that nav means revisiting both components.
 
 File-based content store. No CMS, no database. Content is `.mdx` under
 `content/{posts,patterns,toolkit,harness,security,onramp}/` plus JSON sidecars
-(`content/referrals.json`, products, pattern tool examples).
+(`content/referrals.json`, Toolkit evidence registries, pattern tool examples).
 
 ### 5.1 File → HTML
 
-1. **Read & parse.** `lib/posts.ts:30-76` and peers: `fs.readdirSync` →
+1. **Read & parse.** `lib/posts.ts:87-133` and peers: `fs.readdirSync` →
    `gray-matter` splits frontmatter from body → `reading-time` computes the
    "N min read" string. Frontmatter is typed (`PostFrontmatter`,
    `lib/posts.ts:6-20`, and the per-pillar analogues).
 2. **Filter & sort.** `getAllPosts()` drops `published: false` and sorts by
-   `date` descending (`lib/posts.ts:43-48`). Drafts never reach a static param.
+   `date` descending (`lib/posts.ts`). Dynamic content routes also set
+   `dynamicParams = false`, so drafts and unknown slugs cannot bypass the
+   published static-param set.
 3. **Derive.** TOC extraction, signal extraction, related-content scoring
    (§5.3).
 4. **Compile.** `MDXRemote` (`next-mdx-remote@^6.0.0`, App-Router compatible)
@@ -246,10 +315,12 @@ File-based content store. No CMS, no database. Content is `.mdx` under
 
 `lib/mdx-options.ts:5-39` returns **different pipelines per environment**:
 
-- **Dev:** `remark-gfm` only.
-- **Prod:** `remark-gfm` + `rehype-pretty-code` with a custom Shiki theme
-  (`neoBrutalistTheme`), loaded via dynamic `import()` and a singleton
-  highlighter (`lib/shiki-highlighter.ts`).
+- **Both:** `remark-gfm`, deterministic heading IDs, and define-on-first-use
+  glossary terms.
+- **Prod additionally:** `rehype-pretty-code` with the editorial code-theme
+  object (`editorialCodeTheme`), loaded via dynamic `import()` and a singleton
+  highlighter (`lib/shiki-highlighter.ts`). Shiki emits the code palette as CSS
+  token references, keeping `app/globals.css` authoritative for color.
 
 This is an explicit trade-off. The Shiki highlighter and its language grammars
 are heavy; loading them on every HMR cycle would make authoring sluggish.
@@ -261,13 +332,32 @@ keeps Shiki out of any bundle that doesn't render MDX.
 
 ### 5.3 Related-content algorithm
 
-`getRelatedPosts()` (`lib/posts.ts:93-150`) is the reference implementation for
+`getRelatedPosts()` (`lib/posts.ts:181-220`) is the reference implementation for
 relationship surfacing: score every other post by tag-set intersection size,
 sort by score then recency, and if fewer than `limit` posts share a tag,
 backfill with the most recent posts so the slot count is always met. Pattern
 relationships are explicit instead (typed edges in pattern frontmatter), which
 is the right call for a curated graph and the wrong call for a growing blog —
 the asymmetry is intentional.
+
+### 5.4 Deterministic editorial art
+
+Every post has two checked-in raster outputs: a 1600×900 hero and a 960×640
+thumbnail. `.content/images/post-art.v1.json` is the contract: it records the
+palette, renderer versions, output geometry, eight semantic motifs, and the
+motif/variant assigned to every post slug. `scripts/generate-post-images.ts`
+renders raw RGB geometry with Sharp from those versioned inputs. It uses no
+fonts, remote assets, SVG illustration, random source, or model call; visible
+headlines remain HTML rather than being burned into the art.
+
+`pnpm images:generate` rewrites the committed JPEGs and injects both blur
+placeholders into MDX frontmatter. `pnpm images:generate -- --slug <slug>` is the
+authoring path for one post. `pnpm images:check` renders in memory and requires
+byte equality, complete manifest/content coverage, pinned renderer versions,
+canonical filenames and dimensions, and exact blur data. This makes the image
+system reproducible rather than merely stylistically consistent. The lead essay
+uses its 16:9 hero; every writing-ledger record renders its 3:2 thumbnail in a
+stable media rail, so image coverage is an invariant rather than a layout cadence.
 
 ---
 
@@ -279,22 +369,23 @@ There is **no `tailwind.config.ts`**. Tailwind v4 is configured CSS-first in
 `app/globals.css`:
 
 - `:root` defines raw values for both themes plus the active aliases
-  (`app/globals.css:7-45`).
+  (`app/globals.css:7-48`).
 - `html.light` / `html.dark` rebind the active aliases
-  (`app/globals.css:47-68`).
-- `@theme inline` (`app/globals.css:71-84`) maps the CSS variables to Tailwind
+  (`app/globals.css:50-75`).
+- `@theme inline` (`app/globals.css:78-95`) maps the CSS variables to Tailwind
   utility names so `bg-background`, `text-text`, `border-accent` resolve to
   live variables.
 
-Core palette (dark default → light):
+Core palette (light default; dark remains a fully supported preference):
 
-| Token        | Dark      | Light     | Role                       |
-| ------------ | --------- | --------- | -------------------------- |
-| `background` | `#0a0a0a` | `#f5f5f5` | Page base                  |
-| `surface`    | `#333333` | `#e0e0e0` | Cards, code, panels        |
-| `text`       | `#f5f5f5` | `#0a0a0a` | Foreground                 |
-| `muted`      | `#a9a9a9` | `#626262` | Secondary text, hairlines  |
-| `accent`     | `#00ff88` | `#00723f` | Links, focus, active state |
+| Token        | Light     | Dark      | Role                              |
+| ------------ | --------- | --------- | --------------------------------- |
+| `background` | `#f7f4ee` | `#111713` | Warm paper / dark canvas          |
+| `surface`    | `#ebe6dc` | `#1b231e` | Quiet panels and code             |
+| `text`       | `#14211c` | `#f2efe7` | Primary ink                       |
+| `muted`      | `#5d665f` | `#aab2ac` | Secondary copy                    |
+| `accent`     | `#006b4d` | `#72d3ad` | Links, focus, deliberate emphasis |
+| `rule`       | `#d4cec2` | `#38423c` | Hairlines and editorial structure |
 
 Six `--color-chapter-N` tokens give each Patterns chapter its own accent. The
 light theme rebinds each one to a darker same-hue variant so chapter text stays
@@ -308,18 +399,19 @@ is _why_ the bootstrap script in §6.3 exists.
 
 ### 6.2 Typography
 
-`Space_Grotesk` via `next/font/google` (`app/layout.tsx:13-18`), weights
-400/600/700, `display: 'swap'`, exposed as `--font-space-grotesk` and mapped to
-`--font-sans` in `@theme inline`. `next/font` self-hosts the font files at
-build time — there is no runtime request to Google. That is both a performance
-property (no third-party round trip, no FOIT) and a privacy/security property
-that is _consistent with_ the CSP `font-src 'self'` (`next.config.ts:28`). The
-coherence is the point: the font strategy and the CSP were designed together.
+Space Grotesk is loaded from checked-in TTF files with `next/font/local`
+(`app/layout.tsx`) at weights 400, 500/600, and 700, exposed as
+`--font-editorial-sans` and mapped to `font-sans` in `@theme inline`. Editorial
+display copy uses the `font-serif` / `font-display` system stack declared in
+`app/globals.css`: Bodoni/Didot where available, then Baskerville/Iowan Old
+Style/Georgia. The result is typographic contrast without a third-party font
+request. This is both a performance property and a privacy/security property
+consistent with CSP `font-src 'self'` (`next.config.ts`).
 
 ### 6.3 The theme bootstrap (and why it costs us a CSP control)
 
-`app/layout.tsx:84-109` injects a blocking inline `<script>` in `<head>` that
-reads `localStorage['theme-preference']` (default `dark`, `system` resolved via
+`app/layout.tsx:91-109` injects a blocking inline `<script>` in `<head>` that
+reads `localStorage['theme-preference']` (default `light`, `system` resolved via
 `matchMedia`), removes any stale theme class, and sets exactly one resolved
 class on `documentElement` _before_ CSS applies. `ThemeToggle` is mounted in
 the desktop and mobile header controls.
@@ -332,17 +424,28 @@ run before paint cannot be deferred or externalized without reintroducing the
 flash. The two decisions are coupled; change one and you must revisit the
 other.
 
-### 6.4 Neo-brutalist primitives and motion
+### 6.4 Executive-editorial composition and motion
 
-The visual language is enforced in `app/globals.css`: 2px borders on content
-containers (`.mdx-content .code-block-container`, `:152-153`), hard offset
-shadows (no blur), zero border-radius, uppercase letter-spaced table headers
-(`:122-132`). Code blocks get a full grid-based line treatment with line
-numbers, highlight ranges, and `+/-` diff markers driven by `data-` attributes
-from `rehype-pretty-code` (`app/globals.css:172-220+`).
+The professional shell is a restrained editorial system, not a repeated card
+grid. `components/editorial/EditorialHomepage.tsx` establishes the composition:
+large serif thesis, small uppercase role and section labels, long horizontal
+rules, asymmetric whitespace, and sparse accent use. `Header` and `Footer` use
+`Dakota Smith` as the wordmark and `daksmith.dev` as a quiet domain signature.
+Fine `rule` borders structure the page; heavy boxes and decorative shadows are
+not a default hierarchy mechanism. Square controls and the high-contrast MDX
+code treatment remain where they serve function, but the older raw/brutalist
+aesthetic is not the product direction.
+
+Code blocks retain line numbers, highlight ranges, and `+/-` diff markers
+driven by `data-` attributes from `rehype-pretty-code` (`app/globals.css`). A
+single deep-forest code plate serves both reading themes; bone, stone, muted
+sage, and antique-brass tokens replace the retired neon syntax palette. The MDX
+code renderer distinguishes fenced code from inline prose and forwards Shiki's
+language, theme, line-number, and highlight attributes. CSS still reasserts the
+fenced-code foreground as the development and unscoped-token fallback.
 
 Motion is governed globally by `<MotionConfig reducedMotion="user">`
-(`app/layout.tsx:126`). This is the _mechanism_ behind every "respects
+(`app/layout.tsx:133`). This is the _mechanism_ behind every "respects
 `prefers-reduced-motion`" claim — Framer Motion reads the OS setting at the
 provider, so individual components do not each re-implement the check. New
 animation goes through Framer Motion so it inherits this for free; bespoke CSS
@@ -355,8 +458,9 @@ HTML when hydration or an intersection observer fails.
 
 ## 7. Component architecture
 
-Components are grouped by domain under `components/` (`ui/`, `layout/`, `blog/`,
-`home/`, `patterns/`, `learn/`, `seo/`, `about/`) with a barrel `index.ts`.
+Components are grouped by domain under `components/` (`editorial/`, `ui/`,
+`layout/`, `blog/`, `home/`, `patterns/`, `learn/`, `toolkit/`, `work/`,
+`seo/`) with a barrel `index.ts` where the domain exposes one.
 
 The organizing rule is principle #2 — the boundary is an I/O boundary:
 
@@ -401,25 +505,27 @@ LCP < 2.0s, CLS < 0.05, bundle < 100KB gzip, Lighthouse Performance ≥ 90.
 Mechanisms, each tied to code:
 
 - **SSG** — no TTFB server work; the CDN serves a finished document (§3.1).
-- **`optimizePackageImports: ['framer-motion']`** (`next.config.ts:48`) —
+- **`optimizePackageImports: ['framer-motion']`** (`next.config.ts:77`) —
   tree-shakes the one heavy UI dependency to its used surface.
-- **Image policy** (`next.config.ts:52-62`) — AVIF then WebP, an explicit
+- **Image policy** (`next.config.ts:81-91`) — deterministic 3:2 thumbnails and
+  16:9 heroes are checked in; AVIF then WebP plus an explicit
   `deviceSizes`/`imageSizes` ladder so `next/image` emits a tight `srcset`;
   remote images restricted to `images.unsplash.com`.
-- **`removeConsole` in production** (`next.config.ts:66`) — strips logging
+- **`removeConsole` in production** (`next.config.ts:95`) — strips logging
   weight and noise from shipped JS.
 - **Font self-hosting** (§6.2) — no third-party round trip, `swap` avoids
   invisible text.
 - **Lazy Shiki** (§5.2) — the heaviest content dependency is dynamically
   imported and prod-only.
 - **Conditional analytics** — `<Analytics />` / `<SpeedInsights />` render only
-  when `NEXT_PUBLIC_VERCEL_ENV` is set (`app/layout.tsx:135-136`), so they cost
+  when `NEXT_PUBLIC_VERCEL_ENV` is set (`app/layout.tsx:142-143`), so they cost
   nothing in local/preview-less contexts.
-- **Immutable asset caching** (§3.3).
+- **Split asset caching** (§3.3) — immutable only when filenames are
+  fingerprinted; replaceable editorial images revalidate.
 
 **Known characteristic, not a bug:** `getAllPosts()` and peers re-read and
-re-parse the filesystem on every call with no memoization (`lib/posts.ts:30`).
-At build time, with ~90 documents, this is irrelevant. It is a documented
+re-parse the filesystem on every call with no memoization (`lib/posts.ts:119`).
+At build time, with 114 documents, this is irrelevant. It is a documented
 scaling cliff: at thousands of documents, add a build-scoped cache. Don't
 pre-optimize it now.
 
@@ -429,18 +535,17 @@ pre-optimize it now.
 
 100 is a merge gate (§12), so a11y is enforced, not reviewed. The mechanisms:
 
-- **Skip link** — `app/layout.tsx:120-125`, `sr-only` until focused, jumps to
-  `#main-content` (`:129`).
+- **Skip link** — `app/layout.tsx:126-130`, `sr-only` until focused, jumps to
+  `#main-content` (`app/layout.tsx:135`).
 - **Reduced motion** — globally via `MotionConfig` (§6.4), not per-component.
-- **Focus visibility** — high-contrast `accent` focus styling; the neo-brutalist
-  system uses thick focus borders rather than subtle rings, which helps rather
-  than hurts here.
-- **Contrast** — the palette is built for it (`#f5f5f5` on `#0a0a0a`), and
-  `color-contrast` is asserted at `1.0` in CI (`lighthouserc.json:19`).
+- **Focus visibility** — high-contrast `accent` focus rings with a background
+  offset remain visible in both themes without changing layout.
+- **Contrast** — both the warm-ivory and dark palettes are built for it, and
+  `color-contrast` is asserted at `1.0` in CI (`lighthouserc.json:30`).
 - **Semantics & labels** — single `<main id="main-content">`, `<html lang>`;
   `button-name`, `image-alt`, `link-name`, `aria-prohibited-attr`,
   `label-content-name-mismatch` each asserted at `1.0`
-  (`lighthouserc.json:20-24`).
+  (`lighthouserc.json:31-38`).
 
 The principle: a11y regressions fail the build. If you add an icon button
 without a name, CI stops you — that is the design, and it is why the audit list
@@ -450,13 +555,13 @@ in `lighthouserc.json` is specific rather than just `categories:accessibility`.
 
 ## 10. Security architecture
 
-The `security-hardening` branch treats the trust surface as a deliverable. The
+The implemented architecture treats the trust surface as a deliverable. The
 controls and, more importantly, the _reasoning_ are in `next.config.ts` and
 `pnpm-workspace.yaml` so they are reviewed alongside the code they protect.
 
 ### 10.1 Content-Security-Policy
 
-Defined in `next.config.ts:17-36`. The shape:
+Defined in `next.config.ts:42-63`. The shape:
 
 - Locked down: `default-src 'self'`, `object-src 'none'`, `base-uri 'self'`,
   `form-action 'self'`, `frame-ancestors 'self'`, `font-src 'self'`,
@@ -465,14 +570,14 @@ Defined in `next.config.ts:17-36`. The shape:
   `giscus.app`; `connect-src` only Vercel analytics/insights; `frame-src` only
   `giscus.app`; `img-src` only `self`, `data:`, Unsplash.
 - Dev-only: `'unsafe-eval'` and `ws:` are appended _only_ when not production
-  (`:24`, `:30`) for HMR — they never ship.
+  (`next.config.ts:48-58`) for HMR — they never ship.
 - Vercel-only: `upgrade-insecure-requests` (and HSTS, §10.2) are emitted only
   when `VERCEL=1` — behind Vercel's TLS they're correct; from a local
   `pnpm start` on plain HTTP they upgrade every asset to `https://` and HSTS-pin
   `localhost` in the browser for two years, breaking local prod-server testing.
 
 **The accepted weakness, documented at the weakness:** `script-src` includes
-`'unsafe-inline'`. The rationale is in the file comment (`next.config.ts:8-15`):
+`'unsafe-inline'`. The rationale is in the file comment (`next.config.ts:8-17`):
 a strict nonce-based policy requires per-request middleware, which forces
 dynamic rendering and breaks the SSG performance budget — and the theme
 bootstrap (§6.3) is exactly such a required inline script. The decision: accept
@@ -481,20 +586,20 @@ eliminating every _other_ injection vector (no external script origins beyond
 two, no `eval`, no `object`, no `base` hijack, no form exfil). The revisit
 condition: if this site ever gains a server/middleware tier, move to nonces.
 
-`X-XSS-Protection` is **intentionally omitted** — see `next.config.ts:112-114`.
+`X-XSS-Protection` is **intentionally omitted** — see `next.config.ts:148-150`.
 The legacy auditor is deprecated, disabled in modern browsers, and can itself
 introduce cross-site leaks; CSP supersedes it. This is documented so a future
 security scanner's "missing header" finding doesn't get it re-added.
 
 ### 10.2 Transport and isolation headers
 
-All from `next.config.ts:96-135`: HSTS `max-age=63072000; includeSubDomains;
+All from `next.config.ts:125-173`: HSTS `max-age=63072000; includeSubDomains;
 preload` (2y, Vercel-only — see §10.1), `X-Content-Type-Options: nosniff`, `X-Frame-Options:
 SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`,
 `Cross-Origin-Opener-Policy: same-origin`, `X-Permitted-Cross-Domain-Policies:
 none`, `Permissions-Policy` denying camera/mic/geolocation/`browsing-topics`/
 `interest-cohort` (the last two also opt out of ad-tech surveillance APIs).
-`poweredByHeader: false` (`:43`) removes the framework fingerprint.
+`poweredByHeader: false` (`next.config.ts:72`) removes the framework fingerprint.
 
 ### 10.3 Supply chain
 
@@ -508,18 +613,19 @@ pnpm launchers:
   scripts run.
 - Lifecycle scripts are blocked unless `allowBuilds` explicitly approves the
   package (`esbuild`, `sharp`, and `unrs-resolver`). Keep that map minimal.
-- `overrides` pins `postcss` to a patched range in the same workspace file.
+- `overrides` keep vulnerable transitive `js-yaml`, `postcss`, and `sharp`
+  ranges on patched versions in the same workspace file.
 
 `.npmrc` contains only the non-security `fund=false` noise preference. Frozen
 lockfile installs remain a CI and Vercel command-level control.
 
 CI reinforces it (§12): every workflow runs `pnpm install --frozen-lockfile`,
 Node is pinned by `.nvmrc` (single source), pnpm is pinned via `packageManager`
-(`package.json:35`), and **every GitHub Action is pinned to a commit SHA**, not
-a tag (`ci.yml:23,26,27` etc.) — a moved tag cannot inject code. Workflows
+(`package.json:38`), and **every GitHub Action is pinned to a commit SHA**, not
+a tag (`.github/workflows/ci.yml:23,26,27` etc.) — a moved tag cannot inject code. Workflows
 declare `permissions: contents: read` at the top and widen to
 `pull-requests: write` only on the one job that comments
-(`lighthouse.yml:21-23`). Least privilege, by default, per workflow.
+(`.github/workflows/lighthouse.yml:21-23`). Least privilege, by default, per workflow.
 
 ---
 
@@ -539,8 +645,15 @@ declare `permissions: contents: read` at the top and widen to
   segment that defines it (the root `page.tsx`), so child pages return a _bare_
   title — a pre-suffixed string double-suffixes. Home and every `/blog` route
   set `alternates.canonical`, matching the Learn routes.
+- **Static default OG** — root OpenGraph and Twitter metadata reference the
+  checked-in `public/og-default.png` (1200×630). Regenerate it with
+  `pnpm generate:og` after changing the identity, role, thesis, or palette.
+  Keeping the artifact static preserves the SSG-only contract and makes social
+  preview output reviewable in the same change as its generator.
 - **Structured data** — `lib/schema.ts` generators rendered through
-  `components/seo/JsonLd`; every page type has a matching schema (BlogPosting,
+  `components/seo/JsonLd`; `lib/json-ld.ts` escapes `<`, `>`, `&`, and Unicode
+  line separators before placing JSON in a script element. Every page type has
+  a matching schema (BlogPosting,
   TechArticle for patterns, BreadcrumbList, Person, CollectionPage incl. the
   `/learn` hub, `WebSite` with a `SearchAction`). Author is a `Person` whose
   `url` is the on-site `/about` page with off-site profiles in `sameAs`;
@@ -548,8 +661,9 @@ declare `permissions: contents: read` at the top and widen to
   (`app/twofold-logo` ImageObject), not the author Person. Breadcrumb schema is
   what earns rich results, so it is not optional on nested pages.
 - **Sitemap** — `app/sitemap.ts` enumerates blog, every Learn leaf (including
-  Toolkit subpages and Start explainers/demos), and tag pages with tiered
-  priorities. It reads the same published-only loaders as the pages.
+  Toolkit capability lenses, all three product views, and Start
+  explainers/demos), and tag pages with tiered priorities. It reads the same
+  published-only loaders as the pages.
 - **Search** — `lib/search/index-generator.ts` normalizes those same published
   leaf loaders into records that own their canonical `href`; the client never
   reconstructs nested routes from a slug. Decoder terms are the one synthetic
@@ -576,33 +690,47 @@ layer rather than hand-maintained.
 
 CI runs on every PR to `main`. These are the real gates, not guidelines:
 
-**`ci.yml`** — three jobs; `build` depends on `typecheck` + `lint` passing
-first (`ci.yml:51`):
+**`ci.yml`** — four jobs; `build` depends on `typecheck`, `lint`, and `test`
+passing first:
 
-- `pnpm exec tsc --noEmit` — strict TypeScript, zero errors.
+- `pnpm typecheck` — strict application and script TypeScript, zero errors.
 - `pnpm lint` — ESLint 9, zero errors.
+- `pnpm validate:toolkit` + `pnpm test` — fail-closed Toolkit registry/content
+  validation plus focused behavior tests.
 - `pnpm build` — production build must succeed, with `.next/cache` keyed on
   lockfile + source hash.
 
-**`lighthouse.yml`** — builds, then audits home, blog index, a blog detail,
-about, Learn, and Harness 3× each (`lighthouserc.json`). It posts a scored table
-to the PR and **fails** on:
+**`lighthouse.yml`** — the blocking Lighthouse CI job builds, then audits home,
+blog index, the latest blog detail, About, Work, Learn, Toolkit, and Harness 3×
+each (`lighthouserc.json`). It posts one representative run per URL to the PR,
+preserves the complete reports as workflow artifacts, and **fails** on:
 
-- Accessibility, Best Practices, SEO < `1.0` (hard 100).
-- Performance < `0.90`, aggregated `optimistic`.
-- Specific a11y audits < `1.0` (§9).
+- Accessibility, Best Practices, SEO < `1.0` on the pessimistic aggregation —
+  one failing run blocks the merge.
+- Performance < `0.90` on the representative median run.
+- Specific a11y audits < `1.0` on any run (§9).
 
-**`content-check.yml`** — on content-path PRs only: runs content + image
-validation and **fails if average content score < 80**
-(`content-check.yml:117-124`).
+A separate non-blocking desktop job pins the current Lighthouse `13.4.1`
+package and captures HTML and JSON diagnostics for home, blog, Toolkit, and
+Work. This is the forward-looking Performance Insights and Agentic Browsing
+path. It remains advisory because the SHA-pinned Lighthouse CI action currently
+bundles Lighthouse `12.6.1`; forcing a different major through its dependency
+tree would create an unqualified merge gate. The two report sets are named and
+stored separately.
 
-**One asymmetry to understand before you trust the green check:** the
-Performance gate is `0.90` with `optimistic` aggregation — the _best_ of three
-runs must clear 90, not the median. Accessibility/Best-Practices/SEO are hard
-`1.0`. This is deliberate: lab performance is noisy on shared CI runners and we
-refuse to make a flaky gate block merges, but correctness-class categories have
-no such excuse and get no slack. If you tighten performance, also switch off
-`optimistic` — leaving both lenient knobs on hides regressions.
+**`content-check.yml`** — on content- and Toolkit-path PRs only: runs content,
+Toolkit evidence, and image validation and **fails if average content score <
+80**. The report is uploaded as a workflow artifact; a separate least-privilege
+job downloads that evidence and publishes the PR comment. Untrusted validation
+output is treated as data rather than interpolated into executable workflow
+script.
+
+**One asymmetry to understand before you trust the green check:** the merge
+gate and the current-engine diagnostic intentionally run different Lighthouse
+majors. A green blocking job proves the pinned `12.6.1` contract; it does not
+prove that every new Lighthouse 13 Insight is clean. The advisory artifact is
+the evidence for those newer diagnostics until Lighthouse CI officially
+supports the same major or the project deliberately owns a replacement runner.
 
 ---
 
@@ -611,21 +739,26 @@ no such excuse and get no slack. If you tighten performance, also switch off
 The load-bearing decisions, with the alternative we rejected and the condition
 that should make us revisit. Detail is in the cited section.
 
-| #   | Decision                                                                                | Rejected alternative                | Revisit when                                                                                | §        |
-| --- | --------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------- | -------- |
-| 1   | SSG only, no middleware                                                                 | SSR/ISR for freshness               | A real backend appears                                                                      | 3        |
-| 2   | CSP allows `script-src 'unsafe-inline'`                                                 | Nonce-based strict CSP              | A server/middleware tier exists                                                             | 10.1     |
-| 3   | Omit `X-XSS-Protection`                                                                 | Keep legacy header                  | Never (CSP supersedes); documented to prevent re-adding                                     | 10.1     |
-| 4   | Tailwind v4 CSS-first, tokens as CSS vars                                               | `tailwind.config.ts` + dark variant | Tokens outgrow CSS-var theming                                                              | 6        |
-| 5   | Dev = no Shiki, prod = Shiki                                                            | Highlight in dev too                | HMR cost stops mattering                                                                    | 5.2      |
-| 6   | Blocking inline theme script in `<head>`                                                | Defer / accept theme flash          | Coupled to #2 — revisit together                                                            | 6.3      |
-| 7   | 3-day dependency cooldown + SHA-pinned actions + frozen lockfile                        | Trust latest, tag-pinned actions    | Threat model changes                                                                        | 10.3     |
-| 8   | Four pillars + boundary statements + colocated routing invariants                       | Free-form sections                  | Adding a pillar (must ship a boundary)                                                      | 4        |
-| 9   | Filesystem content, no CMS, no memoization                                              | Database/CMS, or cached reads       | Thousands of docs, or non-git authoring                                                     | 5, 8     |
-| 10  | Perf gate `0.90` optimistic; correctness gates hard `1.0`                               | Uniform threshold                   | Perf is tightened (drop optimistic with it)                                                 | 12       |
-| 11  | Runnable code embeds (Codapi) opt-in, OFF by default behind `NEXT_PUBLIC_ENABLE_CODAPI` | Ship runnable by default            | The CSP relaxation (wasm-unsafe-eval + unpkg origin) is accepted and Lighthouse re-verified | 10.1, 14 |
-| 12  | `robots.txt` explicitly _welcomes_ major AI crawlers (per-agent rules)                  | Wildcard-only, or block AI bots     | A crawler abuses access, or citation policy changes (flip its entry to `disallow`)          | 11       |
-| 13  | `/quality-gate`: enforced prose-rubric gate + human sign-off, "gates over trust"        | Trust the mechanical score alone    | LLM-as-judge proves unreliable enough to drop, or a deterministic prose check replaces it   | —        |
+| #   | Decision                                                                                | Rejected alternative                             | Revisit when                                                                                             | §        |
+| --- | --------------------------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | -------- |
+| 1   | SSG only, no middleware                                                                 | SSR/ISR for freshness                            | A real backend appears                                                                                   | 3        |
+| 2   | CSP allows `script-src 'unsafe-inline'`                                                 | Nonce-based strict CSP                           | A server/middleware tier exists                                                                          | 10.1     |
+| 3   | Omit `X-XSS-Protection`                                                                 | Keep legacy header                               | Never (CSP supersedes); documented to prevent re-adding                                                  | 10.1     |
+| 4   | Tailwind v4 CSS-first, tokens as CSS vars                                               | `tailwind.config.ts` + dark variant              | Tokens outgrow CSS-var theming                                                                           | 6        |
+| 5   | Dev = no Shiki, prod = Shiki                                                            | Highlight in dev too                             | HMR cost stops mattering                                                                                 | 5.2      |
+| 6   | Blocking inline theme script in `<head>`                                                | Defer / accept theme flash                       | Coupled to #2 — revisit together                                                                         | 6.3      |
+| 7   | 3-day dependency cooldown + SHA-pinned actions + frozen lockfile                        | Trust latest, tag-pinned actions                 | Threat model changes                                                                                     | 10.3     |
+| 8   | Four pillars + boundary statements + colocated routing invariants                       | Free-form sections                               | Adding a pillar (must ship a boundary)                                                                   | 4        |
+| 9   | Filesystem content, no CMS, no memoization                                              | Database/CMS, or cached reads                    | Thousands of docs, or non-git authoring                                                                  | 5, 8     |
+| 10  | Perf gate `0.90` on median run; correctness gates pessimistic `1.0`                     | Best-run aggregation for all categories          | Runner variance makes the median gate materially flaky                                                   | 12       |
+| 11  | Runnable code embeds (Codapi) opt-in, OFF by default behind `NEXT_PUBLIC_ENABLE_CODAPI` | Ship runnable by default                         | The CSP relaxation (wasm-unsafe-eval + unpkg origin) is accepted and Lighthouse re-verified              | 10.1, 14 |
+| 12  | `robots.txt` explicitly _welcomes_ major AI crawlers (per-agent rules)                  | Wildcard-only, or block AI bots                  | A crawler abuses access, or citation policy changes (flip its entry to `disallow`)                       | 11       |
+| 13  | `/quality-gate`: enforced prose-rubric gate + human sign-off, "gates over trust"        | Trust the mechanical score alone                 | LLM-as-judge proves unreliable enough to drop, or a deterministic prose check replaces it                | —        |
+| 14  | Executive-editorial visual system; warm-ivory light theme is default                    | Preserve dark neo-brutal grid                    | Repeated user feedback or measured readability/accessibility evidence shows the direction weakens trust  | 6        |
+| 15  | `Dakota Smith` wordmark, `daksmith.dev` signature, `Principal Architect` position       | `DAK`, `dak.dev`, or aspirational-title branding | Dakota's legal/public identity or held role changes                                                      | 0, 1, 6  |
+| 16  | Toolkit taxonomy is capability-first; product routes project one dated evidence model   | Separate Claude/Codex/Copilot trees              | Product capabilities stop mapping to durable shared problems                                             | 4        |
+| 17  | Checked-in static `public/og-default.png`; no dynamic OG route                          | Request-time `ImageResponse` route               | Per-page generated social art creates value worth adding a rendering tier                                | 3, 11    |
+| 18  | Versioned deterministic raster art for every post                                       | Manual or stochastic per-post image creation     | The publication adopts photography or commissioned source masters that need a different provenance model | 5.4, 8   |
 
 ---
 
@@ -640,12 +773,14 @@ Stated plainly so nobody rediscovers them as surprises:
   diff markers, and line ranges are unverified until a prod build. Mitigation:
   run `pnpm build` before merging content-heavy or MDX-rendering changes; the
   CI `build` job is the backstop.
-- **Lighthouse `optimistic` aggregation can mask a real performance
-  regression** that only shows on the median run. The hard `1.0` correctness
-  gates have no such hole; performance does. Tighten with eyes open (§12).
+- **The Lighthouse merge gate trails the advisory engine by one major.** This
+  preserves a qualified blocking dependency tree, but a green gate does not
+  imply clean Lighthouse 13 Insights or Agentic Browsing diagnostics. Review
+  the advisory artifact and converge the versions when Lighthouse CI supports
+  the same major (§12).
 - **Unmemoized filesystem reads** are an O(documents) build-time cost with no
   cache (§8). Fine now; a documented cliff later.
-- **`reactStrictMode` double-invokes effects in dev** (`next.config.ts:40`) —
+- **`reactStrictMode` double-invokes effects in dev** (`next.config.ts:69`) —
   intentional; new effects must be idempotent or they will misbehave in dev and
   potentially in prod under concurrent React.
 - **Runnable embeds pressure the CSP if enabled.** `RunnableSnippet` is OFF by
@@ -660,11 +795,22 @@ Stated plainly so nobody rediscovers them as surprises:
   success) and falls back to `mailto:` when unset. The provider origin must be
   added to `connect-src` (see the `NEWSLETTER_ORIGIN` comment in
   `next.config.ts`) or the POST is blocked in production.
-- **The four-pillar IA degrades silently.** Nothing _enforces_ a boundary
-  statement or the flat-only routing invariant — they are prose contracts
-  (§4). The protection is review discipline plus the colocated comments.
+- **Most four-pillar boundaries remain prose contracts.** The Toolkit is now
+  fail-closed on product, source, coverage, frontmatter, and 9 × 5 page
+  completeness, but the other pillar boundary statements and flat-only routing
+  invariants still depend on review discipline plus colocated comments (§4).
   Candidate future work: a unit test asserting every pillar exports a non-empty
   boundary constant and that flat pillars have no two-segment routes.
+- **Toolkit currency is documentation currency, not product conformance.** The
+  registry is source-backed and dated 2026-08-01, but vendors can change a
+  surface after review and none of the current claims are runtime-observed.
+  Re-run source review, update `reviewedAt`/`accessedAt`, and execute
+  `pnpm validate:toolkit` whenever product coverage changes.
+- **Procedural editorial art trades infinite variation for reproducibility.**
+  Eight motifs and four variants provide a bounded visual language, not a
+  unique commissioned illustration for every essay. Expand the versioned motif
+  vocabulary—or adopt provenance-tracked source masters—before repetition
+  becomes more visible than cohesion.
 
 ---
 
@@ -674,11 +820,17 @@ Stated plainly so nobody rediscovers them as surprises:
   Component (§7).
 - New color: add a CSS variable in `app/globals.css` and map it in
   `@theme inline`. Never a literal in a component (§6.1).
+- New visual composition: preserve the executive-editorial hierarchy — serif
+  display type, fine rules, generous negative space, and sparse accent. Do not
+  reintroduce a repeated card grid or hobby-dashboard aesthetic (§6.4).
 - New animation: Framer Motion (inherits reduced-motion); bespoke keyframes
   must add their own `prefers-reduced-motion` guard (§6.4).
 - New Learn pillar: ship a `*-types.ts` (client-safe), a `*.ts` loader (owns
   `fs`), a boundary statement, and a colocated comment for any routing
   invariant (§4).
+- Toolkit product claim: cite an official source, state exact surfaces, retain
+  the documented/observed basis, update review dates, and run
+  `pnpm validate:toolkit` (§4, §12).
 - New external origin (script/style/img/connect/frame): it must be added to the
   CSP in `next.config.ts` _with a comment saying why_, or it will be blocked in
   production — by design (§10.1).

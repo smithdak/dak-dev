@@ -1,273 +1,44 @@
 ---
-title: "Agent Teams: Playbook"
-topic: "agent-teams"
-subPage: "playbook"
+title: 'Multi-Agent Coordination: Playbook'
+topic: 'agent-teams'
+subPage: 'playbook'
 order: 3
-description: "Production team architectures — code review teams, parallel test runners, research pipelines, and debugging squads."
-relatedPatterns: ["parallel-fan-out", "checkpoint-loop", "test-first-steering"]
-relatedTopics: ["agents", "skills", "hooks"]
+description: 'Plan and run bounded parallel agent work with explicit topology, ownership, reconciliation, and measurement.'
+relatedPatterns: ['parallel-fan-out', 'checkpoint-loop', 'vertical-slice']
+relatedTopics: ['agents', 'skills', 'hooks']
 published: true
-keywords: ["agent teams playbook", "code review team", "parallel testing", "research pipeline"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-agent-teams', 'codex-subagents', 'copilot-fleet', 'copilot-cli-reference']
+keywords:
+  ['multi-agent playbook', 'parallel coding agents', 'agent team ownership', 'agent reconciliation']
 ---
 
 # Playbook
 
-Six production team architectures. Each includes the prompt structure, agent definitions, and the reasoning behind the design.
+## 1. Draw the Task Graph
 
-## Architecture 1: Code Review Team
+Mark dependencies and shared files. Parallelize only nodes that can produce independently verifiable outputs.
 
-Three reviewers with dependencies: review, fix, verify. The pipeline pattern.
+## 2. Choose the Topology
 
-**Prompt to the lead:**
+- Use coordinator-worker for bounded fan-out and centralized synthesis.
+- Use peer communication only when workers must negotiate during execution.
+- Use an external orchestrator for durable state, retries, scheduling, or cross-session workflows.
 
-```text
-Create an agent team to review and fix issues in the auth module. Spawn three teammates:
-- A security reviewer focused on vulnerabilities in src/auth/
-- A fixer that implements the security reviewer's recommendations
-- A verifier that runs the test suite and validates fixes don't break anything
+Choose from documented product semantics, not from the generic “team” label.
 
-The fixer should wait until the security reviewer completes their review.
-The verifier should wait until the fixer completes their fixes.
-```
+## 3. Allocate Ownership
 
-**Agent definition** (`.claude/agents/security-reviewer.md`):
+Give each worker a unique task ID, file scope, input snapshot, output contract, and deadline. Define who may change shared files.
 
-```yaml
----
-name: security-reviewer
-description: Reviews code for security vulnerabilities. Use proactively after code changes touching auth, sessions, or tokens.
-tools: Read, Grep, Glob, Bash
-model: opus
-memory: project
----
+## 4. Bound the Run
 
-You are a senior security engineer reviewing code for vulnerabilities.
+Limit active workers, nesting depth, retries, token or credit budget, and wall-clock duration. Prefer one deliberate fan-out over recursive uncontrolled spawning.
 
-Focus areas:
-- Authentication and authorization flaws
-- Injection vulnerabilities (SQL, XSS, command injection)
-- Token handling and session management
-- Input validation and sanitization
-- Secrets exposure
+## 5. Reconcile Centrally
 
-Rate each finding as Critical, High, Medium, or Low.
-Always reference specific file paths and line numbers.
+One accountable coordinator reviews results, resolves conflicts, and reruns integrated verification. Peer agreement is not acceptance evidence.
 
-Update your agent memory with patterns you discover in this codebase.
-```
+## 6. Measure Against One Agent
 
-Why Opus for the reviewer: security analysis requires deep reasoning across multiple files. The fixer and verifier can run Sonnet — they execute instructions rather than discover problems.
-
-**Quality gate hook** (`.claude/settings.json`):
-
-```json
-{
-  "hooks": {
-    "TaskCompleted": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'INPUT=$(cat); SUBJECT=$(echo \"$INPUT\" | jq -r \".task_subject\"); if echo \"$SUBJECT\" | grep -qi \"fix\"; then npm test 2>/dev/null || (echo \"Tests must pass before marking fix tasks complete\" >&2 && exit 2); fi; exit 0'"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-Exit code 2 prevents the task from being marked complete. The fixer cannot move on until tests pass.
-
-## Architecture 2: Parallel Test Runner
-
-Fan-out pattern. One teammate per failing test file, all working simultaneously.
-
-**Prompt:**
-
-```text
-Create an agent team to fix all failing tests. Run the full suite first, then:
-- Spawn one teammate per failing test file
-- Each teammate should diagnose and fix their assigned test
-- Use worktrees so teammates don't conflict
-
-Use Sonnet for each teammate to keep costs down.
-```
-
-**Agent definition** (`.claude/agents/test-fixer.md`):
-
-```yaml
----
-name: test-fixer
-description: Diagnoses and fixes failing tests
-tools: Read, Grep, Glob, Bash, Edit, Write
-model: sonnet
-isolation: worktree
----
-
-You are a test debugging specialist.
-
-Workflow:
-1. Run the specific test file you've been assigned
-2. Read the error output carefully
-3. Trace the failure to the source code
-4. Fix the root cause (prefer fixing the code over fixing the test)
-5. Run the test again to verify the fix
-6. If the fix touches shared code, run the full suite to check for regressions
-
-Never modify test expectations to make tests pass unless the old expectation was genuinely wrong.
-```
-
-Key design choice: `isolation: worktree` gives each instance its own checkout, preventing file conflicts. Sonnet keeps costs manageable when fanning out to 5-10 teammates.
-
-**Warning**: `isolation: worktree` can silently fail when combined with `team_name` — the agent runs in the main repo instead (GitHub issue #37549). Verify worktree creation in your hooks.
-
-## Architecture 3: Research Pipeline
-
-Pipeline pattern with model-per-stage optimization: Opus for research (deep reasoning), Sonnet for implementation (execution speed), Sonnet for verification (focused checking).
-
-**Prompt:**
-
-```text
-Create an agent team for implementing the new caching layer:
-
-1. Spawn a researcher to investigate our current data access patterns,
-   identify hot paths, and recommend a caching strategy. Require plan
-   approval before they write any implementation notes.
-
-2. After the researcher completes, spawn an implementer to build the
-   caching layer following the researcher's recommendations.
-
-3. After the implementer completes, spawn a verifier to:
-   - Run the full test suite
-   - Run benchmarks comparing before/after performance
-   - Review the implementation for cache invalidation correctness
-
-Use Opus for the researcher, Sonnet for the implementer and verifier.
-```
-
-The phrase "require plan approval" keeps the researcher in read-only plan mode until the lead approves their approach. The lead makes approval decisions autonomously based on criteria you provide. This prevents wasted implementation effort on a flawed strategy.
-
-## Architecture 4: Refactoring Team
-
-Analysis, implementation, regression checking. Packaged as a skill for reuse.
-
-**Skill file** (`.claude/skills/refactor-module/SKILL.md`):
-
-```yaml
----
-name: refactor-module
-description: Orchestrate a multi-agent refactoring of a module
-disable-model-invocation: true
-allowed-tools: Bash(git *) Bash(npm test *)
----
-
-Refactor the module at $ARGUMENTS using an agent team:
-
-1. Create an agent team with three teammates:
-
-   **Analyst** (Opus, plan mode):
-   - Map all usages of the module across the codebase
-   - Identify the public API surface vs internal implementation
-   - Document all integration points and consumers
-   - Produce a refactoring plan with specific file-by-file changes
-   - Require plan approval before proceeding
-
-   **Implementer** (Sonnet):
-   - Wait for the analyst's plan to be approved
-   - Execute the refactoring plan file by file
-   - Maintain backward compatibility for the public API
-   - Add deprecation warnings where APIs change
-
-   **Regression Checker** (Sonnet):
-   - Wait for the implementer to complete
-   - Run the full test suite
-   - Run type checking
-   - Verify no new linting errors
-   - Check that all deprecated API usages have migration paths
-   - Report any regressions found
-```
-
-Invoke with: `/refactor-module src/legacy/payment-processor`
-
-The skill wraps the entire team workflow into a single command. `disable-model-invocation: true` means the skill content is the complete instruction set — no additional model interpretation.
-
-## Architecture 5: Documentation Team
-
-Reader, writer, reviewer. The Explore agent type handles codebase scanning efficiently.
-
-```text
-Create an agent team to document the API module at src/api/:
-
-- Reader: use the Explore agent type. Scan all API endpoints, extract
-  request/response schemas, identify authentication requirements, and
-  list all error codes. Write findings to a scratch file.
-
-- Writer: wait for the reader. Take the reader's findings and generate
-  JSDoc comments for all exported functions, plus a README.md for the
-  api/ directory. Follow our existing documentation style.
-
-- Reviewer: wait for the writer. Review all generated documentation
-  against the actual code. Flag any inaccuracies, missing parameters,
-  or incorrect return types. Send corrections back to the writer.
-```
-
-The reviewer sending corrections back to the writer is direct teammate-to-teammate messaging. The writer can iterate without the lead's involvement — reducing lead context consumption.
-
-## Architecture 6: Competing Hypotheses Debugging
-
-The strongest use case for agent teams. Multiple investigators actively trying to disprove each other's theories.
-
-```text
-Users report the app exits after one message instead of staying connected.
-Spawn 5 agent teammates to investigate different hypotheses. Have them talk
-to each other to try to disprove each other's theories, like a scientific
-debate. Update the findings doc with whatever consensus emerges.
-```
-
-Why this works: sequential debugging locks onto the first plausible explanation (anchoring bias). Five independent investigators exploring different angles — and challenging each other — produce higher-quality root cause analysis.
-
-Design the hypotheses to span different failure domains:
-
-| Teammate | Hypothesis Domain |
-|----------|------------------|
-| 1 | Connection lifecycle / socket management |
-| 2 | Authentication / session expiry |
-| 3 | Error handling / uncaught exceptions |
-| 4 | Resource limits / memory pressure |
-| 5 | Configuration / environment differences |
-
-The debate structure is the key differentiator from running five isolated subagents. Teammates messaging each other with counter-evidence creates emergent debugging quality that no single session achieves.
-
-## Recommended Team Sizes
-
-| Scenario | Teammates | Tasks per Teammate |
-|----------|-----------|-------------------|
-| Code review | 3 (security, performance, correctness) | 1-2 each |
-| Feature implementation | 3-4 (by domain) | 5-6 each |
-| Bug investigation | 3-5 (by hypothesis) | 1-2 each |
-| Refactoring | 3 (analysis, implementation, regression) | 3-5 each |
-| Research | 2-3 (by angle) | 2-3 each |
-
-Target 5-6 tasks per teammate for implementation work. Fewer for investigation. Three focused teammates consistently outperform five scattered ones — coordination overhead grows faster than throughput.
-
-## Model Selection Strategy
-
-Not every teammate needs Opus. Match model to task type:
-
-| Task Type | Model | Reasoning |
-|-----------|-------|-----------|
-| Deep analysis, security review, architecture | Opus | Requires multi-file reasoning |
-| Code implementation, fixes | Sonnet | Executes instructions efficiently |
-| Simple verification, running tests | Sonnet or Haiku | Focused checking, low token cost |
-| Research across large codebases | Opus | Needs broad context understanding |
-
-```yaml
-# Control costs with model selection
----
-name: quick-researcher
-model: haiku
----
-```
-
-A 3-person team with Opus lead + 2 Sonnet workers costs roughly 60% of an all-Opus team while maintaining quality where it matters.
+Track elapsed time, total model usage, defects found after integration, merge effort, and recovery from failure. Keep the team only when it improves the system outcome.

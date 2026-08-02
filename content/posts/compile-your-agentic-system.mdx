@@ -1,16 +1,24 @@
 ---
-title: "Compile Your Agentic System: base, skillsmith, and ObjectCore"
-date: "2026-07-15"
-excerpt: "Explore three projects that treat agent config as compiler output: validated sources in, drift-gated artifacts out — base, skillsmith, and ObjectCore."
-slug: "compile-your-agentic-system"
-tags: ["ai", "claude-code", "agents", "developer-tools"]
-thumbnail: "/images/posts/compile-your-agentic-system/thumbnail.jpg"
-thumbnailBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAEEBv/EAB0QAAICAQUAAAAAAAAAAAAAAAABAhIRISIyUZH/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AMPSSXFhoOUpVe5+k+X2Ef/Z"
-hero: "/images/posts/compile-your-agentic-system/hero.jpg"
-heroBlur: "data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAEDBv/EABwQAAMAAQUAAAAAAAAAAAAAAAABAhESISIxkf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8Aw2il3LDYdVWHyfpDIR//2Q=="
+title: 'Compile Your Agentic System: base, skillsmith, and ObjectCore'
+date: '2026-07-15'
+excerpt: 'Explore three projects that treat agent config as compiler output: validated sources in, drift-gated artifacts out — base, skillsmith, and ObjectCore.'
+slug: 'compile-your-agentic-system'
+tags: ['ai', 'claude-code', 'agents', 'developer-tools']
+thumbnail: '/images/posts/compile-your-agentic-system/thumbnail.jpg'
+thumbnailBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABQAG/8QAHRAAAgIBBQAAAAAAAAAAAAAAAAIBAwUSFSFRVP/EABUBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A2lz2JUzIupojiOwvccl4xoiS/9k='
+hero: '/images/posts/compile-your-agentic-system/hero.jpg'
+heroBlur: 'data:image/jpeg;base64,/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABQAG/8QAGhABAAIDAQAAAAAAAAAAAAAAAQACBAURIf/EABUBAQEAAAAAAAAAAAAAAAAAAAAC/8QAFREBAQAAAAAAAAAAAAAAAAAAAAH/2gAMAwEAAhEDEQA/ANs2sCh15B7bLZlkMLwY3KSWP//Z'
 published: true
-author: "Dakota Smith"
-keywords: ["agentic system", "Claude Code plugins", "agent configuration", "Claude Code skills", "plugin marketplace", "CI drift gate"]
+author: 'Dakota Smith'
+keywords:
+  [
+    'agentic system',
+    'Claude Code plugins',
+    'agent configuration',
+    'Claude Code skills',
+    'plugin marketplace',
+    'CI drift gate',
+  ]
 ---
 
 I shipped three projects this year that share one invariant: sources are hand-edited, artifacts are generated — never the reverse. [base](https://github.com/smithdak/base) compiles one agentic system definition into native config for three coding harnesses. [skillsmith](https://github.com/smithdak/skillsmith) compiles Claude Code skills into plugins, a marketplace manifest, and a catalog. [ObjectCore](https://github.com/smithdak/objectcore) compiles a plugin registry into a live marketplace endpoint. Different layers, same discipline: treat agent configuration as compiler output, and let CI fail on a single byte of drift.
@@ -66,25 +74,25 @@ In development, `deriveCatalog` reads `./plugins/*` from git and writes the comm
 
 ## Tech Stack
 
-| Project | Technology | Why |
-|---------|------------|-----|
-| base | Rust 1.85+, plain files in git | A config compiler should be one fast binary; all state must diff in git. |
-| skillsmith | Bun + TypeScript, no build step | The pipeline is validation and codegen; Bun runs TypeScript directly. |
+| Project    | Technology                                   | Why                                                                                    |
+| ---------- | -------------------------------------------- | -------------------------------------------------------------------------------------- |
+| base       | Rust 1.85+, plain files in git               | A config compiler should be one fast binary; all state must diff in git.               |
+| skillsmith | Bun + TypeScript, no build step              | The pipeline is validation and codegen; Bun runs TypeScript directly.                  |
 | ObjectCore | Bun + TypeScript, Hono, Turso/libSQL, Fly.io | Zero-dependency pure cores behind ports; the DB dependency is confined to one package. |
-| All three | CI drift gates | The invariant is enforced by machines, not review vigilance. |
+| All three  | CI drift gates                               | The invariant is enforced by machines, not review vigilance.                           |
 
 ## The Gates, by the Numbers
 
-| Gate | Threshold |
-|------|-----------|
-| skillsmith quality rules | 14 (V1–V14) |
-| skillsmith security rules | 7 (S1–S7) |
-| Trigger hit-rate floor | 0.85 |
-| Eval cases per skill | ≥3 should-trigger, ≥3 should-not-trigger |
-| Skill body cap | 500 lines ≈ 5,000 tokens. |
-| Harness targets compiled by base | 3 (Claude Code, Codex, Copilot) |
-| Plugins governed by ObjectCore | 13 |
-| Allowed drift in CI | 0 bytes. |
+| Gate                             | Threshold                                |
+| -------------------------------- | ---------------------------------------- |
+| skillsmith quality rules         | 14 (V1–V14)                              |
+| skillsmith security rules        | 7 (S1–S7)                                |
+| Trigger hit-rate floor           | 0.85                                     |
+| Eval cases per skill             | ≥3 should-trigger, ≥3 should-not-trigger |
+| Skill body cap                   | 500 lines ≈ 5,000 tokens.                |
+| Harness targets compiled by base | 3 (Claude Code, Codex, Copilot)          |
+| Plugins governed by ObjectCore   | 13                                       |
+| Allowed drift in CI              | 0 bytes.                                 |
 
 ## When Not to Compile
 

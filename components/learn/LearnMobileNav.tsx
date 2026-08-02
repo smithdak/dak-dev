@@ -1,400 +1,186 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { useId, useState } from 'react';
 import Link from 'next/link';
-import type { ChapterMeta } from '@/lib/patterns';
-import type { ToolkitTopicMeta } from '@/lib/toolkit-types';
-import { SUB_PAGE_META, type ToolkitSubPage } from '@/lib/toolkit-types';
-import type { HarnessChapterMeta } from '@/lib/harness-types';
-import type { SecurityChapterMeta } from '@/lib/security-types';
+import { usePathname } from 'next/navigation';
+import type {
+  LearnNavigationItem,
+  LearnSectionNavigation,
+} from '@/components/learn/LearnNavigationTypes';
 
-const TEXT_COLORS: Record<number, string> = {
-  1: 'text-chapter-1',
-  2: 'text-chapter-2',
-  3: 'text-chapter-3',
-  4: 'text-chapter-4',
-  5: 'text-chapter-5',
-  6: 'text-chapter-6',
-};
-
-interface SidebarPattern {
-  slug: string;
-  name: string;
-  number: string;
-  chapter: number;
-  difficulty: string;
-}
-
-interface LearnMobileNavProps {
-  chapters: ChapterMeta[];
-  patterns: SidebarPattern[];
-  toolkitTopics: ToolkitTopicMeta[];
-  topicSubPages: Record<string, ToolkitSubPage[]>;
-  harnessChapters: HarnessChapterMeta[];
-  securityChapters: SecurityChapterMeta[];
+interface LearnMobileNavProps extends LearnSectionNavigation {
   className?: string;
 }
 
+interface ExpansionOverride {
+  pathname: string;
+  href: string | null;
+}
+
+function findCurrentLabel(
+  pathname: string,
+  overviewHref: string,
+  overviewLabel: string,
+  items: LearnNavigationItem[]
+) {
+  if (pathname === overviewHref) return overviewLabel;
+
+  for (const item of items) {
+    if (pathname === item.href) return item.label;
+    const child = item.children?.find((candidate) => candidate.href === pathname);
+    if (child) return child.label;
+  }
+
+  return overviewLabel;
+}
+
+function containsPath(item: LearnNavigationItem, pathname: string) {
+  return item.href === pathname || item.children?.some((child) => child.href === pathname) === true;
+}
+
 export function LearnMobileNav({
-  chapters,
-  patterns,
-  toolkitTopics,
-  topicSubPages,
-  harnessChapters,
-  securityChapters,
+  title,
+  overviewHref,
+  overviewLabel,
+  utilityItems = [],
+  items,
   className = '',
 }: LearnMobileNavProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState<'patterns' | 'toolkit' | 'harness' | 'security'>(
-    pathname.startsWith('/learn/toolkit')
-      ? 'toolkit'
-      : pathname.startsWith('/learn/harness')
-        ? 'harness'
-        : pathname.startsWith('/learn/security')
-          ? 'security'
-          : 'patterns'
-  );
+  const panelId = useId();
+  const [isOpen, setIsOpen] = useState(false);
+  const activeGroup = items.find((item) => containsPath(item, pathname))?.href ?? null;
+  const [expansionOverride, setExpansionOverride] = useState<ExpansionOverride | null>(null);
+  const expandedHref =
+    expansionOverride?.pathname === pathname ? expansionOverride.href : activeGroup;
+  const currentLabel = findCurrentLabel(pathname, overviewHref, overviewLabel, [
+    ...utilityItems,
+    ...items,
+  ]);
 
-  // Sync active tab on navigation
-  useEffect(() => {
-    if (pathname.startsWith('/learn/toolkit')) {
-      setActiveTab('toolkit');
-    } else if (pathname.startsWith('/learn/harness')) {
-      setActiveTab('harness');
-    } else if (pathname.startsWith('/learn/security')) {
-      setActiveTab('security');
-    } else if (pathname.startsWith('/learn/patterns')) {
-      setActiveTab('patterns');
-    }
-  }, [pathname]);
-
-  const activePatternSlug =
-    pathname.startsWith('/learn/patterns/') && !pathname.startsWith('/learn/patterns/chapter/')
-      ? pathname.replace('/learn/patterns/', '').split('/')[0]
-      : null;
-  const activePattern = patterns.find((p) => p.slug === activePatternSlug);
-
-  const activeChapterSlug = pathname.startsWith('/learn/patterns/chapter/')
-    ? pathname.replace('/learn/patterns/chapter/', '').split('/')[0]
-    : null;
-  const activeChapter = activeChapterSlug
-    ? chapters.find((c) => c.slug === activeChapterSlug)
-    : null;
-
-  const activeTopicSlug = pathname.startsWith('/learn/toolkit/')
-    ? pathname.replace('/learn/toolkit/', '').split('/')[0]
-    : null;
-  const activeTopic = toolkitTopics.find((t) => t.slug === activeTopicSlug);
-  const activeSubPage = activeTopicSlug
-    ? (pathname.replace(`/learn/toolkit/${activeTopicSlug}/`, '').split('/')[0] as ToolkitSubPage)
-    : null;
-  const activeSubMeta =
-    activeSubPage && SUB_PAGE_META[activeSubPage] ? SUB_PAGE_META[activeSubPage] : null;
-
-  const activeHarnessSlug = pathname.startsWith('/learn/harness/')
-    ? pathname.replace('/learn/harness/', '').split('/')[0]
-    : null;
-  const activeHarnessChapter = harnessChapters.find((c) => c.slug === activeHarnessSlug);
-
-  const activeSecuritySlug = pathname.startsWith('/learn/security/')
-    ? pathname.replace('/learn/security/', '').split('/')[0]
-    : null;
-  const activeSecurityChapter = securityChapters.find((c) => c.slug === activeSecuritySlug);
-
-  const currentLabel = activePattern
-    ? `${activePattern.number} ${activePattern.name}`
-    : activeChapter
-      ? `${activeChapter.number} ${activeChapter.name}`
-      : activeTopic
-        ? activeSubMeta
-          ? `${activeTopic.name} › ${activeSubMeta.label}`
-          : activeTopic.name
-        : activeHarnessChapter
-          ? `${activeHarnessChapter.number} ${activeHarnessChapter.name}`
-          : activeSecurityChapter
-            ? `${activeSecurityChapter.number} ${activeSecurityChapter.name}`
-            : 'Navigate Learn';
+  const linkClass = (href: string) =>
+    `flex min-h-11 items-center gap-3 border-l px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
+      pathname === href
+        ? 'border-accent bg-background font-semibold text-text'
+        : 'border-rule text-muted hover:border-text hover:text-text'
+    }`;
 
   return (
-    <div className={`lg:hidden ${className}`}>
+    <div className={`xl:hidden ${className}`}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-3 border-4 border-text bg-surface font-semibold text-sm"
+        type="button"
         aria-expanded={isOpen}
+        aria-controls={panelId}
+        onClick={() => setIsOpen((open) => !open)}
+        className="flex min-h-12 w-full items-center justify-between gap-4 border-y border-rule bg-surface px-4 py-3 text-left text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
       >
-        <span>{currentLabel}</span>
-        <svg
-          className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        <span className="min-w-0 truncate">
+          <span className="text-muted">{title}</span>
+          <span className="mx-2 text-rule" aria-hidden="true">
+            /
+          </span>
+          {currentLabel}
+        </span>
+        <span className="shrink-0 text-[0.68rem] uppercase tracking-[0.08em] text-muted">
+          {isOpen ? 'Close' : 'Browse'}
+        </span>
       </button>
 
-      {isOpen && (
-        <nav className="border-4 border-t-0 border-text bg-surface max-h-[60vh] overflow-y-auto">
-          {/* Tab switcher */}
-          <div className="flex border-b-2 border-text/20">
-            <button
-              onClick={() => setActiveTab('patterns')}
-              className={`min-h-11 flex-1 px-2 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
-                activeTab === 'patterns'
-                  ? 'bg-background text-text border-b-2 border-accent -mb-0.5'
-                  : 'text-muted hover:text-text'
-              }`}
-            >
-              Patterns
-            </button>
-            <button
-              onClick={() => setActiveTab('toolkit')}
-              className={`min-h-11 flex-1 px-2 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
-                activeTab === 'toolkit'
-                  ? 'bg-background text-text border-b-2 border-accent -mb-0.5'
-                  : 'text-muted hover:text-text'
-              }`}
-            >
-              Toolkit
-            </button>
-            <button
-              onClick={() => setActiveTab('harness')}
-              className={`min-h-11 flex-1 px-2 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
-                activeTab === 'harness'
-                  ? 'bg-background text-text border-b-2 border-accent -mb-0.5'
-                  : 'text-muted hover:text-text'
-              }`}
-            >
-              Harness
-            </button>
-            <button
-              onClick={() => setActiveTab('security')}
-              className={`min-h-11 flex-1 px-2 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
-                activeTab === 'security'
-                  ? 'bg-background text-text border-b-2 border-accent -mb-0.5'
-                  : 'text-muted hover:text-text'
-              }`}
-            >
-              Security
-            </button>
-          </div>
+      {isOpen ? (
+        <nav
+          id={panelId}
+          aria-label={`${title} mobile syllabus`}
+          className="max-h-[65vh] overflow-y-auto border-b border-rule bg-surface py-3"
+        >
+          <ul>
+            <li>
+              <Link
+                href={overviewHref}
+                aria-current={pathname === overviewHref ? 'page' : undefined}
+                onClick={() => setIsOpen(false)}
+                className={linkClass(overviewHref)}
+              >
+                {overviewLabel}
+              </Link>
+            </li>
+            {utilityItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  aria-current={pathname === item.href ? 'page' : undefined}
+                  onClick={() => setIsOpen(false)}
+                  className={linkClass(item.href)}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
 
-          {activeTab === 'patterns' && (
-            <>
-              <Link
-                href="/learn/patterns"
-                onClick={() => setIsOpen(false)}
-                className="block px-4 py-3 text-sm font-bold uppercase tracking-wider border-b border-muted/20 hover:bg-background"
-              >
-                All Patterns
-              </Link>
-              <Link
-                href="/learn/patterns/graph"
-                onClick={() => setIsOpen(false)}
-                className="block px-4 py-3 text-sm font-bold uppercase tracking-wider border-b border-muted/20 hover:bg-background"
-              >
-                Language Map
-              </Link>
-              <Link
-                href="/learn/patterns/cards"
-                onClick={() => setIsOpen(false)}
-                className="block px-4 py-3 text-sm font-bold uppercase tracking-wider border-b-2 border-muted/20 hover:bg-background"
-              >
-                Cards
-              </Link>
+          <ol className="mt-2 border-t border-rule pt-2">
+            {items.map((item) => {
+              const isExpanded = expandedHref === item.href;
+              const hasChildren = Boolean(item.children?.length);
 
-              {chapters.map((chapter) => {
-                const chapterPatterns = patterns.filter((p) => p.chapter === chapter.number);
-                return (
-                  <div key={chapter.number} className="border-b border-muted/20 last:border-b-0">
+              return (
+                <li key={item.href}>
+                  <div className="flex items-stretch">
                     <Link
-                      href={`/learn/patterns/chapter/${chapter.slug}`}
+                      href={item.href}
+                      aria-current={pathname === item.href ? 'page' : undefined}
                       onClick={() => setIsOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 hover:bg-background transition-colors ${
-                        activeChapterSlug === chapter.slug ||
-                        (activePatternSlug &&
-                          chapterPatterns.some((p) => p.slug === activePatternSlug))
-                          ? 'font-semibold text-text bg-background'
-                          : 'text-muted'
-                      }`}
+                      className={`${linkClass(item.href)} min-w-0 flex-1`}
                     >
-                      <span
-                        className={`font-mono font-bold text-xs shrink-0 ${TEXT_COLORS[chapter.number]}`}
-                      >
-                        {chapter.number}
-                      </span>
-                      <div className="min-w-0">
-                        <span className="text-sm block truncate">{chapter.name}</span>
-                      </div>
+                      {item.marker ? (
+                        <span
+                          className="w-6 shrink-0 text-xs tabular-nums text-muted"
+                          aria-hidden="true"
+                        >
+                          {item.marker}
+                        </span>
+                      ) : null}
+                      {item.label}
                     </Link>
-                    {chapterPatterns.length > 0 && (
-                      <ul>
-                        {chapterPatterns.map((pattern) => (
-                          <li key={pattern.slug}>
-                            <Link
-                              href={`/learn/patterns/${pattern.slug}`}
-                              onClick={() => setIsOpen(false)}
-                              className={`flex min-h-11 items-center gap-2 px-4 pl-11 py-2 text-sm transition-colors ${
-                                activePatternSlug === pattern.slug
-                                  ? 'font-semibold text-text bg-background'
-                                  : 'text-muted hover:text-text hover:bg-background'
-                              }`}
-                            >
-                              <span className={`font-mono text-xs ${TEXT_COLORS[pattern.chapter]}`}>
-                                {pattern.number}
-                              </span>
-                              <span className="truncate">{pattern.name}</span>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                );
-              })}
-            </>
-          )}
-
-          {activeTab === 'toolkit' && (
-            <>
-              <Link
-                href="/learn/toolkit"
-                onClick={() => setIsOpen(false)}
-                className="block px-4 py-3 text-sm font-bold uppercase tracking-wider border-b-2 border-muted/20 hover:bg-background"
-              >
-                All Topics
-              </Link>
-              {toolkitTopics.map((topic) => {
-                const subPages = topicSubPages[topic.slug] || [];
-                return (
-                  <div key={topic.slug} className="border-b border-muted/20 last:border-b-0">
-                    <Link
-                      href={`/learn/toolkit/${topic.slug}`}
-                      onClick={() => setIsOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 hover:bg-background transition-colors ${
-                        activeTopicSlug === topic.slug
-                          ? 'font-semibold text-text bg-background'
-                          : 'text-muted'
-                      }`}
-                    >
-                      <svg
-                        className="w-4 h-4 text-accent shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    {hasChildren ? (
+                      <button
+                        type="button"
+                        aria-expanded={isExpanded}
+                        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${item.label}`}
+                        onClick={() =>
+                          setExpansionOverride({
+                            pathname,
+                            href: isExpanded ? null : item.href,
+                          })
+                        }
+                        className="min-h-11 w-16 border-l border-rule text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d={topic.icon}
-                        />
-                      </svg>
-                      <div className="min-w-0">
-                        <span className="text-sm block truncate">{topic.name}</span>
-                      </div>
-                    </Link>
-                    {subPages.length > 0 && (
-                      <ul>
-                        {subPages.map((sub) => {
-                          const subMeta = SUB_PAGE_META[sub];
-                          const subHref = `/learn/toolkit/${topic.slug}/${sub}`;
-                          const isActive = pathname === subHref;
-                          return (
-                            <li key={sub}>
-                              <Link
-                                href={subHref}
-                                onClick={() => setIsOpen(false)}
-                                className={`flex min-h-11 items-center gap-2 px-4 pl-11 py-2 text-sm transition-colors ${
-                                  isActive
-                                    ? 'font-semibold text-text bg-background'
-                                    : 'text-muted hover:text-text hover:bg-background'
-                                }`}
-                              >
-                                <span className="truncate">{subMeta.label}</span>
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
+                        {isExpanded ? 'Close' : 'Open'}
+                      </button>
+                    ) : null}
                   </div>
-                );
-              })}
-            </>
-          )}
 
-          {activeTab === 'harness' && (
-            <>
-              <Link
-                href="/learn/harness"
-                onClick={() => setIsOpen(false)}
-                className={`block px-4 py-3 text-sm font-bold uppercase tracking-wider border-b-2 border-muted/20 hover:bg-background ${
-                  pathname === '/learn/harness' ? 'text-text bg-background' : ''
-                }`}
-              >
-                Overview
-              </Link>
-              {harnessChapters.map((chapter) => (
-                <div key={chapter.slug} className="border-b border-muted/20 last:border-b-0">
-                  <Link
-                    href={`/learn/harness/${chapter.slug}`}
-                    onClick={() => setIsOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 hover:bg-background transition-colors ${
-                      activeHarnessSlug === chapter.slug
-                        ? 'font-semibold text-text bg-background'
-                        : 'text-muted'
-                    }`}
-                  >
-                    <span className="font-mono font-bold text-xs text-accent/60 shrink-0">
-                      {chapter.number}
-                    </span>
-                    <div className="min-w-0">
-                      <span className="text-sm block truncate">{chapter.name}</span>
-                    </div>
-                  </Link>
-                </div>
-              ))}
-            </>
-          )}
-
-          {activeTab === 'security' && (
-            <>
-              <Link
-                href="/learn/security"
-                onClick={() => setIsOpen(false)}
-                className={`block px-4 py-3 text-sm font-bold uppercase tracking-wider border-b-2 border-muted/20 hover:bg-background ${
-                  pathname === '/learn/security' ? 'text-text bg-background' : ''
-                }`}
-              >
-                Overview
-              </Link>
-              {securityChapters.map((chapter) => (
-                <div key={chapter.slug} className="border-b border-muted/20 last:border-b-0">
-                  <Link
-                    href={`/learn/security/${chapter.slug}`}
-                    onClick={() => setIsOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 hover:bg-background transition-colors ${
-                      activeSecuritySlug === chapter.slug
-                        ? 'font-semibold text-text bg-background'
-                        : 'text-muted'
-                    }`}
-                  >
-                    <span className="font-mono font-bold text-xs text-accent/60 shrink-0">
-                      {chapter.number}
-                    </span>
-                    <div className="min-w-0">
-                      <span className="text-sm block truncate">{chapter.name}</span>
-                    </div>
-                  </Link>
-                </div>
-              ))}
-            </>
-          )}
+                  {hasChildren && isExpanded ? (
+                    <ul className="ml-7 border-l border-rule py-1">
+                      {item.children?.map((child) => (
+                        <li key={child.href}>
+                          <Link
+                            href={child.href}
+                            aria-current={pathname === child.href ? 'page' : undefined}
+                            onClick={() => setIsOpen(false)}
+                            className={linkClass(child.href)}
+                          >
+                            {child.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ol>
         </nav>
-      )}
+      ) : null}
     </div>
   );
 }

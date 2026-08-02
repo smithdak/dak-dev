@@ -5,7 +5,7 @@
 
 import { getAllPosts } from '@/lib/posts';
 import { getAllPatterns, CHAPTERS } from '@/lib/patterns';
-import { getAllToolkitPages } from '@/lib/toolkit';
+import { TOOLKIT_REVIEWED_AT, getAllToolkitPages, getToolkitProductSlugs } from '@/lib/toolkit';
 import { HARNESS_CHAPTERS } from '@/lib/harness';
 import { SECURITY_CHAPTERS } from '@/lib/security';
 import { getAllDemos, getAllExplainers } from '@/lib/onramp';
@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const posts = getAllPosts();
   const patterns = getAllPatterns();
   const toolkitPages = getAllToolkitPages();
+  const toolkitProductSlugs = getToolkitProductSlugs();
   const demos = getAllDemos();
   const explainers = getAllExplainers();
   const tagSlugs = getAllTagSlugs(posts);
@@ -83,6 +84,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.7,
     },
+    {
+      url: `${SITE_URL}/work`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
   ];
 
   // Blog post pages
@@ -97,6 +104,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const patternPages: MetadataRoute.Sitemap = patterns.map((pattern) => ({
     url: `${SITE_URL}/learn/patterns/${pattern.frontmatter.slug}`,
     lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
+
+  const toolkitProductPages: MetadataRoute.Sitemap = toolkitProductSlugs.map((product) => ({
+    url: `${SITE_URL}/learn/toolkit/products/${product}`,
+    lastModified: new Date(TOOLKIT_REVIEWED_AT),
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }));
@@ -130,7 +144,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: page.frontmatter.subPage
       ? `${SITE_URL}/learn/toolkit/${page.frontmatter.topic}/${page.frontmatter.subPage}`
       : `${SITE_URL}/learn/toolkit/${page.frontmatter.topic}`,
-    lastModified: new Date(),
+    lastModified: new Date(page.frontmatter.reviewedAt),
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }));
@@ -181,6 +195,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...patternSubPages,
     ...chapterPages,
     ...toolkitContentPages,
+    ...toolkitProductPages,
     ...harnessPages,
     ...securityPages,
     ...onrampPages,

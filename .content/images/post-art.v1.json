@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "generatorVersion": "1.0.0",
+  "renderer": {
+    "sharp": "0.35.3",
+    "vips": "8.18.3",
+    "mozjpeg": "0826579",
+    "supersample": 2,
+    "simd": false,
+    "jpegQuality": 88
+  },
+  "outputs": {
+    "hero": {
+      "width": 1600,
+      "height": 900,
+      "file": "hero.jpg"
+    },
+    "thumbnail": {
+      "width": 960,
+      "height": 640,
+      "file": "thumbnail.jpg"
+    }
+  },
+  "palette": {
+    "paper": "#f7f4ee",
+    "surface": "#ebe6dc",
+    "ink": "#14211c",
+    "muted": "#5d665f",
+    "accent": "#006b4d",
+    "rule": "#d4cec2"
+  },
+  "motifs": {
+    "handoff": "Bounded working units connected by explicit transfer paths and one green authorization point.",
+    "boundary": "Nested policy fields with a single controlled passage through the governing edge.",
+    "convergence": "Independent provenance paths retained as they join one inspectable artifact.",
+    "ledger": "Measured evidence rows resolved through a narrow verdict column.",
+    "aperture": "Owned interfaces arranged as offset planes around one legible exchange channel.",
+    "cascade": "A work item moving through discrete stages toward one verified output.",
+    "orbit": "Independent research paths testing a stable center from different directions.",
+    "calibration": "Several noisy trajectories narrowed into one measured, direct signal."
+  },
+  "posts": [
+    {
+      "slug": "agent-delivery-harness",
+      "motif": "boundary",
+      "variant": 0
+    },
+    {
+      "slug": "agent-operating-system-multi-agent-pipelines",
+      "motif": "handoff",
+      "variant": 0
+    },
+    {
+      "slug": "ai-isnt-just-for-coders-claude-skills",
+      "motif": "convergence",
+      "variant": 0
+    },
+    {
+      "slug": "base-compile-agent-config",
+      "motif": "ledger",
+      "variant": 0
+    },
+    {
+      "slug": "building-apl-autonomous-coding-agent",
+      "motif": "cascade",
+      "variant": 0
+    },
+    {
+      "slug": "building-claude-marketplace-cms-analyzers",
+      "motif": "aperture",
+      "variant": 0
+    },
+    {
+      "slug": "building-plugin-architect-zero-code-claude-plugin",
+      "motif": "boundary",
+      "variant": 1
+    },
+    {
+      "slug": "building-plugin-gtm-go-to-market-engine",
+      "motif": "convergence",
+      "variant": 1
+    },
+    {
+      "slug": "building-plugin-ops-maintenance-engine",
+      "motif": "ledger",
+      "variant": 1
+    },
+    {
+      "slug": "claude-code-skills-agent-skills-standard",
+      "motif": "aperture",
+      "variant": 1
+    },
+    {
+      "slug": "claude-managed-agents-end-of-diy-infrastructure",
+      "motif": "handoff",
+      "variant": 1
+    },
+    {
+      "slug": "claude-skills-power-user-guide",
+      "motif": "cascade",
+      "variant": 1
+    },
+    {
+      "slug": "compile-your-agentic-system",
+      "motif": "convergence",
+      "variant": 2
+    },
+    {
+      "slug": "deep-research-agent-fan-out-adversarial-verification",
+      "motif": "orbit",
+      "variant": 0
+    },
+    {
+      "slug": "durable-agent-orchestration-claude-managed-agents",
+      "motif": "handoff",
+      "variant": 2
+    },
+    {
+      "slug": "how-apl-built-this-blog",
+      "motif": "cascade",
+      "variant": 2
+    },
+    {
+      "slug": "mcp-apps-interactive-ui-inside-ai-chat",
+      "motif": "aperture",
+      "variant": 2
+    },
+    {
+      "slug": "my-2026-dev-setup",
+      "motif": "calibration",
+      "variant": 0
+    },
+    {
+      "slug": "objectcore-plugin-marketplace-software-factory",
+      "motif": "convergence",
+      "variant": 3
+    },
+    {
+      "slug": "preparing-for-mythos-ai-security-checklist",
+      "motif": "boundary",
+      "variant": 2
+    },
+    {
+      "slug": "skillsmith-quality-gates-claude-code-skills",
+      "motif": "ledger",
+      "variant": 2
+    },
+    {
+      "slug": "supervisor-in-the-machine-why-i-built-studio",
+      "motif": "orbit",
+      "variant": 1
+    },
+    {
+      "slug": "webmcp-chrome-ai-agent-protocol",
+      "motif": "calibration",
+      "variant": 1
+    }
+  ]
+}

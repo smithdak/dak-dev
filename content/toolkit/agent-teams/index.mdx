@@ -1,40 +1,41 @@
 ---
-title: "Agent Teams: Expert's Guide"
-topic: "agent-teams"
+title: 'Multi-Agent Coordination Across Claude Code, Codex, and Copilot'
+topic: 'agent-teams'
 order: 1
-description: "Master multi-agent orchestration in Claude Code — role-based pipelines, coordination architectures, and when teams beat solo agents."
-relatedPatterns: ["parallel-fan-out", "checkpoint-loop", "vertical-slice"]
-relatedTopics: ["agents", "hooks", "skills", "memory"]
+description: 'Compare coordinator-led parallelism, peer messaging, shared task state, and experimental team topologies across coding agents.'
+relatedPatterns: ['parallel-fan-out', 'checkpoint-loop', 'vertical-slice']
+relatedTopics: ['agents', 'hooks', 'skills', 'memory']
 published: true
-keywords: ["agent teams", "multi-agent orchestration", "coordination architectures", "role-based pipelines"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-agent-teams', 'codex-subagents', 'copilot-fleet', 'copilot-cli-reference']
+keywords:
+  [
+    'multi-agent coordination',
+    'Claude agent teams',
+    'Codex subagents',
+    'Copilot Fleet',
+    'parallel agents',
+  ]
 ---
 
-# Agent Teams
+# Multi-Agent Coordination
 
-Agent teams coordinate multiple Claude Code sessions around a shared task list. One session leads, the rest work as teammates — each with its own context window, tools, and the ability to message others directly. This is Claude Code's answer to distributed systems: independent processes, asynchronous communication, and minimal shared state.
+“Multi-agent” is not one architecture. The decisive variable is coordination topology: who can create work, who owns shared state, how results move, and whether workers communicate only through a coordinator or directly with peers.
 
-## Why Teams Exist
+## Three Topologies
 
-A single Claude Code session hits walls. Context windows fill. Sequential execution burns clock time on parallelizable work. One perspective misses what three would catch. Agent teams solve all three problems at once — parallel execution across independent context windows with built-in coordination.
+1. **Coordinator and workers** — a lead decomposes work, spawns isolated agents, and collects their results.
+2. **Peer team** — agents have independent sessions plus direct messaging and shared task state.
+3. **External orchestrator** — a workflow engine owns scheduling, retries, state, and evidence while agents perform bounded steps.
 
-The tradeoff is real: each teammate is a full Claude instance. A 3-person team costs roughly 4x a solo session (3 workers + lead). Teams earn their cost when the task decomposes into genuinely independent units.
+Claude Code's documented agent teams use independent teammate sessions, a shared task list, mailboxes, and peer messaging, but Anthropic still labels the feature experimental. Codex documents parallel subagents whose results return through the main coordinator; the reviewed source does not describe a peer mailbox or shared task ledger. Copilot CLI Fleet provides coordinator-led parallel execution and documents sibling-agent messaging.
 
-## When Multi-Agent Beats Single-Agent
+Those are semantic differences, not naming differences.
 
-| Scenario | Team? | Why |
-|----------|-------|-----|
-| 3+ independent subtasks across different domains | Yes | Parallel execution, no file conflicts |
-| Competing hypotheses for a bug | Yes | Fights anchoring bias |
-| Security + performance + correctness review | Yes | Different perspectives in parallel |
-| Sequential steps where each depends on the last | No | Coordination overhead exceeds benefit |
-| Multiple agents editing the same files | No | Overwrites without worktree isolation |
-| Simple, well-scoped task | No | Setup cost exceeds time saved |
+## When Teams Pay
 
-## What's Inside
+Use multiple agents for genuinely independent work, competing hypotheses, or separate review perspectives. Avoid them when tasks share files, depend on the previous result, or cannot state a crisp completion contract.
 
-Explore the sub-pages for deep expertise:
+The cost model includes more than tokens: coordination messages, duplicate context, merge conflicts, verification, and recovery from partial failure. Start with the smallest useful fan-out and measure elapsed time, defect rate, and total model usage against a single-agent baseline.
 
-- **Mental Model** — Architecture patterns (orchestrator/worker, fan-out, pipeline, hierarchy) and the distributed systems mental model that makes teams predictable
-- **Playbook** — Production team architectures: code review teams, parallel test runners, research pipelines, and competing-hypotheses debugging
-- **Compositions** — Teams combined with hooks, skills, MCP, memory, and worktrees for production-grade workflows
-- **Pitfalls** — Context exhaustion, cost multiplication, worktree bugs, race conditions, and when teams make things worse
+The deeper lenses retain Claude Code team examples. Do not translate a peer-team design directly onto a coordinator-only surface without replacing its communication and shared-state assumptions.

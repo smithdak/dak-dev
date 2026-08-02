@@ -3,7 +3,8 @@
  * Shared between server and client code
  */
 
-export type SearchContentType = 'post' | 'pattern' | 'toolkit' | 'harness' | 'security' | 'start';
+export type SearchContentType =
+  'post' | 'pattern' | 'toolkit' | 'harness' | 'security' | 'start' | 'work';
 
 export interface SearchIndexItem {
   slug: string;

@@ -1,116 +1,101 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getAllPosts } from '@/lib/posts';
-import { getPaginatedPosts, POSTS_PER_PAGE } from '@/lib/pagination';
-import { getAllTags } from '@/lib/tags';
-import { Card } from '@/components/ui/Card';
-import { TagList } from '@/components/ui/Tag';
+import { ArticleLedger } from '@/components/blog/ArticleLedger';
 import { Pagination } from '@/components/blog/Pagination';
-import { PageTransition } from '@/components/ui/PageTransition';
+import { getPaginatedPosts, POSTS_PER_PAGE } from '@/lib/pagination';
+import { getAllPosts } from '@/lib/posts';
+import { splitWritingPosts } from '@/lib/writing';
 
-export async function generateStaticParams() {
-  const allPosts = await getAllPosts();
-  const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
+export const dynamicParams = false;
 
-  // Generate params for pages 1 through totalPages
-  return Array.from({ length: totalPages }, (_, i) => ({
-    page: String(i + 1),
+export function generateStaticParams() {
+  const { archive } = splitWritingPosts(getAllPosts());
+  const totalPages = Math.ceil(archive.length / POSTS_PER_PAGE);
+
+  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => ({
+    page: String(index + 2),
   }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ page: string }>;
-}) {
+export async function generateMetadata({ params }: { params: Promise<{ page: string }> }) {
   const { page } = await params;
-  const pageNum = parseInt(page, 10);
+  const pageNumber = Number.parseInt(page, 10);
 
   return {
-    title: `Blog - Page ${pageNum} | Dakota Smith`,
+    title: `Writing archive — Page ${pageNumber}`,
     description:
-      'Tech articles and engineering insights from Dakota Smith.',
+      'Earlier analysis of accountable AI systems, agentic engineering, architecture, and delivery.',
+    alternates: { canonical: `/blog/page/${pageNumber}` },
   };
 }
 
-export default async function BlogPageRoute({
+export default async function WritingArchivePage({
   params,
 }: {
   params: Promise<{ page: string }>;
 }) {
   const { page } = await params;
-  const pageNum = parseInt(page, 10);
+  const pageNumber = Number.parseInt(page, 10);
 
-  // Validate page number
-  if (isNaN(pageNum) || pageNum < 1) {
+  if (!Number.isInteger(pageNumber) || pageNumber < 2) {
     notFound();
   }
 
-  const allPosts = await getAllPosts();
-  const paginationData = getPaginatedPosts(allPosts, pageNum);
-  const tags = getAllTags(allPosts);
+  const allPosts = getAllPosts();
+  const { archive } = splitWritingPosts(allPosts);
+  const paginationData = getPaginatedPosts(archive, pageNumber);
 
-  // If page number is out of range, show 404
-  if (paginationData.posts.length === 0 && pageNum > 1) {
+  if (paginationData.posts.length === 0) {
     notFound();
   }
+
+  const startIndex = (pageNumber - 1) * POSTS_PER_PAGE + 1;
 
   return (
-    <PageTransition className="min-h-screen py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <header className="mb-12 border-b-4 border-text pb-8">
-          <h1 className="text-5xl font-bold mb-4">Blog</h1>
-          <p className="text-xl text-muted max-w-2xl">
-            15 years of shipping production systems and leading engineering teams. Real code, real metrics, and the tradeoffs behind every decision.
-          </p>
-          {paginationData.totalPages > 1 && (
-            <p className="text-sm text-muted mt-4">
-              Page {paginationData.currentPage} of {paginationData.totalPages} (
-              {paginationData.totalPosts} total posts)
+    <div className="min-h-screen py-12 md:py-16 lg:py-20">
+      <div className="editorial-shell">
+        <header className="border-b border-rule pb-10 md:pb-14">
+          <nav aria-label="Breadcrumb">
+            <ol className="flex items-center gap-2 text-sm text-muted">
+              <li>
+                <Link
+                  href="/blog"
+                  className="editorial-link focus:outline-none focus:ring-2 focus:ring-accent"
+                >
+                  Writing
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li aria-current="page" className="text-text">
+                Archive
+              </li>
+            </ol>
+          </nav>
+
+          <div className="mt-8 grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+            <div>
+              <h1 className="font-display text-5xl leading-none tracking-[-0.035em] sm:text-6xl md:text-7xl">
+                Writing archive
+              </h1>
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
+                Earlier field notes and long-form analysis, ordered by publication date.
+              </p>
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.11em] text-muted">
+              Page {paginationData.currentPage} of {paginationData.totalPages}
             </p>
-          )}
+          </div>
         </header>
 
-        {/* Tag Filter Bar */}
-        {tags.length > 0 && (
-          <nav aria-label="Filter by tag" className="mb-12 border-b-4 border-surface bg-surface/20 p-6">
-            <p className="text-sm font-semibold text-muted mb-3">Filter by tag</p>
-            <TagList tags={tags} interactive />
-          </nav>
-        )}
-
-        {/* Posts Grid */}
-        {paginationData.posts.length > 0 ? (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {paginationData.posts.map((post) => (
-                <Card
-                  key={post.frontmatter.slug}
-                  title={post.frontmatter.title}
-                  excerpt={post.frontmatter.excerpt}
-                  slug={post.frontmatter.slug}
-                  thumbnail={post.frontmatter.thumbnail}
-                  date={post.frontmatter.date}
-                  readingTime={post.readingTime}
-                  tags={post.frontmatter.tags}
-                />
-              ))}
-            </div>
-
-            {/* Pagination */}
-            <Pagination
-              currentPage={paginationData.currentPage}
-              totalPages={paginationData.totalPages}
-              basePath="/blog"
-            />
-          </>
-        ) : (
-          <div className="border-4 border-text p-12 text-center">
-            <p className="text-2xl font-semibold mb-2">No posts yet</p>
-            <p className="text-muted">Check back soon for new content.</p>
-          </div>
-        )}
+        <section className="pt-10 md:pt-14" aria-label="Writing archive records">
+          <ArticleLedger posts={paginationData.posts} startIndex={startIndex} headingLevel="h2" />
+          <Pagination
+            currentPage={paginationData.currentPage}
+            totalPages={paginationData.totalPages}
+            basePath="/blog"
+          />
+        </section>
       </div>
-    </PageTransition>
+    </div>
   );
 }

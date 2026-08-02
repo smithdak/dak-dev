@@ -1,59 +1,49 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { ReactNode } from 'react';
-import { slugify } from '@/lib/utils';
 import { AgentLoopStepper } from '@/components/interactive/AgentLoopStepper';
 import { ScrollStory } from '@/components/interactive/ScrollStory';
 import { RunnableSnippet } from '@/components/interactive/RunnableSnippet';
 import { GlossaryTerm } from '@/components/learn/GlossaryTerm';
 
 /**
- * Custom MDX components with neo-brutalist styling
+ * Editorial MDX components shared by articles and Learn guides.
  * These override the default markdown elements
  */
 
 // Headings with auto-generated IDs for anchor links
-function H1({ children }: { children?: ReactNode }) {
-  const text = typeof children === 'string' ? children : '';
-  const id = slugify(text);
-
+function H1({ children, id }: { children?: ReactNode; id?: string }) {
   return (
     <h1
       id={id}
-      className="text-4xl md:text-5xl font-bold mb-6 mt-12 border-b-4 border-text pb-4 scroll-mt-20"
+      className="mb-6 mt-14 scroll-mt-24 border-b border-text/20 pb-5 font-display text-4xl leading-tight tracking-tight md:text-5xl"
     >
       {children}
     </h1>
   );
 }
 
-function H2({ children }: { children?: ReactNode }) {
-  const text = typeof children === 'string' ? children : '';
-  const id = slugify(text);
-
+function H2({ children, id }: { children?: ReactNode; id?: string }) {
   return (
     <h2
       id={id}
-      className="text-3xl md:text-4xl font-bold mb-4 mt-10 border-l-4 border-accent pl-4 scroll-mt-20"
+      className="mb-4 mt-12 scroll-mt-24 font-display text-3xl leading-tight tracking-tight md:text-4xl"
     >
       {children}
     </h2>
   );
 }
 
-function H3({ children }: { children?: ReactNode }) {
-  const text = typeof children === 'string' ? children : '';
-  const id = slugify(text);
-
+function H3({ children, id }: { children?: ReactNode; id?: string }) {
   return (
-    <h3 id={id} className="text-2xl md:text-3xl font-bold mb-3 mt-8 scroll-mt-20">
+    <h3 id={id} className="mb-3 mt-9 scroll-mt-24 font-display text-2xl leading-tight md:text-3xl">
       {children}
     </h3>
   );
 }
 
 function H4({ children }: { children?: ReactNode }) {
-  return <h4 className="text-xl md:text-2xl font-bold mb-3 mt-6">{children}</h4>;
+  return <h4 className="mb-3 mt-7 font-display text-xl md:text-2xl">{children}</h4>;
 }
 
 function H5({ children }: { children?: ReactNode }) {
@@ -75,31 +65,12 @@ function A({ href, children }: { href?: string; children?: ReactNode }) {
   const isAnchor = href?.startsWith('#');
 
   const className =
-    'text-text font-semibold underline decoration-2 underline-offset-4 hover:decoration-accent hover:decoration-4 transition-all focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background';
+    'font-semibold text-text underline decoration-text/35 decoration-1 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background';
 
   if (isExternal) {
     return (
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`${className} inline-flex items-center gap-1`}
-      >
+      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
         {children}
-        <svg
-          className="w-4 h-4 inline-block text-accent"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-          />
-        </svg>
       </a>
     );
   }
@@ -136,39 +107,23 @@ function Img({
   // For external images or if dimensions are provided
   if (width && height) {
     return (
-      <span className="block my-8 border-4 border-text">
-        <Image
-          src={src}
-          alt={alt || ''}
-          width={width}
-          height={height}
-          className="w-full h-auto"
-          placeholder="blur"
-          blurDataURL="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 225'%3E%3Cfilter id='b' color-interpolation-filters='sRGB'%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3CfeColorMatrix values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 100 -1' result='s'/%3E%3CfeFlood x='0' y='0' width='100%25' height='100%25'/%3E%3CfeComposite operator='out' in='s'/%3E%3CfeComposite in2='SourceGraphic'/%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' fill='%230a0a0a'/%3E%3C/svg%3E"
-        />
+      <span className="my-9 block overflow-hidden bg-surface">
+        <Image src={src} alt={alt || ''} width={width} height={height} className="w-full h-auto" />
       </span>
     );
   }
 
   // For images without dimensions, use fill with aspect ratio container
   return (
-    <span className="block my-8 border-4 border-text relative aspect-video">
-      <Image
-        src={src}
-        alt={alt || ''}
-        fill
-        className="object-cover"
-        placeholder="blur"
-        blurDataURL="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 225'%3E%3Cfilter id='b' color-interpolation-filters='sRGB'%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3CfeColorMatrix values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 100 -1' result='s'/%3E%3CfeFlood x='0' y='0' width='100%25' height='100%25'/%3E%3CfeComposite operator='out' in='s'/%3E%3CfeComposite in2='SourceGraphic'/%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' fill='%230a0a0a'/%3E%3C/svg%3E"
-      />
+    <span className="relative my-9 block aspect-video overflow-hidden bg-surface">
+      <Image src={src} alt={alt || ''} fill className="object-cover" />
     </span>
   );
 }
 
-// Blockquotes with brutalist styling
 function Blockquote({ children }: { children?: ReactNode }) {
   return (
-    <blockquote className="my-8 border-l-4 border-accent bg-surface p-6 italic">
+    <blockquote className="my-9 border-l-2 border-accent py-1 pl-6 font-display text-xl italic leading-relaxed">
       <div className="text-text">{children}</div>
     </blockquote>
   );
@@ -176,26 +131,25 @@ function Blockquote({ children }: { children?: ReactNode }) {
 
 // Unordered lists
 function Ul({ children }: { children?: ReactNode }) {
-  return <ul className="my-6 ml-6 space-y-2 list-none">{children}</ul>;
+  return <ul className="my-6 ml-6 list-disc space-y-2 marker:text-accent">{children}</ul>;
 }
 
 // Ordered lists
 function Ol({ children }: { children?: ReactNode }) {
-  return <ol className="my-6 ml-6 space-y-2 list-none counter-reset-[item]">{children}</ol>;
+  return (
+    <ol className="my-6 ml-6 list-decimal space-y-2 marker:font-semibold marker:text-accent">
+      {children}
+    </ol>
+  );
 }
 
-// List items with custom bullets/numbers
 function Li({ children }: { children?: ReactNode }) {
-  return (
-    <li className="relative pl-6 text-muted before:content-['▪'] before:absolute before:left-0 before:text-text before:font-bold">
-      {children}
-    </li>
-  );
+  return <li className="pl-2 leading-relaxed text-muted">{children}</li>;
 }
 
 // Horizontal rule
 function Hr() {
-  return <hr className="my-12 border-0 border-t-4 border-text" />;
+  return <hr className="my-12 border-0 border-t border-text/20" />;
 }
 
 // Strong (bold)
@@ -208,17 +162,40 @@ function Em({ children }: { children?: ReactNode }) {
   return <em className="italic text-text">{children}</em>;
 }
 
-// Inline code
-function Code({ children }: { children?: ReactNode }) {
+type CodeProps = React.ComponentPropsWithoutRef<'code'>;
+
+// Inline code and fenced-code passthrough. rehype-pretty-code attaches its
+// language, theme, line-number, and highlighting contract to the code element;
+// keep those props intact instead of styling every code node as inline prose.
+function Code({ children, className, ...props }: CodeProps) {
+  const isFencedCode =
+    className?.includes('language-') ||
+    'data-language' in props ||
+    'data-theme' in props ||
+    'data-line-numbers' in props;
+
+  if (isFencedCode) {
+    return (
+      <code {...props} className={className}>
+        {children}
+      </code>
+    );
+  }
+
   return (
-    <code className="px-1.5 py-0.5 bg-surface/50 text-text text-sm font-mono">{children}</code>
+    <code
+      {...props}
+      className={`bg-surface/50 px-1.5 py-0.5 font-mono text-sm text-text ${className || ''}`}
+    >
+      {children}
+    </code>
   );
 }
 
 // Table components with scroll hint on mobile
 function Table({ children }: { children?: ReactNode }) {
   return (
-    <div className="my-8 border-2 border-text relative">
+    <div className="relative my-9 border-y border-text/20">
       <div className="overflow-x-auto table-scroll-container">
         <table className="w-full border-collapse">{children}</table>
       </div>
@@ -240,7 +217,7 @@ function Tr({ children }: { children?: ReactNode }) {
 
 function Th({ children }: { children?: ReactNode }) {
   return (
-    <th className="bg-surface px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-text border-b-2 border-text">
+    <th className="border-b border-text/30 bg-surface px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.1em] text-text">
       {children}
     </th>
   );
@@ -251,11 +228,11 @@ function Td({ children }: { children?: ReactNode }) {
 
   let content: ReactNode = children;
   if (text === 'Yes') {
-    content = <span className="text-accent font-medium">✓ Yes</span>;
+    content = <span className="font-medium text-accent">Yes</span>;
   } else if (text === 'No') {
-    content = <span className="text-muted">✗ No</span>;
+    content = <span className="text-muted">No</span>;
   } else if (text === 'Experimental') {
-    content = <span className="text-yellow-400 font-medium">◆ Experimental</span>;
+    content = <span className="font-medium text-chapter-5">Experimental</span>;
   }
 
   return <td className="px-4 py-3 text-muted border-b border-muted/30">{content}</td>;

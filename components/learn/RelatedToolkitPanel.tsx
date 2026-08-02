@@ -6,32 +6,30 @@ interface RelatedToolkitPanelProps {
 }
 
 export function RelatedToolkitPanel({ topicSlugs }: RelatedToolkitPanelProps) {
-  const topics = topicSlugs
-    .map((slug) => getToolkitTopicBySlug(slug))
-    .filter(Boolean);
+  const topics = topicSlugs.map((slug) => getToolkitTopicBySlug(slug)).filter(Boolean);
 
   if (topics.length === 0) return null;
 
   return (
-    <div className="border-4 border-text/20 p-4 mt-6">
-      <h3 className="text-xs font-bold uppercase tracking-widest text-muted mb-3">
-        Related Toolkit
+    <aside className="mt-8 border-y border-text/20 py-5" aria-labelledby="related-toolkit-heading">
+      <h3
+        id="related-toolkit-heading"
+        className="text-xs font-semibold uppercase tracking-[0.14em] text-muted"
+      >
+        Related agent tooling
       </h3>
-      <ul className="space-y-2">
+      <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
         {topics.map((topic) => (
           <li key={topic!.slug}>
             <Link
               href={`/learn/toolkit/${topic!.slug}`}
-              className="flex items-center gap-2 text-sm text-muted hover:text-accent transition-colors"
+              className="text-sm font-semibold underline decoration-text/30 underline-offset-4 transition-colors hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent"
             >
-              <svg className="w-4 h-4 text-accent/50 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={topic!.icon} />
-              </svg>
-              <span>{topic!.name}</span>
+              {topic!.name}
             </Link>
           </li>
         ))}
       </ul>
-    </div>
+    </aside>
   );
 }

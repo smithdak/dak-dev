@@ -68,13 +68,6 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
 
-  // The OG image generator reads brand font files at runtime (Satori needs raw
-  // font data; next/font can't be used server-side in ImageResponse). Trace
-  // them into the /api/og serverless bundle or Vercel omits them.
-  outputFileTracingIncludes: {
-    '/api/og': ['./assets/fonts/*.ttf'],
-  },
-
   // Disable X-Powered-By header
   poweredByHeader: false,
 
@@ -105,23 +98,15 @@ const nextConfig: NextConfig = {
   // Headers for security and caching
   async headers() {
     return [
-      // Cache static assets aggressively
+      // Public editorial images keep stable filenames and can be replaced on a
+      // later publish, so clients must revalidate instead of caching them as
+      // immutable for a year.
       {
-        source: '/:all*(svg|jpg|png|webp|avif|woff|woff2)',
+        source: '/images/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      // Cache Next.js static assets
-      {
-        source: '/_next/static/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            value: 'public, max-age=0, must-revalidate',
           },
         ],
       },
@@ -194,7 +179,12 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/tools',
-        destination: '/about#tools',
+        destination: '/work',
+        permanent: true,
+      },
+      {
+        source: '/blog/page/1',
+        destination: '/blog',
         permanent: true,
       },
       {

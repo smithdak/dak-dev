@@ -1,12 +1,12 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env -S pnpm exec tsx
 /**
  * Batch Content Validation Script
  *
  * Validates all posts against brand guidelines.
  * Usage:
- *   npm run validate:content           # Validate all published posts
- *   npm run validate:content -- --all  # Validate all posts including drafts
- *   npm run validate:content -- --slug my-post  # Validate specific post
+ *   pnpm validate:content           # Validate all published posts
+ *   pnpm validate:content -- --all  # Validate all posts including drafts
+ *   pnpm validate:content -- --slug my-post  # Validate specific post
  */
 
 import fs from 'fs';
@@ -39,7 +39,9 @@ async function main() {
   console.log('\n📝 Content Validation Report');
   console.log('═'.repeat(50));
   console.log(`Date: ${new Date().toISOString().split('T')[0]}`);
-  console.log(`Mode: ${specificSlug ? `Single post (${specificSlug})` : includeAll ? 'All posts' : 'Published posts only'}`);
+  console.log(
+    `Mode: ${specificSlug ? `Single post (${specificSlug})` : includeAll ? 'All posts' : 'Published posts only'}`
+  );
   console.log('═'.repeat(50));
 
   // Get slugs to validate
@@ -153,12 +155,11 @@ async function main() {
       : 0;
   console.log(`Average Score: ${avgScore}/100`);
 
-  // Exit with error if any posts failed (for CI)
+  // Record failure after the report is written so CI can publish the evidence
+  // without granting the validation job any pull-request write permission.
+  const shouldFailCi = summary.failed > 0 && ciMode;
   if (summary.failed > 0) {
     console.log('\n⚠️  Some posts have validation errors.\n');
-    if (ciMode) {
-      process.exit(1);
-    }
   } else {
     console.log('\n✅ All posts passed validation!\n');
   }
@@ -184,6 +185,8 @@ async function main() {
     )
   );
   console.log(`Report saved to: ${reportPath}\n`);
+
+  if (shouldFailCi) process.exitCode = 1;
 }
 
 main().catch((error) => {

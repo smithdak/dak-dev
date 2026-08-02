@@ -5,7 +5,7 @@
  */
 
 export const metadata = {
-  title: 'Resume PDF | Dakota Smith',
+  title: 'Resume PDF',
   robots: {
     index: false,
     follow: false,
@@ -40,7 +40,7 @@ const experiences = [
     location: 'Remote',
     period: 'Apr 2019 – Mar 2020',
     highlights: [
-      'Global Implementation: Pioneered the first Sitecore instance hosted behind China\'s firewall, navigating complex regulatory and infrastructure landscapes.',
+      "Global Implementation: Pioneered the first Sitecore instance hosted behind China's firewall, navigating complex regulatory and infrastructure landscapes.",
       'Platform Engineering: Optimized content management efficiency by extending Sitecore pipelines and building reusable enterprise component libraries.',
     ],
   },
@@ -92,16 +92,16 @@ export default function ResumePDFPage() {
       <section className="mb-6">
         <h2 className="text-2xl font-bold mb-3 border-b border-black">Executive Summary</h2>
         <p className="text-sm leading-relaxed">
-          Systems Architect with <strong>15 years</strong> in enterprise software, specializing in the
-          stabilization and modernization of complex Sitecore and .NET ecosystems. I bridge the gap
-          between generative AI speed and enterprise-grade rigor through <strong>Deterministic
-          Orchestration</strong>—ensuring agentic intelligence follows strict architectural logic
-          rather than &quot;Prompt-and-Pray&quot; patterns.
+          Systems Architect with <strong>15 years</strong> in enterprise software, specializing in
+          the stabilization and modernization of complex Sitecore and .NET ecosystems. I bridge the
+          gap between generative AI speed and enterprise-grade rigor through{' '}
+          <strong>Deterministic Orchestration</strong>—ensuring agentic intelligence follows strict
+          architectural logic rather than &quot;Prompt-and-Pray&quot; patterns.
         </p>
         <p className="text-sm leading-relaxed mt-2">
-          Proven track record of shipping <strong>30+ production-ready projects</strong> with a focus
-          on <strong>Industrial Clarity</strong>: eliminating technical slop to build resilient,
-          sub-second performance systems.
+          Proven track record of shipping <strong>30+ production-ready projects</strong> with a
+          focus on <strong>Industrial Clarity</strong>: eliminating technical slop to build
+          resilient, sub-second performance systems.
         </p>
       </section>
 
@@ -160,7 +160,9 @@ export default function ResumePDFPage() {
                 <h3 className="font-bold text-base">{exp.company}</h3>
                 <span className="text-xs">{exp.period}</span>
               </div>
-              <p className="italic mb-1">{exp.title} | {exp.location}</p>
+              <p className="italic mb-1">
+                {exp.title} | {exp.location}
+              </p>
               <ul className="list-disc list-inside space-y-0.5 ml-2">
                 {exp.highlights.map((highlight, hIndex) => (
                   <li key={hIndex}>{highlight}</li>
@@ -177,11 +179,18 @@ export default function ResumePDFPage() {
         <div className="text-sm space-y-3">
           <div>
             <h3 className="font-bold">Claude CMS Marketplace (Creator)</h3>
-            <p>AI-powered plugins for analyzing architectural debt, security vulnerabilities, and performance bottlenecks across Sitecore and XM Cloud. CI/CD-ready agents for PR pipelines.</p>
+            <p>
+              AI-powered plugins for analyzing architectural debt, security vulnerabilities, and
+              performance bottlenecks across Sitecore and XM Cloud. CI/CD-ready agents for PR
+              pipelines.
+            </p>
           </div>
           <div>
             <h3 className="font-bold">STUDIO (Architect)</h3>
-            <p>High-performance orchestration layer built for &quot;Industrial Clarity&quot; and engineering precision in AI-assisted development.</p>
+            <p>
+              High-performance orchestration layer built for &quot;Industrial Clarity&quot; and
+              engineering precision in AI-assisted development.
+            </p>
           </div>
           <div>
             <h3 className="font-bold">HandoffKit (Creator)</h3>
@@ -192,7 +201,9 @@ export default function ResumePDFPage() {
 
       {/* Certifications */}
       <section className="mb-6">
-        <h2 className="text-2xl font-bold mb-3 border-b border-black">Certifications & Education</h2>
+        <h2 className="text-2xl font-bold mb-3 border-b border-black">
+          Certifications & Education
+        </h2>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <h3 className="font-bold mb-2">Certifications</h3>
@@ -216,7 +227,8 @@ export default function ResumePDFPage() {
       {/* Print Instructions */}
       <div className="mt-8 p-4 bg-gray-100 print:hidden">
         <p className="text-sm text-gray-700">
-          To generate PDF: Use your browser&apos;s Print function (Cmd/Ctrl + P) and select &quot;Save as PDF&quot;
+          To generate PDF: Use your browser&apos;s Print function (Cmd/Ctrl + P) and select
+          &quot;Save as PDF&quot;
         </p>
       </div>
     </div>

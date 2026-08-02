@@ -18,7 +18,7 @@ export interface PostFrontmatter {
   featured?: boolean;
   author?: string;
   keywords?: string[];
-  thumbnailText?: string;  // Short 1-5 word tagline for thumbnail overlay
+  thumbnailText?: string; // Short 1-5 word tagline for thumbnail overlay
 }
 
 export interface Post {
@@ -28,6 +28,93 @@ export interface Post {
 }
 
 const postsDirectory = path.join(process.cwd(), 'content/posts');
+
+function assertRecord(value: unknown, label: string): asserts value is Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new TypeError(`${label} must be an object`);
+  }
+}
+
+function requireString(data: Record<string, unknown>, key: string): string {
+  const value = data[key];
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new TypeError(`frontmatter.${key} must be a non-empty string`);
+  }
+  return value;
+}
+
+function optionalString(data: Record<string, unknown>, key: string): string | undefined {
+  const value = data[key];
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new TypeError(`frontmatter.${key} must be a non-empty string when present`);
+  }
+  return value;
+}
+
+function requireStringArray(data: Record<string, unknown>, key: string): string[] {
+  const value = data[key];
+  if (!Array.isArray(value) || !value.every((item) => typeof item === 'string')) {
+    throw new TypeError(`frontmatter.${key} must be an array of strings`);
+  }
+  return value;
+}
+
+function optionalStringArray(data: Record<string, unknown>, key: string): string[] | undefined {
+  if (data[key] === undefined) return undefined;
+  return requireStringArray(data, key);
+}
+
+function requireBoolean(data: Record<string, unknown>, key: string): boolean {
+  const value = data[key];
+  if (typeof value !== 'boolean') {
+    throw new TypeError(`frontmatter.${key} must be a boolean`);
+  }
+  return value;
+}
+
+function isValidCalendarDate(value: string): boolean {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  return (
+    date.getUTCFullYear() === Number(match[1]) &&
+    date.getUTCMonth() === Number(match[2]) - 1 &&
+    date.getUTCDate() === Number(match[3])
+  );
+}
+
+/** Parse and validate frontmatter before it reaches a page or generated index. */
+export function parsePostFrontmatter(data: unknown, slug: string): PostFrontmatter {
+  assertRecord(data, `Post "${slug}" frontmatter`);
+
+  const date = requireString(data, 'date');
+  if (!isValidCalendarDate(date)) {
+    throw new TypeError('frontmatter.date must be a valid YYYY-MM-DD calendar date');
+  }
+
+  const featured = data.featured;
+  if (featured !== undefined && typeof featured !== 'boolean') {
+    throw new TypeError('frontmatter.featured must be a boolean when present');
+  }
+
+  return {
+    title: requireString(data, 'title'),
+    date,
+    excerpt: requireString(data, 'excerpt'),
+    slug,
+    tags: requireStringArray(data, 'tags'),
+    thumbnail: requireString(data, 'thumbnail'),
+    thumbnailBlur: optionalString(data, 'thumbnailBlur'),
+    hero: requireString(data, 'hero'),
+    heroBlur: optionalString(data, 'heroBlur'),
+    published: requireBoolean(data, 'published'),
+    featured,
+    author: optionalString(data, 'author'),
+    keywords: optionalStringArray(data, 'keywords'),
+    thumbnailText: optionalString(data, 'thumbnailText'),
+  };
+}
 
 export function getAllPosts(): Post[] {
   // Ensure directory exists
@@ -43,37 +130,29 @@ export function getAllPosts(): Post[] {
       return getPostBySlug(slug);
     })
     .filter((post): post is Post => post !== null && post.frontmatter.published)
-    .sort((a, b) => {
-      const dateA = new Date(a.frontmatter.date);
-      const dateB = new Date(b.frontmatter.date);
-      return dateB.getTime() - dateA.getTime();
-    });
+    .sort((a, b) => b.frontmatter.date.localeCompare(a.frontmatter.date));
 
   return allPosts;
 }
 
 export function getPostBySlug(slug: string): Post | null {
+  const fullPath = path.join(postsDirectory, `${slug}.mdx`);
+  if (!fs.existsSync(fullPath)) return null;
+
   try {
-    const fullPath = path.join(postsDirectory, `${slug}.mdx`);
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data, content } = matter(fileContents);
-
-    const frontmatter = data as PostFrontmatter;
+    const frontmatter = parsePostFrontmatter(data, slug);
     const stats = readingTime(content);
 
     return {
-      frontmatter: {
-        ...frontmatter,
-        slug,
-      },
+      frontmatter,
       content,
       readingTime: stats.text,
     };
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error(`[posts] Failed to load post: ${slug}`, error);
-    }
-    return null;
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`[posts] Invalid post "${slug}": ${message}`);
   }
 }
 
@@ -83,7 +162,14 @@ export function getAllSlugs(): string[] {
   }
 
   const fileNames = fs.readdirSync(postsDirectory);
-  return fileNames.filter((fileName) => fileName.endsWith('.mdx')).map((fileName) => fileName.replace(/\.mdx$/, ''));
+  return fileNames
+    .filter((fileName) => fileName.endsWith('.mdx'))
+    .map((fileName) => fileName.replace(/\.mdx$/, ''));
+}
+
+/** Static route candidates must never include drafts. */
+export function getPublishedPostSlugs(): string[] {
+  return getAllSlugs().filter((slug) => getPostBySlug(slug)?.frontmatter.published === true);
 }
 
 /**
@@ -124,7 +210,7 @@ export function getRelatedPosts(currentSlug: string, limit: number = 3): Post[] 
         return b.score - a.score;
       }
       // If scores are equal, sort by date (most recent first)
-      return new Date(b.post.frontmatter.date).getTime() - new Date(a.post.frontmatter.date).getTime();
+      return b.post.frontmatter.date.localeCompare(a.post.frontmatter.date);
     });
 
   // If we have enough posts with matching tags, return them

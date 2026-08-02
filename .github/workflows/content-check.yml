@@ -3,9 +3,15 @@ name: Content Check
 on:
   pull_request:
     paths:
-      - 'content/posts/**'
+      - 'content/**'
       - '.content/**'
-      - 'public/images/posts/**'
+      - 'public/images/**'
+      - 'lib/content-validation/**'
+      - 'lib/toolkit*.ts'
+      - 'components/toolkit/**'
+      - 'app/learn/toolkit/**'
+      - 'scripts/validate-posts.ts'
+      - 'scripts/generate-post-images.ts'
 
 permissions:
   contents: read
@@ -16,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -31,63 +36,111 @@ jobs:
       - name: Run content validation
         run: pnpm run validate:content:all -- --ci
 
+      - name: Validate Toolkit evidence contract
+        if: always()
+        run: pnpm validate:toolkit
+
       - name: Run image validation
+        if: always()
         run: pnpm run images:validate -- --ci
 
-      - name: Read validation report
-        if: always()
-        id: report
-        run: |
-          if [ -f .content/validation-report.json ]; then
-            TOTAL=$(jq -r '.summary.total' .content/validation-report.json)
-            PASSED=$(jq -r '.summary.passed' .content/validation-report.json)
-            FAILED=$(jq -r '.summary.failed' .content/validation-report.json)
-            WARNINGS=$(jq -r '.summary.warnings' .content/validation-report.json)
-            AVG_SCORE=$(jq -r '.summary.average_score' .content/validation-report.json)
-            echo "total=$TOTAL" >> $GITHUB_OUTPUT
-            echo "passed=$PASSED" >> $GITHUB_OUTPUT
-            echo "failed=$FAILED" >> $GITHUB_OUTPUT
-            echo "warnings=$WARNINGS" >> $GITHUB_OUTPUT
-            echo "avg_score=$AVG_SCORE" >> $GITHUB_OUTPUT
+      - name: Upload validation evidence
+        if: always() && hashFiles('.content/validation-report.json') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: content-validation-report
+          path: .content/validation-report.json
+          if-no-files-found: error
+          retention-days: 7
 
-            # Build results table
-            RESULTS_TABLE=""
-            while IFS= read -r row; do
-              TITLE=$(echo "$row" | jq -r '.title')
-              SCORE=$(echo "$row" | jq -r '.score')
-              ISSUES=$(echo "$row" | jq -r '.issueCount')
-              WARNS=$(echo "$row" | jq -r '.warningCount')
-              STATUS=$(echo "$row" | jq -r 'if .passed then "Pass" else "Fail" end')
-              RESULTS_TABLE="${RESULTS_TABLE}| ${TITLE} | ${SCORE}/100 | ${STATUS} | ${ISSUES} | ${WARNS} |\n"
-            done < <(jq -c '.results[]' .content/validation-report.json)
-            # Use a delimiter approach for multiline
-            echo "results_table<<RESULTS_EOF" >> $GITHUB_OUTPUT
-            echo -e "$RESULTS_TABLE" >> $GITHUB_OUTPUT
-            echo "RESULTS_EOF" >> $GITHUB_OUTPUT
-          fi
+      - name: Check score threshold
+        if: always() && hashFiles('.content/validation-report.json') != ''
+        run: >-
+          node -e "const report=require('./.content/validation-report.json');
+          const score=report?.summary?.average_score;
+          if(!Number.isInteger(score)||score<80){
+          console.error('Average content score is invalid or below 80:',score);
+          process.exit(1)}"
+
+  comment:
+    name: Publish Validation Report
+    needs: validate
+    if: always() && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Download validation evidence
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: content-validation-report
+          path: validation-evidence
 
       - name: Post PR comment
-        if: always() && steps.report.outputs.total != ''
+        if: steps.download.outcome == 'success'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
-            const avgScore = parseInt('${{ steps.report.outputs.avg_score }}');
-            const scoreEmoji = avgScore >= 90 ? '🟢' : avgScore >= 80 ? '🟡' : '🔴';
-            const body = `## ${scoreEmoji} Content Validation Report
+            const fs = require('node:fs');
+            const report = JSON.parse(
+              fs.readFileSync('validation-evidence/validation-report.json', 'utf8')
+            );
+
+            const integer = (value, label) => {
+              if (!Number.isInteger(value) || value < 0) {
+                throw new Error(`Invalid ${label} in validation report`);
+              }
+              return value;
+            };
+            const cell = (value) => String(value ?? '')
+              .replaceAll('\\', '\\\\')
+              .replaceAll('|', '\\|')
+              .replace(/[\r\n]+/g, ' ')
+              .replaceAll('<', '&lt;')
+              .replaceAll('@', '&#64;');
+
+            const summary = report.summary ?? {};
+            const total = integer(summary.total, 'total');
+            const passed = integer(summary.passed, 'passed');
+            const failed = integer(summary.failed, 'failed');
+            const warnings = integer(summary.warnings, 'warnings');
+            const averageScore = integer(summary.average_score, 'average score');
+            if (averageScore > 100 || passed + failed !== total) {
+              throw new Error('Inconsistent validation report summary');
+            }
+
+            const results = Array.isArray(report.results) ? report.results.slice(0, 100) : [];
+            const rows = results.map((result) => {
+              const score = integer(result.score, 'result score');
+              const issues = integer(result.issueCount, 'issue count');
+              const resultWarnings = integer(result.warningCount, 'warning count');
+              if (score > 100 || typeof result.passed !== 'boolean') {
+                throw new Error('Invalid result in validation report');
+              }
+              return `| ${cell(result.title)} | ${score}/100 | ${result.passed ? 'Pass' : 'Fail'} | ${issues} | ${resultWarnings} |`;
+            }).join('\n');
+
+            const scoreEmoji = averageScore >= 90 ? '🟢' : averageScore >= 80 ? '🟡' : '🔴';
+            const marker = '<!-- content-validation-report -->';
+            const body = `${marker}
+            ## ${scoreEmoji} Content Validation Report
 
             | Metric | Value |
             |--------|-------|
-            | Posts checked | ${{ steps.report.outputs.total }} |
-            | Passed | ${{ steps.report.outputs.passed }} |
-            | Failed | ${{ steps.report.outputs.failed }} |
-            | Warnings | ${{ steps.report.outputs.warnings }} |
-            | **Average Score** | **${{ steps.report.outputs.avg_score }}/100** |
+            | Posts checked | ${total} |
+            | Passed | ${passed} |
+            | Failed | ${failed} |
+            | Warnings | ${warnings} |
+            | **Average Score** | **${averageScore}/100** |
 
             ### Results
 
             | Post | Score | Status | Issues | Warnings |
             |------|-------|--------|--------|----------|
-            ${{ steps.report.outputs.results_table }}
+            ${rows || '| No results | 0/100 | Fail | 0 | 0 |'}
 
             ---
             *Generated by content-check workflow*`;
@@ -97,7 +150,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-            const existing = comments.find(c => c.body?.includes('Content Validation Report'));
+            const existing = comments.find((comment) => comment.body?.includes(marker));
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
@@ -113,12 +166,3 @@ jobs:
                 body,
               });
             }
-
-      - name: Check score threshold
-        if: always() && steps.report.outputs.avg_score != ''
-        run: |
-          AVG=${{ steps.report.outputs.avg_score }}
-          if [ "$AVG" -lt 80 ]; then
-            echo "Average score $AVG is below threshold of 80"
-            exit 1
-          fi

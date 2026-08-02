@@ -1,9 +1,4 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { staggerContainerVariants, slideUpVariants, drawLineVariants } from '@/lib/animations';
-import { ScrollReveal, ScrollRevealItem } from '@/components/ui/ScrollReveal';
 
 interface LearnHeroProps {
   patternCount: number;
@@ -14,17 +9,11 @@ interface LearnHeroProps {
 }
 
 interface Pillar {
-  key: string;
+  index: string;
   title: string;
   href: string;
   description: string;
   stat: string;
-  cta: string;
-  /** Static literal so Tailwind's class extraction keeps it. */
-  topBorder: string;
-  iconColor: string;
-  /** Single-path 24x24 stroke icon, matches the site's SVG convention. */
-  icon: string;
 }
 
 export function LearnHero({
@@ -38,222 +27,93 @@ export function LearnHero({
 
   const pillars: Pillar[] = [
     {
-      key: 'patterns',
+      index: '01',
       title: 'Patterns',
       href: '/learn/patterns',
-      description:
-        'Named, portable patterns for AI-assisted engineering. A structured reference of repeatable techniques.',
+      description: 'Reference architectures and repeatable moves for AI-assisted engineering.',
       stat: `${patternCount} patterns · ${chapterCount} chapters`,
-      cta: 'Browse patterns',
-      topBorder: 'border-t-chapter-1',
-      iconColor: 'text-chapter-1',
-      icon: 'M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z',
     },
     {
-      key: 'toolkit',
-      title: 'Claude Code Toolkit',
+      index: '02',
+      title: 'Toolkit',
       href: '/learn/toolkit',
-      description:
-        "Expert's guide to the Claude Code features. Mental models, production architectures, and real-world pitfalls.",
-      stat: `${toolkitTopicCount} deep-dives`,
-      cta: 'Explore toolkit',
-      topBorder: 'border-t-chapter-2',
-      iconColor: 'text-chapter-2',
-      icon: 'M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.121 2.121 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z',
+      description: 'A source-backed comparison of Claude Code, Codex, and GitHub Copilot.',
+      stat: `${toolkitTopicCount} capability guides`,
     },
     {
-      key: 'harness',
-      title: 'Harness Engineering',
+      index: '03',
+      title: 'Harness',
       href: '/learn/harness',
-      description:
-        'Runtime control beneath the model and delivery control above it — from the agent loop to accountable authorization.',
+      description: 'Runtime control beneath the model and accountable delivery control above it.',
       stat: `${harnessChapterCount} chapters · two layers`,
-      cta: 'Go deeper',
-      topBorder: 'border-t-chapter-4',
-      iconColor: 'text-chapter-4',
-      icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
     },
     {
-      key: 'security',
+      index: '04',
       title: 'Security',
       href: '/learn/security',
-      description:
-        'AI privacy and security for builders — prompt injection, PII in the context window, secrets, permissions, and exfiltration.',
-      stat: `${securityChapterCount} chapters · the trust surface`,
-      cta: 'Lock it down',
-      topBorder: 'border-t-chapter-6',
-      iconColor: 'text-chapter-6',
-      icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+      description: 'Trust surfaces: injection, secrets, permissions, data, and exfiltration.',
+      stat: `${securityChapterCount} chapters`,
     },
   ];
 
   return (
-    <>
-      <header className="relative border-b-4 border-text overflow-hidden">
-        {/* Corner marks + coordinate labels — decorative, mirror the section */}
-        <div
-          className="absolute z-[2] top-3 left-3 w-8 h-8 border-t-2 border-l-2 border-accent/40"
-          aria-hidden="true"
-        />
-        <span className="hero-coord z-[2] top-4 left-14" aria-hidden="true">
-          LEARN
-        </span>
-        <div
-          className="absolute z-[2] top-3 right-3 w-8 h-8 border-t-2 border-r-2 border-accent/40"
-          aria-hidden="true"
-        />
-        <span className="hero-coord z-[2] top-4 right-16" aria-hidden="true">
-          4 PILLARS
-        </span>
-        <div
-          className="absolute z-[2] bottom-3 left-3 w-8 h-8 border-b-2 border-l-2 border-accent/40"
-          aria-hidden="true"
-        />
-        <span className="hero-coord z-[2] bottom-4 left-14" aria-hidden="true">
-          {totalGuides} GUIDES
-        </span>
-        <div
-          className="absolute z-[2] bottom-3 right-3 w-8 h-8 border-b-2 border-r-2 border-accent/40"
-          aria-hidden="true"
-        />
-        <span className="hero-coord z-[2] bottom-4 right-16" aria-hidden="true">
-          AGENTIC
-        </span>
-
-        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-          <motion.div variants={staggerContainerVariants} initial={false} animate="visible">
-            <motion.div
-              variants={slideUpVariants}
-              className="mb-6 inline-block border-4 border-accent bg-surface px-6 py-2"
-            >
-              <p className="text-sm font-bold uppercase tracking-wider text-accent">
-                Learn &middot; Expert Guides
-              </p>
-            </motion.div>
-
-            <motion.h1
-              variants={slideUpVariants}
-              className="text-5xl md:text-7xl font-bold leading-tight mb-6"
-            >
-              Agentic Engineering
-            </motion.h1>
-
-            <motion.div
-              className="h-1 bg-accent mb-8 origin-left"
-              style={{ maxWidth: '200px' }}
-              aria-hidden="true"
-              variants={drawLineVariants}
-            />
-
-            <motion.p
-              variants={slideUpVariants}
-              className="mb-10 max-w-3xl text-muted text-lg leading-relaxed"
-            >
-              Four pillars, one stack. <span className="text-text font-semibold">Patterns</span> are
-              the portable techniques. The <span className="text-text font-semibold">Toolkit</span>{' '}
-              is the Claude Code features.{' '}
-              <span className="text-text font-semibold">Harness Engineering</span> spans runtime
-              execution beneath the model and delivery control above it.{' '}
-              <span className="text-text font-semibold">Security</span> is the trust surface that
-              cuts across all three.
-            </motion.p>
-
-            {/* Stats bar — clones the proven LearnShowcase idiom (tabular-nums) */}
-            <motion.div variants={slideUpVariants} className="flex flex-wrap gap-x-8 gap-y-4">
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl md:text-4xl font-bold text-accent tabular-nums">
-                  {patternCount}
-                </span>
-                <span className="text-sm font-bold uppercase tracking-wider text-muted">
-                  Patterns
-                </span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl md:text-4xl font-bold text-text tabular-nums">
-                  {toolkitTopicCount}
-                </span>
-                <span className="text-sm font-bold uppercase tracking-wider text-muted">
-                  Toolkit Topics
-                </span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl md:text-4xl font-bold text-text tabular-nums">
-                  {harnessChapterCount}
-                </span>
-                <span className="text-sm font-bold uppercase tracking-wider text-muted">
-                  Harness Chapters
-                </span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl md:text-4xl font-bold text-text tabular-nums">
-                  {securityChapterCount}
-                </span>
-                <span className="text-sm font-bold uppercase tracking-wider text-muted">
-                  Security Chapters
-                </span>
-              </div>
-            </motion.div>
-          </motion.div>
+    <header className="border-b border-text/15">
+      <div className="mx-auto grid max-w-7xl gap-14 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-[minmax(0,0.9fr)_minmax(30rem,1.1fr)] lg:gap-20 lg:px-8">
+        <div>
+          <p className="editorial-kicker mb-5">Learn · field guide</p>
+          <h1 className="font-display max-w-3xl text-5xl leading-[0.98] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
+            Practical knowledge for building agentic systems that ship.
+          </h1>
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-muted">
+            Four connected fields for practitioners designing AI systems that must work beyond the
+            demo: reusable techniques, product capabilities, runtime control, and security.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-text/15 pt-5 text-sm text-muted">
+            <span>
+              <strong className="font-semibold text-text">{totalGuides}</strong> published guides
+            </span>
+            <span>Source-backed where products change</span>
+            <span>Designed for implementation</span>
+          </div>
         </div>
-      </header>
 
-      <section
-        aria-labelledby="learn-pillars-heading"
-        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-20"
-      >
-        <h2 id="learn-pillars-heading" className="sr-only">
-          The four pillars
-        </h2>
-        <ScrollReveal stagger>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <section aria-labelledby="fields-heading" className="self-end">
+          <div className="mb-5 flex items-baseline justify-between gap-4 border-b border-text/20 pb-3">
+            <h2 id="fields-heading" className="editorial-kicker">
+              Fields of inquiry
+            </h2>
+            <span className="font-mono text-xs uppercase tracking-[0.16em] text-muted">
+              {pillars.length} fields
+            </span>
+          </div>
+          <ol>
             {pillars.map((pillar) => (
-              <ScrollRevealItem key={pillar.key}>
+              <li key={pillar.href} className="border-b border-text/15 last:border-b-0">
                 <Link
                   href={pillar.href}
-                  className={`group relative flex h-full flex-col border-4 border-text border-t-8 ${pillar.topBorder} bg-surface/30 p-6 transition-all duration-200 hover:-translate-y-1 hover:border-accent hover:shadow-[8px_8px_0_0_var(--color-accent)] focus:outline-none focus:ring-4 focus:ring-accent focus:ring-offset-4 focus:ring-offset-background`}
+                  className="group grid min-h-24 grid-cols-[2.5rem_minmax(7rem,0.55fr)_minmax(0,1.45fr)_auto] items-center gap-4 py-4 outline-none transition-colors hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:gap-6"
                 >
-                  <svg
-                    className={`w-8 h-8 mb-4 ${pillar.iconColor}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d={pillar.icon}
-                    />
-                  </svg>
-                  <h3 className="text-2xl md:text-3xl font-bold mb-3 group-hover:text-accent transition-colors">
+                  <span className="font-mono text-xs text-muted" aria-hidden="true">
+                    {pillar.index}
+                  </span>
+                  <span className="text-lg font-semibold tracking-tight sm:text-xl">
                     {pillar.title}
-                  </h3>
-                  <p className="text-muted leading-relaxed mb-6 flex-1">{pillar.description}</p>
-                  <p className="text-sm font-mono text-muted mb-4 tabular-nums">{pillar.stat}</p>
-                  <span className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-accent">
-                    {pillar.cta}
-                    <svg
-                      className="w-4 h-4 group-hover:translate-x-1 transition-transform"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
+                  </span>
+                  <span className="hidden text-sm leading-6 text-muted sm:block">
+                    {pillar.description}
+                    <span className="mt-1 block font-mono text-[0.68rem] uppercase tracking-[0.12em]">
+                      {pillar.stat}
+                    </span>
+                  </span>
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] underline decoration-1 underline-offset-4">
+                    Open
                   </span>
                 </Link>
-              </ScrollRevealItem>
+              </li>
             ))}
-          </div>
-        </ScrollReveal>
-      </section>
-    </>
+          </ol>
+        </section>
+      </div>
+    </header>
   );
 }

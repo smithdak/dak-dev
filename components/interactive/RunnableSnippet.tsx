@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from 'react';
  * connect-src for WASI wasm, plus 'wasm-unsafe-eval'). That is a real, outward-
  * facing security tradeoff, so runnable mode is OPT-IN and OFF by default:
  *
- *   - Default (flag unset): renders a clean, static, neo-brutalist code block.
+ *   - Default (flag unset): renders a clean, static code block.
  *     Zero third-party script, zero CSP change, zero Lighthouse risk.
  *   - Enabled (NEXT_PUBLIC_ENABLE_CODAPI === 'true'): lazily loads the Codapi
  *     web component and upgrades the block into a runnable playground.
@@ -103,10 +103,10 @@ export function RunnableSnippet({
   return (
     <div
       ref={containerRef}
-      className="my-8 border-2 border-text"
+      className="my-8 border-y border-text/20"
       data-runnable={enhanced ? 'on' : 'off'}
     >
-      <div className="flex items-center justify-between border-b-2 border-text bg-surface px-3 py-1.5">
+      <div className="flex items-center justify-between border-b border-text/20 bg-surface px-3 py-1.5">
         <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted">
           {langLabel}
         </span>
@@ -115,7 +115,7 @@ export function RunnableSnippet({
             className="font-mono text-[10px] font-bold uppercase tracking-widest"
             style={{ color: 'var(--color-accent)' }}
           >
-            ▶ runnable
+            Runnable
           </span>
         ) : (
           CODAPI_ENABLED && (

@@ -1,0 +1,520 @@
+{
+  "reviewedAt": "2026-08-01",
+  "claims": [
+    {
+      "topic": "project-instructions",
+      "tool": "claude-code",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "CLAUDE.md and scoped rules provide first-party persistent instructions. They guide model behavior; they are not an enforcement boundary.",
+      "sourceIds": ["claude-memory"],
+      "basis": "documented"
+    },
+    {
+      "topic": "project-instructions",
+      "tool": "claude-code",
+      "surfaces": ["cloud"],
+      "status": "unknown",
+      "summary": "The reviewed project-instruction source does not define a complete cloud-surface loading contract.",
+      "sourceIds": ["claude-memory", "claude-overview"],
+      "basis": "documented"
+    },
+    {
+      "topic": "project-instructions",
+      "tool": "openai-codex",
+      "surfaces": ["cli", "ide", "cloud"],
+      "status": "native",
+      "summary": "AGENTS.md is the documented repository instruction contract, with hierarchical scope for more specific directories.",
+      "sourceIds": ["codex-agents-md"],
+      "basis": "documented"
+    },
+    {
+      "topic": "project-instructions",
+      "tool": "github-copilot",
+      "surfaces": ["cli", "ide", "cloud"],
+      "status": "native",
+      "summary": "Copilot supports repository-wide, path-specific, and agent instruction files; exact file support varies by product surface.",
+      "sourceIds": ["copilot-instructions-cli", "copilot-instructions-support"],
+      "basis": "documented"
+    },
+
+    {
+      "topic": "hooks",
+      "tool": "claude-code",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "Claude Code documents command, prompt, agent, HTTP, and MCP-tool hooks across lifecycle events and settings scopes.",
+      "sourceIds": ["claude-hooks"],
+      "basis": "documented"
+    },
+    {
+      "topic": "hooks",
+      "tool": "openai-codex",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "Codex exposes first-party local lifecycle hooks. OpenAI explicitly describes hooks as guardrails, not complete policy enforcement.",
+      "sourceIds": ["codex-hooks"],
+      "basis": "documented"
+    },
+    {
+      "topic": "hooks",
+      "tool": "openai-codex",
+      "surfaces": ["cloud"],
+      "status": "no-documented-equivalent",
+      "summary": "The reviewed official hooks reference documents the local Codex hook boundary, not an equivalent cloud hook runtime.",
+      "sourceIds": ["codex-hooks"],
+      "basis": "documented"
+    },
+    {
+      "topic": "hooks",
+      "tool": "github-copilot",
+      "surfaces": ["cli", "cloud"],
+      "status": "partial",
+      "summary": "Copilot documents lifecycle hooks and decision control, but hook timeouts fail open; use them as automation and guardrails, not a universal hard-policy boundary.",
+      "sourceIds": ["copilot-hooks"],
+      "basis": "documented"
+    },
+
+    {
+      "topic": "skills",
+      "tool": "claude-code",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "Claude Code implements Agent Skills with progressive disclosure, manual or model invocation, scripts, resources, and product-specific controls.",
+      "sourceIds": ["claude-skills"],
+      "basis": "documented"
+    },
+    {
+      "topic": "skills",
+      "tool": "openai-codex",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "Codex documents reusable skills as the first-party packaging mechanism for repeatable workflows and supporting resources.",
+      "sourceIds": ["codex-skills"],
+      "basis": "documented"
+    },
+    {
+      "topic": "skills",
+      "tool": "github-copilot",
+      "surfaces": ["cli", "cloud"],
+      "status": "native",
+      "summary": "Copilot documents Agent Skills for specialized instructions, scripts, and resources, with product-specific discovery and precedence.",
+      "sourceIds": ["copilot-customize-cli", "copilot-cli-reference"],
+      "basis": "documented"
+    },
+
+    {
+      "topic": "agents",
+      "tool": "claude-code",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "Claude Code supports built-in and custom subagents with isolated context, tool and model controls, and nested delegation.",
+      "sourceIds": ["claude-subagents"],
+      "basis": "documented"
+    },
+    {
+      "topic": "agents",
+      "tool": "openai-codex",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "Codex enables built-in and custom subagents by default and surfaces their parallel work as coordinator-managed threads.",
+      "sourceIds": ["codex-subagents"],
+      "basis": "documented"
+    },
+    {
+      "topic": "agents",
+      "tool": "github-copilot",
+      "surfaces": ["cli", "cloud"],
+      "status": "native",
+      "summary": "Copilot documents custom agents with isolated context and role-specific tools, used as subagents by the primary agent.",
+      "sourceIds": ["copilot-customize-cli", "copilot-cli-reference"],
+      "basis": "documented"
+    },
+
+    {
+      "topic": "agent-teams",
+      "tool": "claude-code",
+      "surfaces": ["cli"],
+      "status": "partial",
+      "summary": "Agent teams provide independent teammate sessions, a shared task list, mailboxes, and peer messaging, but Anthropic still labels the feature experimental.",
+      "sourceIds": ["claude-agent-teams"],
+      "basis": "documented"
+    },
+    {
+      "topic": "agent-teams",
+      "tool": "openai-codex",
+      "surfaces": ["cli", "ide"],
+      "status": "partial",
+      "summary": "Codex runs parallel specialized subagents and collects results through the main coordinator. The reviewed docs do not describe a peer mailbox or shared task-ledger topology.",
+      "sourceIds": ["codex-subagents"],
+      "basis": "documented"
+    },
+    {
+      "topic": "agent-teams",
+      "tool": "github-copilot",
+      "surfaces": ["cli"],
+      "status": "native",
+      "summary": "Copilot CLI Fleet decomposes work across parallel subagents and documents sibling-agent discovery and messaging.",
+      "sourceIds": ["copilot-fleet", "copilot-cli-reference"],
+      "basis": "documented"
+    },
+
+    {
+      "topic": "mcp",
+      "tool": "claude-code",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "Claude Code provides first-party MCP configuration and connection management for external tools and data sources.",
+      "sourceIds": ["claude-mcp"],
+      "basis": "documented"
+    },
+    {
+      "topic": "mcp",
+      "tool": "openai-codex",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "Codex documents first-party MCP client configuration for extending local agent tool and context access.",
+      "sourceIds": ["codex-mcp"],
+      "basis": "documented"
+    },
+    {
+      "topic": "mcp",
+      "tool": "github-copilot",
+      "surfaces": ["cli"],
+      "status": "native",
+      "summary": "Copilot CLI provides first-party MCP server configuration and management.",
+      "sourceIds": ["copilot-customize-cli", "copilot-cli-reference"],
+      "basis": "documented"
+    },
+    {
+      "topic": "mcp",
+      "tool": "github-copilot",
+      "surfaces": ["cloud"],
+      "status": "partial",
+      "summary": "Copilot cloud agent supports MCP tools, but the documented surface excludes resources, prompts, and remote OAuth.",
+      "sourceIds": ["copilot-cloud-mcp"],
+      "basis": "documented"
+    },
+
+    {
+      "topic": "commands",
+      "tool": "claude-code",
+      "surfaces": ["cli"],
+      "status": "native",
+      "summary": "Claude Code provides built-in commands and invocable custom workflows; skills are now the recommended packaging model for multi-step commands.",
+      "sourceIds": ["claude-commands", "claude-skills"],
+      "basis": "documented"
+    },
+    {
+      "topic": "commands",
+      "tool": "openai-codex",
+      "surfaces": ["cli"],
+      "status": "native",
+      "summary": "Codex CLI documents an interactive slash-command surface, while repeatable custom workflows are packaged as skills.",
+      "sourceIds": ["codex-commands", "codex-skills"],
+      "basis": "documented"
+    },
+    {
+      "topic": "commands",
+      "tool": "github-copilot",
+      "surfaces": ["cli"],
+      "status": "native",
+      "summary": "Copilot CLI provides built-in slash commands plus command files as a simplified, lower-priority alternative to skills.",
+      "sourceIds": ["copilot-cli-reference"],
+      "basis": "documented"
+    },
+
+    {
+      "topic": "settings",
+      "tool": "claude-code",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "Claude Code documents layered settings, permissions, managed policy, environment controls, and configuration precedence.",
+      "sourceIds": ["claude-settings"],
+      "basis": "documented"
+    },
+    {
+      "topic": "settings",
+      "tool": "openai-codex",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "Codex exposes a first-party configuration file and layered controls for models, sandboxing, approvals, and extensions.",
+      "sourceIds": ["codex-config"],
+      "basis": "documented"
+    },
+    {
+      "topic": "settings",
+      "tool": "github-copilot",
+      "surfaces": ["cli"],
+      "status": "native",
+      "summary": "Copilot CLI provides personal settings, permissions, provider, extension, and agent customization controls.",
+      "sourceIds": ["copilot-customize-cli", "copilot-cli-reference"],
+      "basis": "documented"
+    },
+
+    {
+      "topic": "memory",
+      "tool": "claude-code",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "Claude Code combines human-authored CLAUDE.md context with machine-authored, repository-scoped local auto memory.",
+      "sourceIds": ["claude-memory"],
+      "basis": "documented"
+    },
+    {
+      "topic": "memory",
+      "tool": "openai-codex",
+      "surfaces": ["cli", "ide"],
+      "status": "native",
+      "summary": "Local Codex clients use a local memory store and per-chat controls; required team rules still belong in AGENTS.md or checked-in documentation.",
+      "sourceIds": ["codex-memory", "codex-agents-md"],
+      "basis": "documented"
+    },
+    {
+      "topic": "memory",
+      "tool": "openai-codex",
+      "surfaces": ["web", "cloud"],
+      "status": "partial",
+      "summary": "ChatGPT and hosted work use separate account or workspace memory behavior rather than the local Codex memory store and controls.",
+      "sourceIds": ["codex-memory"],
+      "basis": "documented"
+    },
+    {
+      "topic": "memory",
+      "tool": "github-copilot",
+      "surfaces": ["cli"],
+      "status": "native",
+      "summary": "Copilot CLI documents a memory tool and explicit memory enablement controls for prompt-mode sessions.",
+      "sourceIds": ["copilot-cli-reference"],
+      "basis": "documented"
+    },
+    {
+      "topic": "memory",
+      "tool": "github-copilot",
+      "surfaces": ["ide", "web", "cloud"],
+      "status": "unknown",
+      "summary": "The reviewed CLI source is insufficient to assert one shared memory contract across Copilot's editor, web, and cloud surfaces.",
+      "sourceIds": ["copilot-cli-reference"],
+      "basis": "documented"
+    },
+
+    {
+      "topic": "hooks",
+      "tool": "claude-code",
+      "surfaces": ["cloud"],
+      "status": "unknown",
+      "summary": "The reviewed hook reference is insufficient to assert the same lifecycle contract on Claude Code's hosted surface.",
+      "sourceIds": ["claude-hooks"],
+      "basis": "documented"
+    },
+    {
+      "topic": "skills",
+      "tool": "claude-code",
+      "surfaces": ["cloud"],
+      "status": "unknown",
+      "summary": "The reviewed skills reference is insufficient to classify hosted discovery and invocation as equivalent to local clients.",
+      "sourceIds": ["claude-skills"],
+      "basis": "documented"
+    },
+    {
+      "topic": "agents",
+      "tool": "claude-code",
+      "surfaces": ["cloud"],
+      "status": "unknown",
+      "summary": "The reviewed subagent reference does not establish a complete hosted-surface contract equivalent to local clients.",
+      "sourceIds": ["claude-subagents"],
+      "basis": "documented"
+    },
+    {
+      "topic": "agent-teams",
+      "tool": "claude-code",
+      "surfaces": ["ide", "cloud"],
+      "status": "unknown",
+      "summary": "The reviewed experimental agent-teams reference does not establish equivalent IDE and hosted coordination behavior.",
+      "sourceIds": ["claude-agent-teams"],
+      "basis": "documented"
+    },
+    {
+      "topic": "mcp",
+      "tool": "claude-code",
+      "surfaces": ["cloud"],
+      "status": "unknown",
+      "summary": "The reviewed MCP source does not define a complete hosted capability and authentication matrix.",
+      "sourceIds": ["claude-mcp"],
+      "basis": "documented"
+    },
+    {
+      "topic": "commands",
+      "tool": "claude-code",
+      "surfaces": ["ide", "cloud"],
+      "status": "unknown",
+      "summary": "The reviewed command reference is terminal-centered and does not establish identical IDE or hosted command availability.",
+      "sourceIds": ["claude-commands"],
+      "basis": "documented"
+    },
+    {
+      "topic": "settings",
+      "tool": "claude-code",
+      "surfaces": ["cloud"],
+      "status": "unknown",
+      "summary": "The reviewed settings source is insufficient to classify the hosted configuration and managed-policy surface as equivalent.",
+      "sourceIds": ["claude-settings"],
+      "basis": "documented"
+    },
+    {
+      "topic": "memory",
+      "tool": "claude-code",
+      "surfaces": ["cloud"],
+      "status": "unknown",
+      "summary": "Claude's documented local auto-memory store is machine-local; the reviewed source does not establish an equivalent hosted store.",
+      "sourceIds": ["claude-memory"],
+      "basis": "documented"
+    },
+
+    {
+      "topic": "project-instructions",
+      "tool": "openai-codex",
+      "surfaces": ["web"],
+      "status": "unknown",
+      "summary": "The reviewed AGENTS.md source does not establish one general web-surface loading contract outside the named Codex clients and cloud workflows.",
+      "sourceIds": ["codex-agents-md"],
+      "basis": "documented"
+    },
+    {
+      "topic": "hooks",
+      "tool": "openai-codex",
+      "surfaces": ["web"],
+      "status": "unknown",
+      "summary": "The reviewed hook reference does not establish a browser-hosted hook runtime.",
+      "sourceIds": ["codex-hooks"],
+      "basis": "documented"
+    },
+    {
+      "topic": "skills",
+      "tool": "openai-codex",
+      "surfaces": ["web", "cloud"],
+      "status": "unknown",
+      "summary": "The reviewed build-skills source is insufficient to classify skill discovery and execution across web and cloud as equivalent to local clients.",
+      "sourceIds": ["codex-skills"],
+      "basis": "documented"
+    },
+    {
+      "topic": "agents",
+      "tool": "openai-codex",
+      "surfaces": ["web", "cloud"],
+      "status": "partial",
+      "summary": "Hosted subagent workflows are documented, but availability and controls differ from configurable local Codex agents.",
+      "sourceIds": ["codex-subagents"],
+      "basis": "documented"
+    },
+    {
+      "topic": "agent-teams",
+      "tool": "openai-codex",
+      "surfaces": ["web", "cloud"],
+      "status": "partial",
+      "summary": "Hosted parallel subagents are documented as coordinator-managed workflows; the source does not describe a peer team with shared task state.",
+      "sourceIds": ["codex-subagents"],
+      "basis": "documented"
+    },
+    {
+      "topic": "mcp",
+      "tool": "openai-codex",
+      "surfaces": ["web", "cloud"],
+      "status": "unknown",
+      "summary": "The reviewed MCP source is insufficient to assert one hosted capability, transport, and authentication contract.",
+      "sourceIds": ["codex-mcp"],
+      "basis": "documented"
+    },
+    {
+      "topic": "commands",
+      "tool": "openai-codex",
+      "surfaces": ["ide", "web", "cloud"],
+      "status": "unknown",
+      "summary": "The reviewed slash-command source is CLI-specific and does not establish identical commands on IDE, web, or cloud surfaces.",
+      "sourceIds": ["codex-commands"],
+      "basis": "documented"
+    },
+    {
+      "topic": "settings",
+      "tool": "openai-codex",
+      "surfaces": ["web", "cloud"],
+      "status": "unknown",
+      "summary": "The reviewed config-file source does not establish an equivalent hosted configuration contract.",
+      "sourceIds": ["codex-config"],
+      "basis": "documented"
+    },
+
+    {
+      "topic": "project-instructions",
+      "tool": "github-copilot",
+      "surfaces": ["web"],
+      "status": "partial",
+      "summary": "GitHub documents instruction support on selected web experiences, but supported file types and behavior vary by feature.",
+      "sourceIds": ["copilot-instructions-support"],
+      "basis": "documented"
+    },
+    {
+      "topic": "hooks",
+      "tool": "github-copilot",
+      "surfaces": ["ide", "web"],
+      "status": "unknown",
+      "summary": "The reviewed hooks source does not establish the same event and decision contract for general IDE and web interactions.",
+      "sourceIds": ["copilot-hooks"],
+      "basis": "documented"
+    },
+    {
+      "topic": "skills",
+      "tool": "github-copilot",
+      "surfaces": ["ide", "web"],
+      "status": "unknown",
+      "summary": "The reviewed CLI sources are insufficient to classify skill discovery and invocation on IDE and web surfaces.",
+      "sourceIds": ["copilot-customize-cli", "copilot-cli-reference"],
+      "basis": "documented"
+    },
+    {
+      "topic": "agents",
+      "tool": "github-copilot",
+      "surfaces": ["ide", "web"],
+      "status": "unknown",
+      "summary": "The reviewed CLI customization sources do not establish one equivalent custom-agent contract for IDE and web surfaces.",
+      "sourceIds": ["copilot-customize-cli", "copilot-cli-reference"],
+      "basis": "documented"
+    },
+    {
+      "topic": "agent-teams",
+      "tool": "github-copilot",
+      "surfaces": ["ide", "web", "cloud"],
+      "status": "unknown",
+      "summary": "Fleet is documented for Copilot CLI; the reviewed sources do not establish the same team topology on IDE, web, or cloud surfaces.",
+      "sourceIds": ["copilot-fleet", "copilot-cli-reference"],
+      "basis": "documented"
+    },
+    {
+      "topic": "mcp",
+      "tool": "github-copilot",
+      "surfaces": ["ide", "web"],
+      "status": "unknown",
+      "summary": "The reviewed CLI and cloud sources are insufficient to classify the remaining IDE and web MCP surfaces as equivalent.",
+      "sourceIds": ["copilot-customize-cli", "copilot-cloud-mcp"],
+      "basis": "documented"
+    },
+    {
+      "topic": "commands",
+      "tool": "github-copilot",
+      "surfaces": ["ide", "web", "cloud"],
+      "status": "unknown",
+      "summary": "The reviewed command reference is CLI-specific and does not establish identical commands elsewhere in the Copilot family.",
+      "sourceIds": ["copilot-cli-reference"],
+      "basis": "documented"
+    },
+    {
+      "topic": "settings",
+      "tool": "github-copilot",
+      "surfaces": ["ide", "web", "cloud"],
+      "status": "unknown",
+      "summary": "The reviewed CLI settings source is insufficient to define one equivalent configuration contract across the wider Copilot family.",
+      "sourceIds": ["copilot-customize-cli", "copilot-cli-reference"],
+      "basis": "documented"
+    }
+  ]
+}

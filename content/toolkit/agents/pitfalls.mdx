@@ -1,312 +1,48 @@
 ---
-title: "Agents: Pitfalls"
-topic: "agents"
-subPage: "pitfalls"
+title: 'Agents and Subagents: Pitfalls'
+topic: 'agents'
+subPage: 'pitfalls'
 order: 5
-description: "Context exhaustion, over-delegation, poor briefing, worktree cleanup, cost multiplication, and race conditions."
-relatedPatterns: ["scope-fence", "checkpoint-loop"]
-relatedTopics: ["agent-teams", "settings", "memory"]
+description: 'Failure modes in delegation scope, shared writes, context handoff, authority, nesting, and unverifiable completion.'
+relatedPatterns: ['scope-fence', 'parallel-fan-out', 'safety-net']
+relatedTopics: ['agent-teams', 'settings', 'hooks']
 published: true
-keywords: ["agents pitfalls", "context exhaustion", "over-delegation", "worktree cleanup", "cost multiplication"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-subagents', 'codex-subagents', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords:
+  ['subagent pitfalls', 'agent delegation failure', 'parallel edit conflicts', 'agent authority']
 ---
 
-# Agents: Pitfalls
+# Pitfalls
 
-Every pitfall here comes from production usage. These aren't theoretical — they're the failure modes that waste tokens, produce garbage results, or leave your workspace in a broken state.
+## Delegating an Unbounded Goal
 
-## Context Window Exhaustion from Subagent Results
+“Improve the codebase” creates scope drift and an unreviewable result. Assign one objective and a stop condition.
 
-**The problem:** Each subagent's final message returns to the parent. Five subagents returning 3K tokens each consume 15K tokens — roughly 7-10% of your working context. Do this repeatedly and the parent conversation compacts away useful earlier context.
+## Concurrent Writes Without Ownership
 
-**How it manifests:**
+Context isolation does not prevent file conflicts. Allocate files or isolate worktrees.
 
-- Parent starts forgetting earlier decisions after several rounds of delegation
-- Auto-compaction triggers mid-conversation, losing nuance from earlier exchanges
-- Research results from early subagents are gone by the time you need them
+## Authority Leakage
 
-**Mitigations:**
+A specialized role may inherit tools or credentials unrelated to its task. Apply least privilege at the runtime layer.
 
-- Request concise output explicitly: "Return only a bullet-point summary, max 10 items"
-- For persistent results, ask the subagent to write findings to a file: "Write your analysis to `docs/audit-results.md` and return a one-paragraph summary"
-- Use subagents for tasks where intermediate work matters (test running, log processing), not the final report
-- For sustained parallel work that exceeds context limits, switch to **agent teams**
-- Tune compaction threshold with `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=50` to trigger earlier
+## Context Dumping
 
-**The math:** A subagent returning 3,000 tokens of analysis consumes ~1.5% of a 200K context window per invocation. With 10 delegations per conversation, that's 15% consumed by subagent results alone — before accounting for your own prompts and Claude's responses.
+Returning every log and file defeats the point of delegation. Require a structured result with links to evidence.
 
-## Over-Delegation
+## Blindly Trusting Completion
 
-**The problem:** Spawning a subagent has real overhead. The subagent starts fresh, spends initial turns rebuilding context by reading files and searching code. Parallelizing four 30-second tasks costs more wall-clock time and tokens than doing them sequentially inline.
+The parent must inspect the diff and rerun the decisive checks. Child confidence is not integration evidence.
 
-**The rule of thumb:**
+## Deep Nesting Without Observability
 
-| Condition | Action |
-|-----------|--------|
-| Task takes fewer than 30 seconds inline | Stay inline |
-| Task touches fewer than 3 files | Stay inline |
-| Task produces verbose output you don't need in context | Delegate |
-| Task needs tool restrictions (read-only) | Delegate |
-| 10+ files to explore | Delegate |
-| 3+ independent work items | Delegate in parallel |
+Nested delegation can obscure who acted, where tokens went, and which instruction set applied. Bound depth and preserve causal identifiers.
 
-**Community observation:** Claude often ignores available subagents and handles everything itself unless you name the subagent explicitly or use @-mention. This is actually the correct behavior for simple tasks — the overhead of delegation exceeds the benefit. The problem is when you *want* delegation and don't get it.
+## Falsification Checklist
 
-## Poor Briefing
-
-**The problem:** A subagent with a vague prompt wastes turns exploring blindly. With no parent conversation history, the subagent has zero context unless you provide it.
-
-**Anti-patterns:**
-
-| Prompt | Failure Mode |
-|--------|-------------|
-| "Review my code" | Which code? What to look for? How to report? |
-| "Fix the tests" | Which tests? What's the error? What changed? |
-| "Look at the codebase and find issues" | Aimless exploration, generic findings |
-| "Refactor this module" | No constraints, no definition of done |
-
-**The briefing checklist:**
-
-Every subagent prompt should include:
-
-1. **Specific file paths** — Don't make the subagent guess where to look
-2. **What to analyze** — Security, performance, style, correctness
-3. **Relevant error messages** — Paste the actual output
-4. **Constraints** — "Read-only", "Don't modify tests", "Only touch src/auth/"
-5. **Output format** — "Bullet list with file:line references", "Write to file X"
-
-A reusable briefing template:
-
-```markdown
-# Briefing: [Task Name]
-
-## Context
-- Module: [path/to/module]
-- Stack: [relevant tech, versions]
-- Recent changes: [what changed, when, by whom]
-
-## Objective
-[Specific, measurable deliverable — not "review" but "find all X in Y"]
-
-## Files to Examine
-- `src/auth/session.ts` — JWT creation logic
-- `src/auth/middleware.ts` — request validation
-- `src/auth/types.ts` — shared interfaces
-
-## Constraints
-- [Read-only | Can modify | Specific boundaries]
-- [Time/turn budget if applicable]
-
-## Expected Output
-[Exact format: bullet list, table, file write, pass/fail]
-Return ONLY the summary. Do not include raw file contents.
-```
-
-**The cost of vagueness:** A poorly briefed subagent might spend 20 turns (and 50K+ tokens) exploring before producing useful output. The same task with a good briefing takes 5 turns.
-
-## Worktree Conflicts and Cleanup
-
-**The problem:** Worktrees created by crashed sessions can linger with uncommitted changes, consuming disk space and creating branch namespace pollution.
-
-**Auto-cleanup rules:**
-
-Orphaned worktrees are cleaned at startup if ALL conditions are met:
-
-- Older than `cleanupPeriodDays` (default: 30)
-- No uncommitted changes
-- No untracked files
-- No unpushed commits
-
-If any condition fails, the worktree is preserved. You must manually inspect and remove from `.claude/worktrees/`.
-
-**Merge conflicts from parallel worktrees:**
-
-When multiple worktree agents modify related code paths — even in different files — merge conflicts can occur during integration. A function signature change in one worktree and a new call site in another creates a conflict that neither agent anticipated.
-
-**Preventions:**
-
-- Plan parallelization to avoid overlapping code paths, not just overlapping files
-- Use worktree agents for truly independent features (different modules, different layers)
-- When overlap is unavoidable, make one agent the "owner" and have others wait for its branch to merge first
-
-**Manual cleanup:**
-
-```bash
-# List all worktrees
-git worktree list
-
-# Remove a specific worktree
-git worktree remove .claude/worktrees/experimental-refactor
-
-# Prune stale worktree references
-git worktree prune
-```
-
-## Cost Multiplication
-
-**The problem:** Every subagent consumes tokens independently. Subagents inherit the parent model by default. Five parallel Opus subagents = 5x Opus cost per turn.
-
-**Cost reduction strategies:**
-
-| Strategy | Impact |
-|----------|--------|
-| `model: haiku` for exploration and simple analysis | ~20x cheaper than Opus |
-| `model: sonnet` for code review and moderate work | ~5x cheaper than Opus |
-| `effort: low` or `effort: medium` | Reduces thinking token budget |
-| `MAX_THINKING_TOKENS=8000` | Hard cap on thinking tokens per request |
-| `maxTurns: 20` | Prevents runaway sessions |
-| `CLAUDE_CODE_SUBAGENT_MODEL` env var | Override model for all subagents globally |
-
-A cost-optimized agent set:
-
-```yaml
-# .claude/agents/explorer.md — cheap exploration
----
-name: explorer
-description: Deep codebase exploration and file discovery
-model: haiku
-effort: low
-maxTurns: 30
-tools: Read, Grep, Glob
----
-
-# .claude/agents/implementer.md — moderate cost
----
-name: implementer
-description: Implements features following project conventions
-model: sonnet
-effort: medium
-maxTurns: 20
-tools: Read, Write, Edit, Bash, Grep, Glob
----
-
-# .claude/agents/architect.md — high cost, use sparingly
----
-name: architect
-description: Complex architectural decisions and system design
-model: opus
-effort: high
-maxTurns: 15
----
-```
-
-Override the model for all subagents globally:
-
-```bash
-# Force all subagents to use Sonnet regardless of their definition
-export CLAUDE_CODE_SUBAGENT_MODEL=claude-sonnet-4-6
-
-# Cap thinking tokens to control cost
-export MAX_THINKING_TOKENS=8000
-```
-
-**The hidden cost:** There is no per-agent cost breakdown. You cannot see how many tokens each subagent consumed. The only visibility is your overall API usage. If costs spike unexpectedly, audit your agent configurations for inherited Opus usage on tasks that Haiku could handle.
-
-**Token budget estimation:**
-
-| Agent Type | Typical Tokens per Invocation |
-|------------|------------------------------|
-| Explore (Haiku, 5-10 turns) | 10K-30K input, 2K-5K output |
-| Research (Sonnet, 10-15 turns) | 30K-80K input, 5K-15K output |
-| Implementation (Opus, 15-25 turns) | 80K-150K input, 15K-40K output |
-
-These are rough ranges. Actual consumption depends on codebase size, task complexity, and how many files the agent reads.
-
-## Race Conditions with Parallel Agents
-
-**The problem:** Two parallel subagents modifying the same file, database, or external resource produce conflicts or data corruption. Subagents have no awareness of each other and no file locking.
-
-**The failure scenario:**
-
-1. Subagent A reads `config.ts`, plans to add a new export
-2. Subagent B reads `config.ts`, plans to modify an existing export
-3. Both write their changes — whichever finishes last overwrites the other's work
-
-**Decision framework:**
-
-| Condition | Dispatch Strategy |
-|-----------|-------------------|
-| 3+ unrelated tasks, no shared state, clear file boundaries | Parallel |
-| Tasks share files or have unclear scope | Sequential |
-| Research/analysis (read-only) | Parallel or background |
-| Tasks with dependencies | Sequential, passing results between agents |
-
-**When you need parallel writes with safety:** Use **agent teams** instead of subagents. Agent teams provide file locking to prevent concurrent write conflicts. Subagents do not.
-
-## Subagents Making Unwanted Changes
-
-**The problem:** A subagent with Write/Edit access modifies files you didn't intend. Without conversation history, the subagent may make assumptions about scope that diverge from your intent.
-
-**Defense in depth:**
-
-A fully locked-down analysis agent:
-
-```yaml
----
-name: safe-analyzer
-description: |
-  Read-only code analysis. Use when you need an unbiased audit
-  without any risk of file modification. Invoke for security
-  reviews, dependency audits, and architecture assessments.
-tools: Read, Grep, Glob, Bash
-disallowedTools: Write, Edit
-permissionMode: plan
-model: haiku
-maxTurns: 25
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "python scripts/block-destructive-commands.py"
----
-
-You are a read-only code analyst. You CANNOT modify any files.
-Analyze the code described in your briefing and return structured
-findings. If you identify issues that need fixing, describe the
-fix but do not attempt to implement it.
-```
-
-| Layer | Mechanism |
-|-------|-----------|
-| Tool restriction | `tools: Read, Grep, Glob` — no Write/Edit available |
-| Permission mode | `permissionMode: plan` — analysis only |
-| Deny mode | `permissionMode: dontAsk` — auto-deny anything not explicitly allowed |
-| Hook validation | `PreToolUse` hooks that validate operations before execution |
-| Worktree isolation | `isolation: worktree` — changes contained in disposable copy |
-
-Stack multiple layers. Tool restriction prevents the obvious case; hooks catch edge cases like destructive Bash commands.
-
-## Lost Context Across the Agent Boundary
-
-**The problem:** The parent receives only the subagent's final message. Intermediate reasoning, failed hypotheses, and context gathered during exploration are permanently lost.
-
-**Why it matters:** A research subagent that reads 40 files, tries three approaches, and finds two dead ends before reaching a conclusion — the parent sees only the conclusion. If the conclusion needs refinement, a new subagent starts from scratch.
-
-**Mitigations:**
-
-- Ask the subagent to summarize its reasoning process, not just conclusions: "Explain what you checked, what you ruled out, and why"
-- Use `memory: project` to persist learnings across conversations
-- For complex investigations, ask the subagent to write a detailed report to a file and return a brief summary
-- Chain subagents from the main conversation, explicitly passing relevant context from one to the next
-
-## Inconsistent Auto-Delegation
-
-**The problem:** Claude prefers to handle tasks inline rather than delegating to configured subagents. You define five custom agents and Claude uses none of them.
-
-**Root cause:** The auto-delegation heuristic weighs agent descriptions against the current prompt. Generic descriptions like "code reviewer" don't trigger reliably.
-
-**Fixes:**
-
-- **Action-oriented descriptions**: "Use proactively after code changes to check for regressions" beats "Reviews code"
-- **@-mention for guaranteed delegation**: `@"code-reviewer (agent)"` bypasses auto-selection entirely
-- **Fewer, sharper agents**: 3-5 well-scoped agents route better than 10 overlapping ones
-- **Trigger phrases in descriptions**: Match the language you naturally use — if you say "audit this", include "audit" in the description
-
-Guaranteed delegation via @-mention:
-
-```markdown
-<!-- These bypass auto-selection entirely -->
-@"code-reviewer (agent)" Review the changes in src/api/ for security issues
-@"explorer (agent)" Map all callers of the createSession function
-@"test-writer (agent)" Generate unit tests for src/auth/rotation.ts
-```
+- Could the task have remained in the parent with less overhead?
+- Is write ownership disjoint and explicit?
+- Can the child act outside the user's authorization?
+- Does the result contain enough evidence to verify independently?
+- Can every nested action be attributed to a run and role?

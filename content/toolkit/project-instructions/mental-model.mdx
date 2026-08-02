@@ -1,0 +1,48 @@
+---
+title: 'Project Instructions: Mental Model'
+topic: 'project-instructions'
+subPage: 'mental-model'
+order: 2
+description: 'A portable model for instruction scope, precedence, context cost, and the boundary between agent guidance and enforceable controls.'
+relatedPatterns: ['convention-file', 'context-priming', 'scope-fence']
+relatedTopics: ['skills', 'settings', 'memory']
+published: true
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-memory', 'codex-agents-md', 'copilot-instructions-cli', 'copilot-instructions-support']
+keywords:
+  [
+    'project instruction architecture',
+    'instruction precedence',
+    'CLAUDE.md',
+    'AGENTS.md',
+    'Copilot instructions',
+  ]
+---
+
+# Mental Model
+
+Project instructions are a context-routing system. Their job is to deliver the smallest relevant repository contract before the agent makes a consequential decision.
+
+## Four Properties
+
+1. **Scope** — which repository, directory, file pattern, agent, or product surface receives the instruction.
+2. **Precedence** — how organization, user, repository, and nested files combine when they disagree.
+3. **Persistence** — when instructions load, reload, or survive context compaction.
+4. **Authority** — whether the text advises the model or is backed by an independently enforced control.
+
+The first three determine whether the agent sees the right context. The fourth determines whether noncompliance is merely unlikely or technically prevented.
+
+## Product Realizations
+
+| Product        | Native center                                          | Material distinction                                                     |
+| -------------- | ------------------------------------------------------ | ------------------------------------------------------------------------ |
+| Claude Code    | `CLAUDE.md` plus scoped rules                          | Instructions and auto memory are related but separately authored context |
+| OpenAI Codex   | Hierarchical `AGENTS.md`                               | More specific directory scope refines the repository contract            |
+| GitHub Copilot | Repository, path-specific, and agent instruction files | Supported formats vary across CLI, IDE, review, and cloud surfaces       |
+
+Do not infer a universal precedence algorithm from the shared use of Markdown. Each product decides discovery and merge behavior.
+
+## The Crux
+
+If a rule must hold even when the model misunderstands, ignores, or never loads it, the rule does not belong only in an instruction file. Put the explanation in instructions and the enforcement in permissions, hooks, tests, CI, or release policy.

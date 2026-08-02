@@ -1,60 +1,48 @@
 ---
-title: "Memory System: Expert's Guide"
-topic: "memory"
+title: 'Persistent Memory Across Claude Code, Codex, and Copilot'
+topic: 'memory'
 order: 1
-description: "Master Claude Code's persistent memory — cross-session intelligence, memory taxonomy, and strategies for building institutional knowledge."
-relatedPatterns: ["memory-layer", "convention-file"]
-relatedTopics: ["claude-md", "agents", "skills", "hooks"]
+description: 'Compare cross-session memory, local and hosted storage boundaries, provenance, review, and stale-context risk across coding agents.'
+relatedPatterns: ['memory-layer', 'context-priming']
+relatedTopics: ['project-instructions', 'agents', 'skills', 'hooks']
 published: true
-keywords: ["claude code memory", "persistent context", "cross-session intelligence", "memory taxonomy"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-memory', 'codex-memory', 'codex-agents-md', 'copilot-cli-reference']
+keywords:
+  [
+    'agent memory',
+    'Claude auto memory',
+    'Codex memories',
+    'Copilot memory',
+    'cross-session context',
+  ]
 ---
 
-# Memory System
+# Persistent Memory
 
-Claude Code's memory system is a file-based persistence layer that lets the agent retain knowledge across sessions. Every correction you make, every architectural decision you explain, every workflow preference you demonstrate — memory captures it so you never repeat yourself.
+Persistent memory carries useful context beyond one conversation. It can reduce repeated discovery, but it also creates a new failure mode: stale or low-provenance context can silently shape future work.
 
-## Why Memory Matters
+## Distinguish Memory from Instructions
 
-Without memory, every Claude Code session starts from zero. The agent re-reads your codebase, re-discovers your conventions, and re-learns your preferences. Memory eliminates that cold-start penalty. A well-maintained memory directory turns Claude into a collaborator that accumulates institutional knowledge over weeks and months.
+Project instructions are human-authored repository contracts. Memory is accumulated recall: preferences, discoveries, recent context, or agent-authored notes. Required team rules belong in version-controlled instructions or documentation, even when a product can remember them.
 
-## Memory vs. CLAUDE.md vs. Conversation Context
+Claude Code documents repository-scoped local auto memory alongside CLAUDE.md. Local Codex clients use a separate local memory store and controls, while hosted ChatGPT behavior is not the same store. Copilot CLI documents memory tooling and enablement, but the reviewed source does not establish one shared memory contract across every Copilot surface.
 
-These three systems serve different purposes. Using the wrong one wastes context window or loses information.
+## A Governed Memory Layer
 
-| System | Who Writes | Persistence | Best For |
-|--------|-----------|-------------|----------|
-| **CLAUDE.md** | You | Permanent (in git) | Rules, conventions, architecture |
-| **Auto Memory** | Claude | Cross-session (local) | Learned patterns, decisions, project state |
-| **Conversation** | Generated | Single session | Current task context |
+Every durable memory should answer:
 
-**Rule of thumb:** If a new teammate needs it, put it in CLAUDE.md. If Claude learned it through work and it's not in the code, put it in memory. If it's only relevant right now, leave it in conversation context.
+- Where did this claim come from?
+- When was it observed or reviewed?
+- What scope does it apply to?
+- Who or what may update it?
+- How is contradiction or staleness detected?
+- Can a user inspect, correct, export, or delete it?
 
-A memory file with proper frontmatter:
+Use stable identifiers and source links for facts that drive decisions. Separate observed state from inferred preference. Expire project-status memories aggressively; retain durable architectural decisions only while their evidence remains valid.
 
-```markdown
----
-name: auth-migration
-description: JWT to session cookie migration, status and blockers
-type: project
----
+## Operational Rule
 
-## Status
-Phase 2 of 3 complete. Session cookie rotation deployed 2026-04-12.
+Treat memory as a recall accelerator, not a source of authority. Revalidate load-bearing facts against code, configuration, or a current primary source before acting. Never rely on model memory alone for release authorization, credentials, customer commitments, or production state.
 
-## Blockers
-- Redis cluster needs TLS cert renewal before Phase 3
-- Mobile clients require SDK update for cookie-based auth
-
-## Decisions
-- Chose HttpOnly + SameSite=Strict over token refresh (2026-04-05)
-- 30-day session expiry, sliding window renewal
-```
-
-## What's Inside
-
-Explore the sub-pages for deep expertise:
-
-- **Mental Model** — How memory works internally: file-based persistence, the four memory types, MEMORY.md index mechanics, and lazy-loading behavior
-- **Playbook** — Production memory strategies: taxonomy design, effective descriptions, maintenance cadence, team patterns, and cross-project strategies
-- **Compositions** — Memory combined with CLAUDE.md, skills, agents, hooks, and MCP for persistent cross-session intelligence
-- **Pitfalls** — Memory bloat, silent truncation, stale memories, the 200-line ceiling, privacy risks, and debugging memory influence
+The deeper lenses retain Claude Code auto-memory mechanics. The governance model transfers; storage paths, loading thresholds, and controls do not.

@@ -57,7 +57,7 @@ export function RelatedPatternsGraph({
   const centerColor = CHAPTER_COLORS[currentPattern.frontmatter.chapter] || CHAPTER_COLORS[1];
 
   return (
-    <div className="border-2 border-text/40 bg-background/80 p-6 md:p-8 h-full flex flex-col">
+    <div className="flex h-full flex-col border-y border-text/20 py-6 md:py-8">
       <h2 className="text-xs font-bold uppercase tracking-wider text-muted mb-3">
         Relationship Map
       </h2>
@@ -98,15 +98,6 @@ export function RelatedPatternsGraph({
                   strokeWidth={2.5}
                   strokeDasharray={dash || undefined}
                 />
-                {/* Shadow rect */}
-                <rect
-                  x={pos.x - nodeW / 2 + 3}
-                  y={pos.y - nodeH / 2 + 3}
-                  width={nodeW}
-                  height={nodeH}
-                  fill="var(--color-text)"
-                  opacity={0.25}
-                />
                 {/* Node rect */}
                 <rect
                   x={pos.x - nodeW / 2}
@@ -115,7 +106,7 @@ export function RelatedPatternsGraph({
                   height={nodeH}
                   fill="var(--color-background)"
                   stroke={nodeColor}
-                  strokeWidth={2.5}
+                  strokeWidth={1.5}
                 />
                 {/* Pattern number */}
                 <text
@@ -149,21 +140,13 @@ export function RelatedPatternsGraph({
 
           {/* Center node (current pattern) — drawn last so it's on top */}
           <rect
-            x={cx - 54 + 3}
-            y={cy - 24 + 3}
-            width={108}
-            height={48}
-            fill="var(--color-text)"
-            opacity={0.3}
-          />
-          <rect
             x={cx - 54}
             y={cy - 24}
             width={108}
             height={48}
             fill="var(--color-background)"
             stroke={centerColor}
-            strokeWidth={3}
+            strokeWidth={2}
           />
           <text
             x={cx}

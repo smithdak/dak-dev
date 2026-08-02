@@ -1,148 +1,95 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { ArticleLedger } from '@/components/blog/ArticleLedger';
 import { getAllPosts } from '@/lib/posts';
 import { getAllTagSlugs, getPostsByTag, getTagNameFromSlug } from '@/lib/tags';
-import { Card } from '@/components/ui/Card';
-import { PageTransition } from '@/components/ui/PageTransition';
-import Link from 'next/link';
+import { formatWritingTag } from '@/lib/writing';
 
-export async function generateStaticParams() {
-  const allPosts = await getAllPosts();
-  const tagSlugs = getAllTagSlugs(allPosts);
+export const dynamicParams = false;
 
-  return tagSlugs.map((tag) => ({
-    tag,
-  }));
+export function generateStaticParams() {
+  const allPosts = getAllPosts();
+  return getAllTagSlugs(allPosts).map((tag) => ({ tag }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ tag: string }>;
-}) {
+export async function generateMetadata({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params;
-  const allPosts = await getAllPosts();
+  const allPosts = getAllPosts();
   const tagName = getTagNameFromSlug(allPosts, tag);
 
   if (!tagName) {
-    return {
-      title: 'Tag Not Found | Dakota Smith',
-    };
+    return { title: 'Topic not found' };
   }
 
+  const displayName = formatWritingTag(tagName);
+
   return {
-    title: `Posts tagged with "${tagName}" | Dakota Smith`,
-    description: `Browse all posts tagged with ${tagName} on Dakota Smith's blog.`,
+    title: `${displayName} — Writing archive`,
+    description: `Analysis filed under ${displayName} in Dakota Smith's writing archive.`,
+    alternates: { canonical: `/blog/tags/${tag}` },
   };
 }
 
-export default async function TagPage({
-  params,
-}: {
-  params: Promise<{ tag: string }>;
-}) {
+export default async function WritingTopicPage({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params;
-  const allPosts = await getAllPosts();
-
-  // Get the original tag name from the slug
+  const allPosts = getAllPosts();
   const tagName = getTagNameFromSlug(allPosts, tag);
 
-  if (!tagName) {
-    notFound();
-  }
+  if (!tagName) notFound();
 
-  // Filter posts by this tag
   const filteredPosts = getPostsByTag(allPosts, tag);
-
-  if (filteredPosts.length === 0) {
-    notFound();
-  }
+  if (filteredPosts.length === 0) notFound();
+  const displayName = formatWritingTag(tagName);
 
   return (
-    <PageTransition className="min-h-screen py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <header className="mb-12 border-b-4 border-text pb-8">
-          {/* Breadcrumb */}
-          <nav className="mb-6" aria-label="Breadcrumb">
-            <ol className="flex items-center gap-2 text-sm text-muted">
+    <div className="min-h-screen py-12 md:py-16 lg:py-20">
+      <div className="editorial-shell">
+        <header className="border-b border-rule pb-10 md:pb-14">
+          <nav aria-label="Breadcrumb">
+            <ol className="flex flex-wrap items-center gap-2 text-sm text-muted">
               <li>
                 <Link
                   href="/blog"
-                  className="hover:text-text hover:underline underline-offset-2 focus:outline-none focus:ring-2 focus:ring-text focus:ring-offset-2 focus:ring-offset-background"
+                  className="editorial-link focus:outline-none focus:ring-2 focus:ring-accent"
                 >
-                  Blog
+                  Writing
                 </Link>
               </li>
               <li aria-hidden="true">/</li>
-              <li>
-                <span className="text-text font-semibold">Tags</span>
-              </li>
-              <li aria-hidden="true">/</li>
-              <li aria-current="page">
-                <span className="text-text font-semibold">{tagName}</span>
+              <li aria-current="page" className="text-text">
+                {displayName}
               </li>
             </ol>
           </nav>
 
-          {/* Tag Header */}
-          <div className="flex items-center gap-4 mb-4">
-            <div className="inline-block border-4 border-text bg-surface px-4 py-2">
-              <span className="text-sm font-bold uppercase tracking-wider">
-                {tagName}
-              </span>
+          <div className="mt-8 grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+            <div>
+              <h1 className="max-w-[16ch] font-display text-5xl leading-none tracking-[-0.035em] sm:text-6xl md:text-7xl">
+                {displayName}
+              </h1>
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
+                Every published analysis filed under this topic.
+              </p>
             </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.11em] text-muted">
+              {filteredPosts.length} {filteredPosts.length === 1 ? 'analysis' : 'analyses'}
+            </p>
           </div>
-
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Posts tagged with "<span className="text-green-400">{tagName}</span>"
-          </h1>
-
-          <p className="text-lg text-muted">
-            {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''}{' '}
-            found
-          </p>
         </header>
 
-        {/* Posts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPosts.map((post) => (
-            <Card
-              key={post.frontmatter.slug}
-              title={post.frontmatter.title}
-              excerpt={post.frontmatter.excerpt}
-              slug={post.frontmatter.slug}
-              thumbnail={post.frontmatter.thumbnail}
-              date={post.frontmatter.date}
-              readingTime={post.readingTime}
-              tags={post.frontmatter.tags}
-            />
-          ))}
-        </div>
+        <section className="pt-10 md:pt-14" aria-label={`${displayName} writing records`}>
+          <ArticleLedger posts={filteredPosts} headingLevel="h2" />
+        </section>
 
-        {/* Back to Blog Link */}
-        <div className="mt-16 text-center">
+        <div className="mt-14 border-t border-rule pt-6">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-text font-semibold hover:underline underline-offset-4 decoration-4 focus:outline-none focus:ring-4 focus:ring-text focus:ring-offset-4 focus:ring-offset-background"
+            className="inline-flex min-h-11 items-center text-xs font-semibold uppercase tracking-[0.11em] text-text underline-offset-4 hover:text-accent hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Back to All Posts
+            Return to all writing
           </Link>
         </div>
       </div>
-    </PageTransition>
+    </div>
   );
 }

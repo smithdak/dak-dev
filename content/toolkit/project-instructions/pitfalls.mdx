@@ -1,0 +1,54 @@
+---
+title: 'Project Instructions: Pitfalls'
+topic: 'project-instructions'
+subPage: 'pitfalls'
+order: 5
+description: 'Failure modes in instruction loading, precedence, portability, context pressure, and false policy assurance.'
+relatedPatterns: ['scope-fence', 'safety-net', 'context-priming']
+relatedTopics: ['settings', 'hooks', 'memory']
+published: true
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-memory', 'codex-agents-md', 'copilot-instructions-cli', 'copilot-instructions-support']
+keywords:
+  [
+    'project instruction pitfalls',
+    'instruction conflicts',
+    'stale agent instructions',
+    'agent policy',
+  ]
+---
+
+# Pitfalls
+
+## Treating Guidance as Enforcement
+
+An instruction can be ignored, displaced by conflicting context, or never loaded. Pair consequential rules with controls outside the model's discretion.
+
+## One Giant Root File
+
+Always-loaded detail consumes attention on every task. Keep the root contract short and route specialized procedures to skills or scoped files.
+
+## Undefined Precedence
+
+Two correct rules can become a wrong system when their scopes overlap. Test the resolved instruction set; do not rely on filename intuition.
+
+## Vendor-Neutral File Names Without Vendor-Neutral Semantics
+
+The same Markdown may be discovered differently across products and surfaces. Port the policy, then verify the adapter.
+
+## Stale Operational State
+
+Active branches, incidents, deadlines, and model behavior age faster than architectural rules. Store them separately with an owner and review date.
+
+## Recursive Imports and Hidden Context Cost
+
+Splitting instructions into imported files can improve organization without reducing loaded context. Measure what the product actually injects.
+
+## Falsification Checklist
+
+- Can the agent state every loaded instruction source?
+- Does a nested file override or merge as intended?
+- Does the rule survive compaction or resume?
+- Can a lower-trust repository weaken managed policy?
+- What prevents the prohibited outcome if the model ignores the prose?

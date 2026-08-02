@@ -10,6 +10,12 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
 
-# Keep transitive PostCSS installs on the patched line.
+# Keep vulnerable transitive parsers, glob tooling, and image tooling on patched
+# lines. These are build-time inputs today, but content and images still cross
+# trust boundaries in local authoring and CI.
 overrides:
-  postcss@<8.5.10: '>=8.5.10'
+  brace-expansion@<1.1.17: 1.1.17
+  js-yaml@<3.15.0: 3.15.0
+  'js-yaml@>=4.0.0 <4.3.0': 4.3.0
+  postcss@<8.5.18: '>=8.5.18'
+  sharp@<0.35.0: 0.35.3

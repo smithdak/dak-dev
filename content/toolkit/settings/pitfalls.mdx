@@ -1,271 +1,48 @@
 ---
-title: "Settings: Pitfalls"
-topic: "settings"
-subPage: "pitfalls"
+title: 'Settings and Policy: Pitfalls'
+topic: 'settings'
+subPage: 'pitfalls'
 order: 5
-description: "Permission gaps, the Read/Edit vs Bash bypass, inheritance bugs, overly restrictive configs, and configuration drift across teams."
-relatedPatterns: ["scope-fence", "safety-net"]
-relatedTopics: ["hooks", "agents", "claude-md"]
+description: 'Failure modes in configuration precedence, bypass paths, local-cloud drift, overbroad permissions, and settings-as-security claims.'
+relatedPatterns: ['scope-fence', 'safety-net']
+relatedTopics: ['project-instructions', 'hooks', 'mcp', 'agents']
 published: true
-keywords: ["settings pitfalls", "permission gaps", "Bash bypass", "inheritance bugs", "configuration drift"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-settings', 'codex-config', 'copilot-customize-cli', 'copilot-cli-reference']
+keywords:
+  ['agent settings pitfalls', 'configuration drift', 'permission bypass', 'cloud agent policy']
 ---
 
 # Pitfalls
 
-Settings bugs are silent. A misconfigured permission doesn't throw an error — it either blocks something that should work or allows something that shouldn't. These are the failure modes that hit production teams.
+## Reading One File as Effective Configuration
 
-## The Read/Edit Bypass — The #1 Security Misconception
+Overrides and managed sources may change the result. Inspect resolved state.
 
-**The problem:** `Read(./.env)` in a deny rule blocks Claude's built-in Read tool. It does NOT block `cat .env` via Bash.
+## Tool Denies as Complete Containment
 
-This is the single most common security misconception in Claude Code configuration. Teams add deny rules for sensitive files, assume they're protected, and leave a `cat`-sized hole in their security posture.
+Equivalent actions may remain available through shell, MCP, nested agents, IDEs, or cloud execution.
 
-**Demonstration:**
+## Broad Convenience Permissions
 
-```json
-{
-  "permissions": {
-    "deny": ["Read(./.env)", "Read(./.env.*)"]
-  }
-}
-```
+Persistent “allow all” choices turn temporary workflow friction into durable authority. Scope rules narrowly and review them.
 
-Claude cannot use the Read tool on `.env`. Claude CAN run `Bash(cat .env)`, `Bash(grep API_KEY .env)`, or `Bash(base64 .env)`. The deny rule only applies to the Read tool, not to Bash commands that read the same file.
+## Repository-Controlled Policy
 
-**The fix:** Enable sandbox for OS-level enforcement:
+An untrusted repository should not be able to grant itself credentials or weaken organization controls.
 
-```json
-{
-  "permissions": {
-    "deny": ["Read(./.env)", "Read(./.env.*)"]
-  },
-  "sandbox": {
-    "enabled": true,
-    "filesystem": {
-      "denyRead": ["./.env", "./.env.*"]
-    }
-  }
-}
-```
+## Local-Cloud Assumption
 
-The sandbox blocks the file at the OS level. No tool — built-in or Bash — can read it.
+Hosted identities, networks, filesystems, and approvals differ. Qualify each surface.
 
-## Permission Conflicts Between Scopes
+## Policy Without Negative Tests
 
-**The problem:** You allow `Bash(npm *)` in user settings. The project denies it. The deny wins, and commands fail without an obvious explanation.
+A configuration screenshot proves intent, not containment. Attempt the prohibited actions.
 
-**The rule:** Deny at ANY level blocks the tool at ALL levels. There is no override. A user allow cannot override a project deny. A project allow cannot override a managed deny. A CLI `--allowedTools` cannot override a managed deny.
+## Falsification Checklist
 
-```
-User settings:     allow Bash(npm *)
-Project settings:  deny  Bash(npm *)
-Result:            DENIED
-```
-
-**Debugging steps:**
-
-1. Run `/permissions` — lists all active rules and which settings file they come from
-2. Run `/status` — shows active settings sources, model, account info
-3. Check the deny list first — deny rules are evaluated before everything else
-4. Check scope precedence — Local > Project > User
-
-## Settings That Silently Get Ignored
-
-These settings do nothing unless placed in the correct scope. No error, no warning.
-
-| Setting | Ignored When Placed In... |
-|---------|---------------------------|
-| `allowManagedHooksOnly` | User or project settings |
-| `allowManagedMcpServersOnly` | User or project settings |
-| `allowManagedPermissionRulesOnly` | User or project settings |
-| `channelsEnabled` | User or project settings |
-| `forceRemoteSettingsRefresh` | User or project settings |
-| `strictKnownMarketplaces` | User or project settings |
-| `sandbox.filesystem.allowManagedReadPathsOnly` | User or project settings |
-| `sandbox.network.allowManagedDomainsOnly` | User or project settings |
-| `autoMode` | Shared project settings (`.claude/settings.json`) |
-| `skipDangerousModePermissionPrompt` | Project settings |
-| `autoMemoryDirectory` | Project settings |
-| MCP server configs | `settings.json` (belongs in `~/.claude.json` or `.mcp.json`) |
-| `autoConnectIde`, `editorMode` | `settings.json` (belongs in `~/.claude.json`) |
-
-The `autoMode` case is particularly dangerous. You configure auto mode rules in the project settings, commit them, and wonder why the classifier ignores them. Auto mode reads from user settings and `.claude/settings.local.json` only — shared project settings are excluded to prevent repo injection of allow rules.
-
-## Overly Restrictive Permissions
-
-**The problem:** Denying too many Bash commands forces Claude to find workarounds or fail repeatedly, wasting tokens and time.
-
-**Symptoms:**
-- Claude keeps asking for permission on every command
-- Claude tries alternative approaches to achieve the same goal
-- Token usage spikes with no progress
-- Claude suggests you run commands manually
-
-**The fix:** Use `acceptEdits` or `auto` mode for development. Reserve `dontAsk` for production/CI where you know exactly which tools are needed. Prefer sandbox + allow rules over extensive deny lists.
-
-**Anti-pattern vs. pattern:**
-
-```json
-// Anti-pattern: 50 deny rules
-{
-  "permissions": {
-    "deny": [
-      "Bash(rm *)", "Bash(mv *)", "Bash(cp *)",
-      "Bash(chmod *)", "Bash(chown *)", "Bash(ln *)"
-      // ... 44 more rules
-    ]
-  }
-}
-
-// Pattern: sandbox + targeted allows
-{
-  "permissions": {
-    "defaultMode": "acceptEdits",
-    "deny": ["Bash(git push --force *)"]
-  },
-  "sandbox": {
-    "enabled": true,
-    "filesystem": {
-      "allowWrite": [".", "/tmp"],
-      "denyWrite": ["/etc", "/usr/local/bin"]
-    }
-  }
-}
-```
-
-## The `bypassPermissions` Subagent Inheritance Trap
-
-**The problem:** `bypassPermissions` skips ALL prompts. If Claude reads a file containing prompt injection, it executes arbitrary commands without confirmation.
-
-**The critical gotcha:** Subagents inherit `bypassPermissions` and it CANNOT be overridden. A subagent with `permissionMode: plan` in its frontmatter still gets full unsupervised access if the parent session uses `bypassPermissions`.
-
-```yaml
----
-name: safe-reviewer
-permissionMode: plan  # THIS IS IGNORED
-tools: Read, Grep
-disallowedTools: Write, Edit, Bash
----
-```
-
-If the parent session runs with `bypassPermissions`, this subagent gets `bypassPermissions` too. The `permissionMode: plan` frontmatter is silently ignored. The `disallowedTools` list is also bypassed.
-
-**The fix:** Only use `bypassPermissions` in isolated environments — containers, VMs, ephemeral CI runners. For development, use `auto` mode or `acceptEdits` instead.
-
-## Bash Pattern Fragility
-
-**The problem:** Bash permission patterns look specific but match less than you think.
-
-`Bash(curl http://github.com/ *)` appears to restrict curl to GitHub, but fails for:
-
-- Options before URL: `curl -X GET http://github.com/...`
-- Different protocol: `curl https://github.com/...`
-- Variable expansion: `URL=http://github.com && curl $URL`
-- Redirects: `curl -L http://bit.ly/xyz`
-
-**The fix:** For URL filtering, deny Bash network tools entirely and use WebFetch with domain restrictions:
-
-```json
-{
-  "permissions": {
-    "deny": ["Bash(curl *)", "Bash(wget *)"],
-    "allow": ["WebFetch(domain:github.com)"]
-  }
-}
-```
-
-WebFetch applies domain restrictions at the application level. Bash patterns are too fragile for URL-based security.
-
-## Model Selection Mistakes
-
-**The problem:** Using Opus for formatting tasks (15x the cost of Haiku) or Haiku for architecture decisions (insufficient reasoning depth).
-
-| Mistake | Cost Impact | Quality Impact |
-|---------|-------------|----------------|
-| Opus for simple lookups | 15x overspend | None |
-| Haiku for complex debugging | Minimal savings | Significantly worse results |
-| Opus for all subagents | Multiplied by subagent count | Marginal improvement |
-| No effort level set | Varies | Inconsistent depth |
-
-**The fix:** Use `opusplan` as your default. Use subagents with `model: haiku` for exploration and simple tasks. Switch to `opus` only for specific hard problems. Set effort levels explicitly — don't rely on defaults.
-
-## Configuration Drift Across Teams
-
-**The problem:** Team members accumulate different user-level permissions from "Yes, don't ask again" prompts. Over weeks, every developer has a different effective configuration, leading to inconsistent behavior and "works on my machine" for AI-assisted workflows.
-
-**Detection:** Ask team members to run `/permissions` and compare outputs. If they differ significantly, you have configuration drift.
-
-**The fix:**
-
-1. Define standard permissions in project `.claude/settings.json`
-2. Set `permissions.defaultMode` to a consistent baseline
-3. For enterprise, use managed settings to enforce critical policies
-4. Periodically audit `/permissions` output across team members
-5. Document expected configuration in CLAUDE.md so deviations are visible
-
-## Profile Switching Confusion
-
-**The problem:** Forgetting which profile is active. Using the work profile with personal API keys, or the personal profile against the corporate proxy.
-
-**Symptoms:** Wrong model, unexpected permission denials, authentication failures, billing surprises.
-
-**The fix:** Surface the active profile in your shell prompt:
-
-```bash
-export PS1="[claude:${CLAUDE_PROFILE:-default}] $PS1"
-```
-
-Or use a status line configuration that shows the active config directory.
-
-## Windows Path Normalization
-
-On Windows, paths are normalized to POSIX form before matching. `C:\Users\alice` becomes `/c/Users/alice`.
-
-```bash
-Read(//c/**/.env)    # Match .env files on C drive
-Read(//**/.env)      # Match .env files on ALL drives
-```
-
-Use double-slash prefix for absolute paths on Windows. Single-slash is relative to project root.
-
-## Auto Mode Default Replacement
-
-**The problem:** Setting `autoMode.soft_deny` or `autoMode.allow` replaces the ENTIRE default list. If you set `soft_deny` with one custom entry, every built-in safety rule — force push protection, data exfiltration blocking, `curl | bash` prevention, production deploy guards — becomes allowed.
-
-**The fix:** Always run `claude auto-mode defaults` first. Copy the full default lists. Then add your entries to the copied lists.
-
-```bash
-# Get current defaults
-claude auto-mode defaults > auto-mode-defaults.json
-
-# Edit the file, ADD your rules to the existing lists
-# Then apply in settings
-```
-
-## Subagent Settings Limitations
-
-Settings that you expect to propagate to subagents but don't:
-
-| Setting | Subagent Behavior |
-|---------|-------------------|
-| CLAUDE.md | NOT loaded — subagent only gets frontmatter system prompt |
-| Skills | NOT inherited — must be listed explicitly in frontmatter |
-| Hooks in settings.json | Run in main session only — subagent hooks go in frontmatter |
-| `permissionMode` from frontmatter | Ignored if parent uses `bypassPermissions` or `auto` |
-| Plugin subagent `hooks` field | Silently ignored |
-| Plugin subagent `mcpServers` field | Silently ignored |
-| Plugin subagent `permissionMode` field | Silently ignored |
-
-The `CLAUDE_CODE_SUBAGENT_MODEL` environment variable overrides ALL subagent model settings, including frontmatter. If you set it and a subagent specifies `model: opus` in frontmatter, the env var wins.
-
-## Debugging Checklist
-
-When a permission denial doesn't make sense, follow this sequence:
-
-1. **`/permissions`** — Lists all rules and their source files
-2. **`/status`** — Shows active settings sources, model, account info
-3. **Check deny rules** — Deny is evaluated first and always wins
-4. **Check scope precedence** — Managed > CLI > Local > Project > User
-5. **Check managed settings** — Cannot be overridden by any other scope
-6. **Check auto mode denials** — Press `r` on denied actions in the "Recently denied" tab to retry
-7. **Check sandbox rules** — `sandbox.filesystem.denyRead` and `sandbox.network.allowedDomains` operate at the OS level, independent of permission rules
+- Which configuration sources won precedence?
+- Can another tool path reach the same protected outcome?
+- Can repository content weaken the rule?
+- Do nested agents inherit more access than intended?
+- Is release still blocked when the local agent configuration is bypassed?

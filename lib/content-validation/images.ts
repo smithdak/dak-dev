@@ -26,7 +26,7 @@ export async function validateImages(frontmatter: PostFrontmatter): Promise<Vali
         category: 'images',
         field: 'thumbnail',
         message: `Thumbnail image not found: ${frontmatter.thumbnail}`,
-        suggestion: 'Add thumbnail image (800x450) to the specified path',
+        suggestion: 'Add thumbnail image (960x640) to the specified path',
       });
     } else {
       // Validate dimensions and size
@@ -91,7 +91,7 @@ export async function validateImages(frontmatter: PostFrontmatter): Promise<Vali
       category: 'images',
       field: 'thumbnailBlur',
       message: 'Missing blur placeholder for thumbnail',
-      suggestion: 'Run npm run images:process to generate blur data',
+      suggestion: 'Run pnpm images:generate to restore the blur data',
     });
   }
 
@@ -101,7 +101,7 @@ export async function validateImages(frontmatter: PostFrontmatter): Promise<Vali
       category: 'images',
       field: 'heroBlur',
       message: 'Missing blur placeholder for hero',
-      suggestion: 'Run npm run images:process to generate blur data',
+      suggestion: 'Run pnpm images:generate to restore the blur data',
     });
   }
 

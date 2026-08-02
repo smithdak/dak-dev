@@ -1,292 +1,50 @@
 ---
-title: "Commands: Playbook"
-topic: "commands"
-subPage: "playbook"
+title: 'Commands and Workflows: Playbook'
+topic: 'commands'
+subPage: 'playbook'
 order: 3
-description: "Production command patterns — deployment pipelines, code review commands, parameterized workflows, and team-shared command libraries."
-relatedPatterns: ["progressive-disclosure", "scaffold-first", "checkpoint-loop"]
-relatedTopics: ["skills", "hooks", "agents"]
+description: 'Design one portable operator workflow and expose it safely through Claude Code, Codex, and Copilot command surfaces.'
+relatedPatterns: ['progressive-disclosure', 'checkpoint-loop', 'safety-net']
+relatedTopics: ['skills', 'hooks', 'settings']
 published: true
-keywords: ["commands playbook", "deployment commands", "parameterized commands", "command libraries"]
+reviewedAt: '2026-08-01'
+sourceIds:
+  ['claude-commands', 'claude-skills', 'codex-commands', 'codex-skills', 'copilot-cli-reference']
+keywords:
+  [
+    'command workflow playbook',
+    'custom slash command',
+    'portable agent workflow',
+    'command verification',
+  ]
 ---
 
 # Playbook
 
-Production commands follow repeatable patterns. This page covers the six command archetypes that handle 90% of real-world automation needs, with complete examples you can adapt to any codebase.
+## 1. Define Intent and Inputs
 
-## Deployment Pipeline
+Use a verb-object name and a narrow input schema. Reject ambiguous destinations before any side effect.
 
-The deployment command is the most common starting point. It combines pre-flight checks, environment targeting, and post-deploy verification into a single invocation.
+## 2. State Authority Boundaries
 
-```markdown
----
-name: deploy
-description: Deploy the application to the specified environment
-disable-model-invocation: true
-allowed-tools: Bash,Read,Grep
----
+List which local changes are authorized by invocation and which external or irreversible actions still require confirmation.
 
-# Deploy
+## 3. Put Complexity in a Skill
 
-Deploy to $ARGUMENTS (defaults to "staging" if empty).
+Use a thin command entrypoint for manual timing. Keep multi-step logic, references, and scripts in a reusable skill when the product supports it.
 
-## Pre-flight checks
+## 4. Make Verification First-Class
 
-1. Run `git status` — abort if there are uncommitted changes
-2. Run `npm run build` — abort on failure
-3. Run `npm run test` — abort on failure
-4. Check current branch — warn if not `main` for production deploys
+The workflow must name the decisive checks and return their actual results. “Done” without evidence is a failed contract.
 
-## Deploy
+## 5. Add Product Adapters
 
-- staging: `vercel deploy --env staging`
-- production: `vercel deploy --prod`
+Map the same workflow to each supported product's current command and skill syntax. Document surfaces where no equivalent adapter has been verified.
 
-## Post-deploy
+## 6. Test Safety
 
-1. Run health check against deployed URL
-2. Report deployment status with URL and commit hash
+Exercise missing inputs, invalid paths, denied tools, interrupted execution, resumed sessions, duplicate invocation, and an attempted external mutation without approval.
 
-## Safety
+## 7. Version the Workflow
 
-- NEVER deploy to production without explicit confirmation
-- Always show the diff since last deployment
-```
-
-Key design choices: `disable-model-invocation: true` prevents Claude from deploying without user intent. `allowed-tools` restricts to Bash, Read, and Grep — Claude cannot edit files during deployment. The safety section at the bottom uses emphasis to ensure production requires confirmation.
-
-## Code Review
-
-Review commands produce structured output without making changes. The `allowed-tools` restriction to read-only tools enforces this at the platform level.
-
-```markdown
----
-name: review
-description: Review code changes for quality, security, and style issues
-allowed-tools: Read,Grep,Glob,Bash(git diff:*),Bash(git log:*)
----
-
-# Code Review
-
-Review the changes in $ARGUMENTS (a file path, branch name, or PR number).
-
-## Checklist
-
-### Security
-- SQL injection, XSS, CSRF vulnerabilities
-- Hardcoded secrets or credentials
-- Unsafe deserialization
-
-### Quality
-- Error handling completeness
-- Edge cases not covered
-- Performance implications (N+1 queries, unnecessary re-renders)
-- TypeScript strict mode violations
-
-### Style
-- Naming conventions match project standards
-- No dead code or commented-out blocks
-- Functions under 50 lines
-
-## Output Format
-
-For each finding:
-- **Severity**: critical / warning / suggestion
-- **Location**: file:line
-- **Issue**: What's wrong
-- **Fix**: Concrete suggestion
-
-Do NOT make changes. Report only.
-```
-
-The `allowed-tools` line is precise: `Bash(git diff:*)` lets Claude run any git diff variant but blocks arbitrary bash commands. This is the tightest practical restriction for a review workflow.
-
-## Versioned Release
-
-Release commands combine version bumping, changelog generation, and git tagging. They reference existing project scripts rather than hardcoding tool invocations.
-
-```markdown
----
-name: release
-description: Create a new versioned release with changelog
-disable-model-invocation: true
-allowed-tools: Bash(npm version:*),Bash(git:*),Read,Edit
----
-
-# Release
-
-Create a release for version $ARGUMENTS.
-
-1. Run `npm version $ARGUMENTS` (patch, minor, or major)
-2. Generate changelog from commits since last tag using conventional commits
-3. Update CHANGELOG.md
-4. Create git tag
-5. Push tag and changes
-6. Report summary with version number and changelog preview
-```
-
-Notice the argument design: `/release patch`, `/release minor`, or `/release major`. The command does not validate the argument — Claude interprets "patch" correctly because npm's `version` subcommand handles it.
-
-## Parameterized Commands
-
-Three argument patterns cover most parameterization needs.
-
-### Simple arguments
-
-```markdown
-# File: .claude/commands/fix-issue.md
-Fix the bug described in GitHub issue #$ARGUMENTS.
-Read the issue, understand the problem, implement a fix, and write tests.
-```
-
-Usage: `/fix-issue 123`
-
-### Positional arguments
-
-```markdown
-# File: .claude/commands/migrate.md
-Migrate the database schema from $1 to $2.
-- Source version: $1
-- Target version: $2
-Generate migration files and rollback scripts.
-```
-
-Usage: `/migrate v2 v3`
-
-### Optional arguments with defaults
-
-```markdown
-# File: .claude/commands/test.md
-Run tests for $ARGUMENTS.
-
-If no arguments provided, run the full test suite with `npm test`.
-If a file path is provided, run only that test file.
-If "coverage" is provided, run `npm run test:coverage`.
-```
-
-Usage: `/test`, `/test src/utils.test.ts`, `/test coverage`
-
-The default-argument pattern is the most robust. Claude handles the conditional logic naturally — you describe the three cases and Claude dispatches based on what the user typed.
-
-## Meta-Commands
-
-A meta-command orchestrates a workflow that normally requires multiple manual steps. This is the highest-leverage command pattern.
-
-```markdown
----
-name: ship
-description: Full ship workflow — lint, test, review, commit, deploy
-disable-model-invocation: true
----
-
-# Ship
-
-Complete ship workflow for the current changes.
-
-Execute these steps in order, stopping on any failure:
-
-1. **Lint and format**: Run the project linter with auto-fix. Fix remaining issues.
-2. **Test**: Run the full test suite. Fix any failures.
-3. **Self-review**: Review all staged changes for security issues, quality problems, and style violations. Fix anything found.
-4. **Commit**: Create a conventional commit with a descriptive message.
-5. **Deploy**: If all above passed, deploy to staging.
-
-Report a summary at the end with pass/fail status for each step.
-```
-
-**Critical limitation:** This does NOT invoke `/lint-fix` or `/review` as slash commands. Claude cannot invoke one command from within another. The meta-command duplicates the intent of each sub-workflow in its own instructions. This means changes to `/review` do not automatically propagate to `/ship`. Accept the duplication or maintain a single source of truth in the meta-command only.
-
-## Content Workflow Commands
-
-Content-heavy projects benefit from a command chain where each command handles one phase of the pipeline.
-
-```
-/content-strategist  (SEO research)
-       |
-/content-calendar    (pipeline tracking)
-       |
-/write-post          (creation + validation)
-       |
-/review-post         (quality gate)
-```
-
-Each command is self-contained but references shared state files. The `/content-strategist` command writes keyword research to `seo/strategy.json`. The `/write-post` command reads from `content-plan.json` to know what to write next. The chain works because each step produces artifacts the next step consumes — not because commands invoke each other.
-
-A production `/write-post` command at 225 lines implements:
-- Multi-step workflow (research, draft, validate, iterate)
-- Quality gates (score >= 80 to pass validation)
-- External tool integration (`npx tsx` for validation scripts)
-- Failure handling with escalation
-- Calendar integration (updates content-plan.json on completion)
-
-## Lint and Auto-Fix
-
-Auto-fix commands handle the common pattern of running tools, fixing what they can, and reporting what they cannot.
-
-```markdown
----
-name: lint-fix
-description: Run linters and automatically fix all fixable issues
-disable-model-invocation: true
-allowed-tools: Bash,Read,Edit
----
-
-# Lint Fix
-
-1. Run `npm run lint -- --fix` and capture output
-2. Run `npx prettier --write .` for formatting
-3. If any unfixable errors remain, list them with file:line and explanation
-4. Run `git diff --stat` to show what changed
-5. Do NOT commit. Report summary of changes made.
-```
-
-The final instruction — "Do NOT commit" — is critical. Without it, Claude often commits after fixing, which may not be what you want. Explicit boundaries prevent scope creep.
-
-## Project Command Library Structure
-
-A mature project organizes commands by workflow category:
-
-```
-.claude/
-  commands/
-    # Development
-    dev.md              # Start dev server with correct env
-    test.md             # Run tests with smart defaults
-    lint-fix.md         # Auto-fix linting issues
-
-    # Git workflow
-    commit.md           # Create conventional commit
-    pr.md               # Create PR with template
-
-    # Deployment
-    deploy.md           # Deploy to staging/production
-    release.md          # Create versioned release
-    ship.md             # Full pipeline: lint -> test -> commit -> deploy
-
-    # Content (project-specific)
-    write-post.md       # Create blog post
-    review-post.md      # Validate post quality
-
-    # Debugging
-    debug.md            # Systematic debugging workflow
-    profile.md          # Performance profiling
-```
-
-Commands in `.claude/commands/` are committed to the repo. Every team member who clones the repo gets the same commands automatically. Personal overrides live in `~/.claude/commands/` — these are not shared and exist only on your machine.
-
-## Documenting Commands for Your Team
-
-Commands are useless if nobody knows they exist. Document them in CLAUDE.md so both Claude and human developers have a single reference:
-
-```markdown
-## Available Commands
-
-| Command | Description |
-|---------|-------------|
-| `/deploy` | Deploy to staging or production |
-| `/review` | Code review with security and quality checks |
-| `/ship` | Full lint -> test -> review -> commit -> deploy pipeline |
-| `/release` | Create versioned release with changelog |
-```
-
-This serves dual purpose: Claude reads it and knows the workflow exists. Human developers see it when they open the project. The table format is scannable for both audiences.
+When output or authority changes materially, update the workflow version and its tests so evidence can be interpreted later.

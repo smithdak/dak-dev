@@ -10,16 +10,17 @@ engineering of the MDX pipeline, see `DESIGN.md` §5.
 
 ## Sources of truth (do not duplicate these)
 
-| Concern | Canonical file |
-|---|---|
-| Brand voice & style | `.content/brand/voice.md` |
-| Machine-readable validation rules | `.content/brand/guidelines.json` |
-| Post templates (general / tutorial / project / pattern) | `.content/templates/*.template` |
-| Content pipeline & idea backlog | `.content/calendar/content-plan.json` |
-| SEO strategy, keywords, clusters, gaps | `.content/seo/strategy.json` |
-| Internal-linking strategy & opportunities | `.content/linking-strategy.md`, `.content/internal-linking-opportunities.md` |
-| Patterns content strategy | `.content/patterns/strategy.md` |
-| Latest validation results | `.content/validation-report.json` |
+| Concern                                                 | Canonical file                                                               |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Brand voice & style                                     | `.content/brand/voice.md`                                                    |
+| Machine-readable validation rules                       | `.content/brand/guidelines.json`                                             |
+| Post templates (general / tutorial / project / pattern) | `.content/templates/*.template`                                              |
+| Content pipeline & idea backlog                         | `.content/calendar/content-plan.json`                                        |
+| SEO strategy, keywords, clusters, gaps                  | `.content/seo/strategy.json`                                                 |
+| Internal-linking strategy & opportunities               | `.content/linking-strategy.md`, `.content/internal-linking-opportunities.md` |
+| Patterns content strategy                               | `.content/patterns/strategy.md`                                              |
+| Deterministic post-art contract                         | `.content/images/post-art.v1.json`                                           |
+| Latest validation results                               | `.content/validation-report.json`                                            |
 
 If a rule (e.g. excerpt length, heading count) is needed, read
 `.content/brand/guidelines.json` — it is the authority, and it can change
@@ -27,14 +28,14 @@ without this file changing.
 
 ## Skills (the procedural layer)
 
-| Skill | Use when |
-|---|---|
-| `/write-post` | Creating a post — brand-consistent scaffold from a template |
-| `/review-post` | Pre-publish review for brand consistency, quality, SEO |
-| `/brand-check` | Quick brand-voice check on arbitrary text |
-| `/quality-gate` | Enforced pre-publish gate: mechanical + voice + prose rubric + human sign-off |
-| `/content-calendar` | View/manage the pipeline and idea backlog |
-| `/content-strategist` | Keyword research, gap analysis, topic clusters, SEO audit |
+| Skill                 | Use when                                                                      |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `/write-post`         | Creating a post — brand-consistent scaffold from a template                   |
+| `/review-post`        | Pre-publish review for brand consistency, quality, SEO                        |
+| `/brand-check`        | Quick brand-voice check on arbitrary text                                     |
+| `/quality-gate`       | Enforced pre-publish gate: mechanical + voice + prose rubric + human sign-off |
+| `/content-calendar`   | View/manage the pipeline and idea backlog                                     |
+| `/content-strategist` | Keyword research, gap analysis, topic clusters, SEO audit                     |
 
 ## Workflow
 
@@ -73,7 +74,7 @@ Integration: `/content-strategist` → `/content-calendar` → `/write-post` →
 ```bash
 pnpm validate:content       # published posts
 pnpm validate:content:all   # includes drafts
-pnpm images:validate        # post imagery
+pnpm images:check           # byte-reproducible post imagery + blur fields
 ```
 
 CI runs these on content PRs and **fails if the average content score is below
@@ -85,6 +86,13 @@ CI runs these on content PRs and **fails if the average content score is below
 - Posts are `.mdx` in `content/posts/`; frontmatter is typed by
   `PostFrontmatter` in `lib/posts.ts`. `published: false` is excluded from
   builds.
+- Post art is generated from the versioned manifest, never improvised per page.
+  Add the slug with one of the eight defined motifs and a variant to
+  `.content/images/post-art.v1.json`, then run
+  `pnpm images:generate -- --slug <slug>`. The generator writes a 1600×900 hero,
+  a 960×640 thumbnail, and both blur fields. `pnpm images:check` renders in
+  memory and byte-compares every committed output; manifest coverage, renderer
+  versions, dimensions, and frontmatter must all agree.
 - **Run `pnpm build` before considering content done.** Syntax highlighting
   (Shiki) is production-only; `pnpm dev` will not surface MDX rendering errors.
   Rationale: `DESIGN.md` §5.2.

@@ -1,362 +1,46 @@
 ---
-title: "Hooks: Pitfalls"
-topic: "hooks"
-subPage: "pitfalls"
+title: 'Lifecycle Hooks: Pitfalls'
+topic: 'hooks'
+subPage: 'pitfalls'
 order: 5
-description: "Silent failures, exit code traps, ordering surprises, performance issues, and platform-specific hook gotchas."
-relatedPatterns: ["safety-net", "scope-fence"]
-relatedTopics: ["settings", "agents", "claude-md"]
+description: 'Hook failure modes: unverified surfaces, fail-open timeouts, bypass paths, recursive execution, and misleading enforcement claims.'
+relatedPatterns: ['safety-net', 'scope-fence']
+relatedTopics: ['settings', 'agents', 'mcp']
 published: true
-keywords: ["hooks pitfalls", "silent failures", "exit codes", "performance traps", "debugging hooks"]
+reviewedAt: '2026-08-01'
+sourceIds: ['claude-hooks', 'codex-hooks', 'copilot-hooks']
+keywords: ['hook pitfalls', 'hook timeout', 'hook bypass', 'agent guardrail failure']
 ---
 
 # Pitfalls
 
-Hooks fail silently. That's the defining characteristic of most hook bugs — they don't crash, they don't throw errors, they just stop enforcing the thing you built them to enforce. Every pitfall here has caused real production issues. Knowing them in advance saves hours of debugging.
+## Claiming Enforcement from Event Coverage
 
-## The Exit Code 1 Trap
+A product may fire a hook without granting a blocking decision. Verify the output contract and failure behavior.
 
-This is the single most dangerous mistake in hook development. Exit code 1 means "error" in Unix convention, but Claude Code treats it as a **non-blocking** error. Your hook logs a warning and Claude continues with the operation.
+## Ignoring Timeouts
 
-```bash
-# WRONG — exit 1 does NOT block
-if dangerous_condition; then
-  echo "Dangerous!" >&2
-  exit 1  # Claude proceeds anyway
-fi
+A handler that fails open on timeout is an availability guardrail, not a hard security boundary. Keep it fast and move final authorization elsewhere.
 
-# CORRECT — exit 2 blocks
-if dangerous_condition; then
-  echo "Dangerous!" >&2
-  exit 2  # Action is actually blocked
-fi
-```
+## Missing Alternate Paths
 
-Only exit code 2 blocks. Exit code 0 means success. Every other exit code (1, 3, 127, 255) is a non-blocking error — the first line of stderr appears as a warning in the transcript, and the operation continues.
+Blocking one shell command does not block the equivalent file tool, MCP action, nested agent, IDE operation, or cloud executor.
 
-The trap is insidious because your hook *appears* to be working. You see the warning message. You assume the operation was blocked. It wasn't.
+## Recursive Hooks
 
-**Rule**: Every security-critical hook must exit with code 2 to block. Grep your hook scripts for `exit 1` — every instance is a potential bypass.
+A completion hook that triggers more agent work can trigger itself again. Use explicit re-entry markers and bounded retries.
 
-## Silent Dependency Failures
+## Untrusted Repository Scripts
 
-If your hook needs `jq` and it's not installed, the script errors out. Depending on your shell configuration and the specific failure point, it may exit 0 (passing everything through) or exit 1 (warning but continuing). Neither blocks the operation.
+Hook configuration and scripts checked into an untrusted repository can execute with developer credentials. Require review and managed allowlists before activation.
 
-**Fail-closed pattern for security hooks:**
+## Non-Deterministic Decisions in a Deterministic Slot
 
-```bash
-#!/bin/bash
-# Check dependencies FIRST — block if missing
-if ! command -v jq &>/dev/null; then
-  echo "BLOCKED: jq is required but not installed" >&2
-  exit 2
-fi
+Prompt or agent handlers can add judgment, but they do not turn the hook into deterministic policy. Label model-derived decisions and retain the evidence.
 
-INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command')
+## Falsification Checklist
 
-# ... rest of hook logic
-```
-
-Apply this pattern to every tool your hook depends on. If `jq` is missing, `grep` is missing, or `node` is missing, the hook should block rather than silently pass. This is the fail-closed principle: when the guard fails, deny the operation.
-
-## Hook Ordering Surprises
-
-All matching hooks for a single event run in parallel. There is no sequential ordering guarantee, no priority system, and no way to specify "run hook A before hook B."
-
-This has three consequences:
-
-**1. Decision fields are safe.** The most-restrictive-wins rule (`deny > defer > ask > allow`) means parallel execution can't accidentally weaken security decisions.
-
-**2. `updatedInput` is non-deterministic.** When two PreToolUse hooks both return `updatedInput` for the same tool call, the last one to finish wins. Since they run in parallel, which one finishes last is unpredictable. Never have two hooks modify the same tool's input.
-
-**3. `additionalContext` concatenates.** All hooks' `additionalContext` is combined and sent to Claude. If two hooks inject contradictory guidance ("use npm" and "use bun"), Claude sees both and may behave unpredictably.
-
-**Mitigation**: One hook, one responsibility. If you need sequential logic, put it in a single script rather than splitting across multiple hooks.
-
-## Performance Traps
-
-Synchronous hooks block the UI. A PostToolUse hook that runs `npx tsc --noEmit` on every file edit adds 5-10 seconds per edit. Across 30 file edits in a session, that's 2.5-5 minutes of waiting.
-
-### Performance Decisions
-
-| Situation | Solution |
-|-----------|----------|
-| Logging, analytics, audit trails | `async: true` |
-| One-time environment checks | `once: true` |
-| Heavy validation (type-check, full lint) | Set `timeout: 10-30` and use `if` to narrow scope |
-| Notifications | `async: true` |
-| Security gates | Keep synchronous but keep scripts fast |
-
-### The `if` Field Is a Performance Feature
-
-Without `if`, every Bash command spawns a hook process — even `ls`, `cat`, and `echo`. With `if`, only matching commands trigger the hook:
-
-```json
-{
-  "type": "command",
-  "if": "Bash(git *)",
-  "command": "./hooks/git-policy.sh"
-}
-```
-
-This single change can eliminate hundreds of unnecessary process spawns per session.
-
-### JSON Output Cap
-
-Hook stdout is capped at 10,000 characters. Excess is saved to a file. If your hook produces verbose output (full test suites, large diffs), it may be truncated. The JSON output structure hooks return follows this format:
-
-```json
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PostToolUse",
-    "additionalContext": "Type check passed. 0 errors found."
-  }
-}
-```
-
-For PreToolUse hooks that need to return a decision:
-
-```json
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PreToolUse",
-    "decision": { "behavior": "deny" },
-    "additionalContext": "Operation blocked by security policy."
-  }
-}
-```
-
-Pipe through `head` or `tail` to control output size:
-
-```bash
-npx tsc --noEmit 2>&1 | head -20
-npx jest --bail 2>&1 | tail -30
-```
-
-## The Stop Hook Infinite Loop
-
-The most common hook bug after exit code confusion. If a Stop hook blocks (exit 2) without checking `stop_hook_active`, Claude tries to stop again, the hook blocks again, and the loop continues until you kill the process.
-
-```bash
-#!/bin/bash
-INPUT=$(cat)
-
-# ALWAYS check this first in Stop hooks
-if [ "$(echo "$INPUT" | jq -r '.stop_hook_active')" = "true" ]; then
-  exit 0  # Let Claude stop — we already forced one continuation
-fi
-
-# Your actual stop-gate logic here
-TASKS_COMPLETE=$(check_remaining_tasks)
-if [ "$TASKS_COMPLETE" = "false" ]; then
-  echo "Tasks remain incomplete. Continue working." >&2
-  exit 2
-fi
-
-exit 0
-```
-
-The `stop_hook_active` field is `true` when Claude is attempting to stop after a previous Stop hook blocked. Checking it gives Claude exactly one forced continuation before allowing the stop.
-
-## Shell Compatibility Issues
-
-### Windows-Specific Problems
-
-Claude Code runs inside Git Bash on Windows. This creates three categories of issues:
-
-**Dollar sign expansion**: PowerShell variables like `$_` get expanded by bash before PowerShell sees them. A hook command containing `$env:PATH` becomes an empty string.
-
-**Backslash path mangling**: `C:\Users\claude` becomes `C:Usersclaude` because bash interprets backslashes as escape characters.
-
-**Missing PowerShell in PATH**: PowerShell may not be in Git Bash's default `$PATH`. A SessionStart hook that calls PowerShell can hang for the full 600-second timeout while bash searches for the executable.
-
-### Cross-Platform Solution
-
-Use Node.js in hooks. Claude Code requires Node.js, so it's always available:
-
-```json
-{
-  "type": "command",
-  "command": "node -e \"const input = require('fs').readFileSync(0, 'utf8'); const data = JSON.parse(input); console.log(data.tool_input.file_path);\""
-}
-```
-
-### Per-Hook Shell Override
-
-For Windows-specific hooks that need PowerShell, use the `shell` field:
-
-```json
-{
-  "type": "command",
-  "command": "Write-Host 'Hook running in PowerShell'",
-  "shell": "powershell"
-}
-```
-
-This bypasses Git Bash entirely for that specific hook. Mix bash and PowerShell hooks in the same configuration by setting `shell` per-hook.
-
-## Overly Broad Matchers
-
-A PreToolUse hook with `"matcher": ""` (empty string matches everything) that exits 2 on certain conditions will also evaluate against Read, Grep, Glob, and every other tool. If your condition check has a bug, you block safe operations.
-
-```json
-{
-  "matcher": "",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "./security-check.sh"
-    }
-  ]
-}
-```
-
-This fires on every single tool call. If `security-check.sh` has a dependency issue that causes exit 2, you've blocked all tools — including the ones Claude needs to diagnose the problem.
-
-**Fix**: Use the narrowest matcher possible. `Bash` instead of `""`. `Edit|Write` instead of `.*`. The `if` field for further specificity.
-
-### Regex Matcher Gotchas
-
-Matchers containing characters beyond letters, digits, `_`, and `|` are evaluated as JavaScript regex. Common mistakes:
-
-| Intended | Written | Actual Match |
-|----------|---------|--------------|
-| Edit or Write | `Edit.Write` | `EditXWrite`, `Edit_Write`, etc. (`.` is any char) |
-| Literal dot | `mcp.github` | `mcp` + any char + `github` |
-| MCP tools | `mcp__github__` | Correct (underscores are literal) |
-
-Use pipe for alternation: `Edit|Write`. Escape dots when matching literal periods: `mcp\.github`.
-
-## Permission Loop Trap
-
-A PermissionRequest hook with an empty matcher that auto-approves everything:
-
-```json
-{
-  "hooks": {
-    "PermissionRequest": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PermissionRequest\", \"decision\": {\"behavior\": \"allow\"}}}'"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-This is `--dangerously-skip-permissions` in disguise. Every safety prompt gets auto-approved. Always scope PermissionRequest hooks to specific tool names.
-
-Additional caution: PermissionRequest hooks **do not fire in headless mode** (the `-p` flag). Automated pipelines that rely on PermissionRequest hooks for approval logic will hang waiting for user input that never comes. Use PreToolUse for headless automation.
-
-## Security Implications
-
-Hooks are powerful. That power comes with risks that aren't immediately obvious.
-
-**Hook commands run with your user permissions.** A malicious hook in a committed `.claude/settings.json` could execute arbitrary code on every contributor's machine. Review hook configurations in project settings before running Claude Code in unfamiliar repositories.
-
-**HTTP hooks expose data to external endpoints.** The full tool input — including file contents for Write operations — is sent as the request body. A compromised webhook URL receives every file Claude writes.
-
-**`updatedInput` can silently rewrite commands.** A PreToolUse hook could change `git push origin feature` to `git push --force origin main` without the user seeing the modification in the UI. The transcript shows the original command, not the modified one.
-
-**`allowedEnvVars` controls header interpolation.** HTTP hooks can interpolate environment variables into headers using `${{VAR_NAME}}` syntax. Without `allowedEnvVars`, no variables are interpolated:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "http",
-            "url": "https://api.example.com/audit",
-            "headers": {
-              "Authorization": "Bearer ${{AUDIT_TOKEN}}",
-              "Content-Type": "application/json"
-            }
-          }
-        ]
-      }
-    ]
-  },
-  "allowedEnvVars": ["AUDIT_TOKEN"]
-}
-```
-
-Only variables listed in `allowedEnvVars` are interpolated. Omit sensitive variables like `AWS_SECRET_ACCESS_KEY` or `GITHUB_TOKEN` to prevent accidental credential leakage to webhook endpoints.
-
-## Debugging Hooks
-
-When a hook isn't working, follow this systematic approach.
-
-### Step 1: Verify the Hook Is Loaded
-
-Type `/hooks` in Claude Code. The output lists every registered hook grouped by event:
-
-```
-PreToolUse:
-  [Project] Bash → .claude/hooks/git-policy.sh (if: Bash(git *))
-  [Project] Bash → .claude/hooks/bash-safety.sh
-  [Project] Edit|Write → .claude/hooks/protect-files.sh
-
-PostToolUse:
-  [Project] Edit|Write → prettier --write (statusMessage: "Formatting...")
-  [User]    Bash → command-log.txt (async)
-
-Notification:
-  [User]    * → osascript notification
-```
-
-If your hook doesn't appear under the correct event, it's not running. Common causes: JSON syntax error in settings.json, hook defined in the wrong scope, or settings file not saved.
-
-### Step 2: Enable Debug Logging
-
-```bash
-claude --debug-file /tmp/claude-debug.log
-# In another terminal:
-tail -f /tmp/claude-debug.log
-```
-
-Or run `/debug` mid-session to enable logging. The debug log shows hook execution, exit codes, stdout/stderr, and timing.
-
-### Step 3: Test Hooks Manually
-
-Pipe sample JSON to your hook script and check the exit code:
-
-```bash
-echo '{"tool_name":"Bash","tool_input":{"command":"git push --force origin main"}}' | ./my-hook.sh
-echo "Exit code: $?"
-```
-
-This isolates hook logic from Claude Code entirely.
-
-### Step 4: Check the Transcript
-
-`Ctrl+O` toggles the transcript view. Successful hooks are silent. Blocking errors show stderr. Non-blocking errors show a `<hook name> hook error` notice.
-
-### JSON Parsing Failures
-
-If your shell profile (`.bashrc`, `.zshrc`) has unconditional `echo` statements, they prepend text to hook stdout, breaking JSON parsing. Fix by wrapping them:
-
-```bash
-# In ~/.zshrc or ~/.bashrc
-if [[ $- == *i* ]]; then
-  echo "Shell ready"  # Only prints in interactive shells
-fi
-```
-
-### Hook Not Firing Checklist
-
-1. `/hooks` confirms the hook appears under the correct event
-2. Matcher is case-sensitive and matches the exact tool name (`Bash`, not `bash`)
-3. Correct event type — `PreToolUse` fires before execution, `PostToolUse` fires after
-4. `if` field matches the actual tool arguments (uses permission rule syntax)
-5. PermissionRequest hooks do not fire in headless mode (`-p`)
-6. The hook script is executable (`chmod +x`) on Unix systems
-7. Dependencies (`jq`, `node`, `grep`) are available in the hook's shell environment
+- Does the handler still control the action when it crashes or times out?
+- Do nested agents and MCP tools traverse the same event?
+- Can repository code disable or replace the hook?
+- Is the release check repeated outside the local agent runtime?
