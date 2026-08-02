@@ -74,7 +74,7 @@ export default function SecurityIndexPage() {
               href={j.href}
               className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted underline-offset-4 hover:text-text hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
             >
-              <span className="text-accent/60 font-mono" aria-hidden="true">
+              <span className="font-mono text-accent" aria-hidden="true">
                 {j.num}
               </span>
               {j.label}
