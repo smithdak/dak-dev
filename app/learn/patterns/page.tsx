@@ -69,7 +69,7 @@ export default function PatternsPage() {
             href="#chapters"
             className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted underline-offset-4 hover:text-text hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            <span className="text-accent/60 font-mono" aria-hidden="true">
+            <span className="font-mono text-accent" aria-hidden="true">
               01
             </span>
             Chapters
@@ -78,7 +78,7 @@ export default function PatternsPage() {
             href="#problems"
             className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted underline-offset-4 hover:text-text hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            <span className="text-accent/60 font-mono" aria-hidden="true">
+            <span className="font-mono text-accent" aria-hidden="true">
               02
             </span>
             Problems
@@ -87,7 +87,7 @@ export default function PatternsPage() {
             href="/learn/patterns/graph"
             className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted underline-offset-4 hover:text-text hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            <span className="text-accent/60 font-mono" aria-hidden="true">
+            <span className="font-mono text-accent" aria-hidden="true">
               03
             </span>
             Language Map
@@ -96,7 +96,7 @@ export default function PatternsPage() {
             href="/learn/patterns/cards"
             className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted underline-offset-4 hover:text-text hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            <span className="text-accent/60 font-mono" aria-hidden="true">
+            <span className="font-mono text-accent" aria-hidden="true">
               04
             </span>
             Cards
