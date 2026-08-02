@@ -14,11 +14,11 @@ import { getMdxOptions } from '@/lib/mdx-options';
 import { generateBreadcrumbSchema } from '@/lib/schema';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { CodeBlockWrapper } from '@/components/blog/CodeBlockWrapper';
-import { TableOfContents } from '@/components/blog/TableOfContents';
 import { extractTableOfContents } from '@/lib/toc';
 import { SectionKicker } from '@/components/learn/SectionKicker';
 import { SectionPager } from '@/components/learn/SectionPager';
 import { MobileTableOfContents } from '@/components/learn/MobileTableOfContents';
+import { StickyTableOfContents } from '@/components/learn/StickyTableOfContents';
 
 import { SITE_URL as siteUrl } from '@/lib/site';
 
@@ -103,7 +103,7 @@ export default async function HarnessChapterPage({
 
       <div className="lg:grid lg:grid-cols-[1fr_220px] lg:gap-10 px-4 sm:px-6 lg:px-0">
         <article className="mdx-content min-w-0 text-lg">
-          <SectionKicker section="Harness" kicker={`Chapter ${meta.number}`} color="purple" />
+          <SectionKicker section="Harness" kicker={`Chapter ${meta.number}`} color="accent" />
           <MobileTableOfContents items={toc} />
           <div className="max-w-[68ch]">
             <CodeBlockWrapper>
@@ -116,7 +116,7 @@ export default async function HarnessChapterPage({
           </div>
 
           <SectionPager
-            color="purple"
+            color="accent"
             prev={
               prev
                 ? { href: `/learn/harness/${prev.slug}`, number: prev.number, name: prev.name }
@@ -130,9 +130,7 @@ export default async function HarnessChapterPage({
           />
         </article>
 
-        <aside className="hidden lg:block">
-          {toc.length > 0 && <TableOfContents items={toc} />}
-        </aside>
+        <StickyTableOfContents items={toc} />
       </div>
     </PageTransition>
   );

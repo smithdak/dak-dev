@@ -5,7 +5,7 @@ import { generateBreadcrumbSchema, generatePersonSchema } from '@/lib/schema';
 export const metadata = {
   title: 'About',
   description:
-    'About Dakota Smith, a Principal Architect working across agentic systems, innovation strategy, and accountable delivery.',
+    'About Dakota Smith, an AI systems architect and full-stack engineer working across agentic systems, innovation strategy, and accountable delivery.',
   alternates: { canonical: '/about' },
 };
 
@@ -64,7 +64,9 @@ export default function AboutPage() {
               Architecture is how AI change becomes accountable.
             </h1>
             <p className="mt-8 text-xl font-semibold text-accent">Dakota Smith</p>
-            <p className="mt-1 text-base text-muted">Principal Architect</p>
+            <p className="mt-1 text-base text-muted">
+              AI Systems Architect &amp; Full-Stack Engineer
+            </p>
           </div>
 
           <div className="flex flex-col justify-end border-t border-rule pt-6 lg:col-span-5 lg:border-t-0 lg:pt-0 lg:pl-12 xl:pl-20">
@@ -196,7 +198,8 @@ export default function AboutPage() {
                   durable operating models.
                 </p>
                 <p className="mt-3 text-sm font-semibold text-muted">
-                  Current position <span aria-hidden="true">·</span> Principal Architect
+                  Current position <span aria-hidden="true">·</span> AI Systems Architect &amp;
+                  Full-Stack Engineer
                 </p>
                 <Link
                   href="/learn"

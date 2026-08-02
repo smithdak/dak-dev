@@ -18,19 +18,17 @@ interface ChapterHeaderProps {
 export function ChapterHeader({ chapter, patternCount, className = '' }: ChapterHeaderProps) {
   return (
     <div
-      className={`grid gap-4 border-b border-text/20 pb-5 md:grid-cols-[4rem_minmax(0,1fr)_auto] ${className}`}
+      className={`grid grid-cols-[3rem_minmax(0,1fr)] gap-x-4 gap-y-3 border-b border-text/20 pb-5 sm:grid-cols-[4rem_minmax(0,1fr)_auto] sm:gap-x-6 ${className}`}
     >
-      <div className="flex items-baseline gap-3 mb-1">
-        <span className={`font-display text-3xl ${TEXT_COLORS[chapter.number]} leading-none`}>
-          {chapter.number}
-        </span>
+      <span className={`font-display text-3xl leading-none ${TEXT_COLORS[chapter.number]}`}>
+        {chapter.number}
+      </span>
+      <div className="min-w-0">
         <h2 className="font-display text-3xl tracking-tight md:text-4xl">{chapter.name}</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{chapter.description}</p>
       </div>
-      <p className="text-sm text-muted max-w-2xl leading-relaxed md:col-start-2">
-        {chapter.description}
-      </p>
       {patternCount > 0 && (
-        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted md:col-start-3 md:row-start-1">
+        <p className="col-start-2 text-xs font-semibold uppercase tracking-[0.1em] text-muted sm:col-start-3 sm:row-start-1 sm:text-right">
           {patternCount} pattern{patternCount !== 1 ? 's' : ''}
         </p>
       )}

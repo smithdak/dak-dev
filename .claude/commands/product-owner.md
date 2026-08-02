@@ -18,14 +18,15 @@ and professional positioning.
 
 ## North Star
 
-Build the publication of a principal architect operating at AI-innovation
-leadership scope: accountable AI systems, innovation strategy, and governed
-delivery explained through concrete work and source discipline.
+Build the publication of an AI systems architect and full-stack engineer
+operating at AI-innovation leadership scope: accountable AI systems,
+innovation strategy, and governed delivery explained through concrete work
+and source discipline.
 
 The artifact should make a credible case that Dakota is progressing toward a
 Head of AI Innovation role. It must never present that aspiration as a title he
-currently holds. Public identity is exact: **Dakota Smith**, **Principal
-Architect**, **daksmith.dev**.
+currently holds. Public identity is exact: **Dakota Smith**, **AI Systems
+Architect & Full-Stack Engineer**, **daksmith.dev**.
 
 The site wins when a senior engineering or business leader can infer three
 things without being told:
@@ -143,8 +144,8 @@ rejected, and return one verdict. Conditions must be testable.
 ### `vision` — current direction
 
 State the North Star, audiences, proof strategy, visual direction, product
-boundaries, and explicit non-goals. Distinguish Dakota's current Principal
-Architect position from the Head of AI Innovation trajectory.
+boundaries, and explicit non-goals. Distinguish Dakota's current AI Systems
+Architect & Full-Stack Engineer role from the Head of AI Innovation trajectory.
 
 ### `roadmap` — ranked direction
 

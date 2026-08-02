@@ -9,9 +9,9 @@ import { SECURITY_CHAPTERS } from '@/lib/security-types';
 import { TOOLKIT_LENSES, TOOLKIT_TOPICS } from '@/lib/toolkit-types';
 
 export const metadata = {
-  title: 'Dakota Smith | Principal Architect',
+  title: 'Dakota Smith | AI Systems Architect & Full-Stack Engineer',
   description:
-    'Principal architect writing about accountable AI systems, innovation strategy, and governed delivery.',
+    'AI systems architect and full-stack engineer writing about accountable AI systems, innovation strategy, and governed delivery.',
   alternates: { canonical: '/' },
 };
 

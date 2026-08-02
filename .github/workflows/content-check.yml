@@ -5,6 +5,10 @@ on:
     paths:
       - 'content/**'
       - '.content/**'
+      - 'app/globals.css'
+      - 'assets/fonts/**'
+      - 'public/brand/**'
+      - 'public/og-default.png'
       - 'public/images/**'
       - 'lib/content-validation/**'
       - 'lib/toolkit*.ts'
@@ -12,6 +16,7 @@ on:
       - 'app/learn/toolkit/**'
       - 'scripts/validate-posts.ts'
       - 'scripts/generate-post-images.ts'
+      - 'scripts/generate-brand-assets.ts'
 
 permissions:
   contents: read
@@ -43,6 +48,10 @@ jobs:
       - name: Run image validation
         if: always()
         run: pnpm images:validate
+
+      - name: Validate deterministic brand assets
+        if: always()
+        run: pnpm brand:check
 
       - name: Upload validation evidence
         if: always() && hashFiles('.content/validation-report.json') != ''

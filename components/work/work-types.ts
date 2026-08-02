@@ -5,6 +5,7 @@ export interface WorkRecord {
   name: string;
   description: string;
   url: string;
+  repositoryUrl?: string;
   category: WorkCategory;
   date: string;
 }

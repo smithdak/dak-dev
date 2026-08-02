@@ -17,7 +17,7 @@ editorial:
 - fine rules, asymmetric composition, and generous negative space;
 - restrained green accent reserved for links, focus, and decisive emphasis;
 - `Dakota Smith` as the wordmark, `daksmith.dev` as the quiet signature, and
-  `Principal Architect` as the current position.
+  `AI Systems Architect & Full-Stack Engineer` as the current position.
 
 The site may communicate readiness for AI innovation leadership through the
 work. It must not imply that Dakota currently holds the title Head of AI
@@ -50,7 +50,7 @@ Innovation.
 ## Visual review checklist
 
 - [ ] Reads as a serious executive publication, not a card grid or terminal UI.
-- [ ] Uses `Dakota Smith`, `daksmith.dev`, and `Principal Architect` precisely;
+- [ ] Uses `Dakota Smith`, `daksmith.dev`, and `AI Systems Architect & Full-Stack Engineer` precisely;
       no aspirational-title claim.
 - [ ] Warm-ivory light mode is the intentional default; dark mode is equally
       legible and structurally identical.

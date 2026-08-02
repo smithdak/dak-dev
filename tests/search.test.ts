@@ -77,3 +77,24 @@ test('search indexes every published leaf once within its payload budget', () =>
   const gzipBytes = gzipSync(JSON.stringify(index)).byteLength;
   assert.ok(gzipBytes < 50 * 1024, `Search index is ${(gzipBytes / 1024).toFixed(1)} KiB gzipped`);
 });
+
+test('Dossier search uses the live system URL and preserves repository provenance', () => {
+  const dossier = workProducts.find((product) => product.id === 'dossier');
+
+  assert.ok(dossier, 'Dossier must remain in the Work source catalog');
+  assert.deepEqual(
+    { url: dossier.url, repositoryUrl: dossier.repositoryUrl },
+    {
+      url: 'https://dak-dossier.vercel.app/',
+      repositoryUrl: 'https://github.com/smithdak/dossier',
+    }
+  );
+
+  const dossierSearchRecords = generateSearchIndex()
+    .filter((item) => item.slug === 'work-dossier')
+    .map(({ href, label }) => ({ href, label }));
+
+  assert.deepEqual(dossierSearchRecords, [
+    { href: 'https://dak-dossier.vercel.app/', label: 'External project' },
+  ]);
+});

@@ -31,7 +31,9 @@ export function Footer() {
           >
             Dakota Smith
           </Link>
-          <p className="mt-2 text-sm text-muted">Principal Architect · daksmith.dev</p>
+          <p className="mt-2 text-sm text-muted">
+            AI Systems Architect &amp; Full-Stack Engineer · daksmith.dev
+          </p>
           <p className="mt-6 text-xs text-muted">
             &copy; {currentYear} Dakota Smith. All rights reserved.
           </p>

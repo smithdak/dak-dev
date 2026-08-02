@@ -7,10 +7,10 @@ const OUTPUT_PATH = path.join(process.cwd(), 'public', 'dakota-smith-resume.pdf'
 // Resume Data
 const resumeData = {
   name: 'Dakota Smith',
-  title: 'Strategic Technical Leader & Fullstack Architect',
+  title: 'AI Systems Architect & Full-Stack Engineer',
   email: 'dakota@twofold.tech',
   github: 'https://github.com/smithdak',
-  summary: `Strategic Technical Leader & Fullstack Architect with 14 years of enterprise experience and a track record of shipping 30+ production-ready projects. I specialize in bridging the gap between high-level business vision and deep technical execution, possessing an "M-shaped" skill set that encompasses multiple technical domains, leadership, and project management. I am a "Big Picture Thinker" who excels at translating business requirements into scalable, secure, and maintainable architectural blueprints.`,
+  summary: `AI systems architect and full-stack engineer with 15 years of enterprise experience and a track record of shipping 30+ production-ready projects. I specialize in bridging the gap between high-level business vision and deep technical execution, possessing an "M-shaped" skill set that encompasses multiple technical domains, leadership, and project management. I am a "Big Picture Thinker" who excels at translating business requirements into scalable, secure, and maintainable architectural blueprints.`,
 
   competencies: [
     {
@@ -35,7 +35,7 @@ const resumeData = {
         },
         {
           name: 'Enterprise CMS',
-          desc: '14+ years architecting Sitecore (XM Cloud), Optimizely, and Umbraco solutions.',
+          desc: '15 years architecting Sitecore (XM Cloud), Optimizely, and Umbraco solutions.',
         },
       ],
     },
@@ -106,7 +106,7 @@ const resumeData = {
     },
     {
       company: 'TwofoldTech',
-      title: 'Founder & Tech Lead',
+      title: 'Founder & AI Systems Architect',
       location: 'Remote',
       period: 'Mar 2020 - Present',
       highlights: [

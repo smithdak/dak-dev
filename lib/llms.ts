@@ -71,7 +71,7 @@ export function generateLlmsTxt(): string {
 
 > An independent publication and four-field guide to agentic engineering — patterns, cross-vendor tooling, delivery harnesses, and security.
 
-Dakota Smith is a principal architect focused on agentic systems, governed delivery, and enterprise platforms. This site pairs an engineering blog with structured, expert-level guides for building with AI coding agents. Content is static MDX; full article bodies render server-side without JavaScript.
+Dakota Smith is an AI systems architect and full-stack engineer focused on agentic systems, governed delivery, and enterprise platforms. This site pairs an engineering blog with structured, expert-level guides for building with AI coding agents. Content is static MDX; full article bodies render server-side without JavaScript.
 
 ## Learn
 

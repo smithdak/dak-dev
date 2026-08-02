@@ -4,8 +4,9 @@ Dakota Smith's independent publication and field guide for agentic engineering. 
 
 ## Product shape
 
-- Distinct Writing, Learn, Work, and About surfaces for a Principal Architect
-  working across AI systems, innovation strategy, and accountable delivery.
+- Distinct Writing, Learn, Work, and About surfaces for an AI systems architect
+  and full-stack engineer working across AI systems, innovation strategy, and
+  accountable delivery.
 - Static Next.js App Router site; all MDX content is read and rendered at build time.
 - Capability-first Toolkit comparing Claude Code, OpenAI Codex, and GitHub Copilot with dated official sources.
 - Native Next.js metadata, structured data, RSS, sitemap, search, and static social assets.

@@ -83,7 +83,7 @@ export function Hero() {
             className="mb-6 inline-block border-4 border-accent bg-surface px-6 py-2"
           >
             <p className="text-sm font-bold uppercase tracking-wider text-accent">
-              Principal Architect
+              AI Systems Architect &amp; Full-Stack Engineer
             </p>
           </motion.div>
 

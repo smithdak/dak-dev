@@ -65,7 +65,7 @@ export default function HarnessIndexPage() {
     <PageTransition className="min-h-screen pb-16">
       <LearnSectionHero
         section="Harness"
-        color="purple"
+        color="accent"
         eyebrow={`Runtime + Delivery · ${HARNESS_CHAPTERS.length} Chapters`}
         title="Harness Engineering"
         description={HARNESS_BOUNDARY}
@@ -115,7 +115,7 @@ export default function HarnessIndexPage() {
                       name={chapter.name}
                       description={chapter.description}
                       icon={chapter.icon}
-                      color="purple"
+                      color="accent"
                       available={chapter.hasContent}
                       cta="Read"
                     />
@@ -128,7 +128,7 @@ export default function HarnessIndexPage() {
 
         <SectionConnects
           id="connects"
-          color="purple"
+          color="accent"
           heading="Where This Connects"
           intro="Harness Engineering spans runtime execution and delivery control. These patterns, toolkit features, and security controls meet it at different authority boundaries."
           links={CONNECTS}

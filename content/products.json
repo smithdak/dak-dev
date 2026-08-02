@@ -1,5 +1,16 @@
 [
   {
+    "id": "dossier",
+    "name": "Dossier",
+    "description": "Git-native institutional memory for humans and agents: typed Markdown/YAML knowledge, graph retrieval over MCP, and a human-gated agent work loop. Open source and pre-launch; packages are not yet published.",
+    "url": "https://dak-dossier.vercel.app/",
+    "repositoryUrl": "https://github.com/smithdak/dossier",
+    "icon": "website",
+    "category": "product",
+    "date": "2026-08",
+    "featured": true
+  },
+  {
     "id": "delivery-harness",
     "name": "delivery-harness",
     "description": "A public agent delivery harness with durable work state, exact-candidate gates, content-addressed evidence, bounded agent-facing tools, deterministic checks, and an operator-owned release-authorization verdict. The documented local implementation is process-tested; live authenticated multi-provider delivery and external delivery remain unproven.",

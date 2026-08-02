@@ -25,7 +25,7 @@ const experiences = [
   },
   {
     company: 'Twofold Tech',
-    title: 'Founder & Principal Architect',
+    title: 'Founder & AI Systems Architect',
     location: 'Remote',
     period: 'Mar 2020 – Present',
     highlights: [
@@ -81,7 +81,7 @@ export default function ResumePDFPage() {
       {/* Header */}
       <header className="mb-8 border-b-2 border-black pb-4">
         <h1 className="text-4xl font-bold mb-2">Dakota Smith</h1>
-        <p className="text-xl mb-2">Principal Architect | Enterprise DXP & Agentic Orchestration</p>
+        <p className="text-xl mb-2">AI Systems Architect &amp; Full-Stack Engineer</p>
         <div className="text-sm">
           <p>dakota@twofold.tech</p>
           <p>github.com/smithdak | twofold.tech</p>
@@ -92,11 +92,11 @@ export default function ResumePDFPage() {
       <section className="mb-6">
         <h2 className="text-2xl font-bold mb-3 border-b border-black">Executive Summary</h2>
         <p className="text-sm leading-relaxed">
-          Systems Architect with <strong>15 years</strong> in enterprise software, specializing in
-          the stabilization and modernization of complex Sitecore and .NET ecosystems. I bridge the
-          gap between generative AI speed and enterprise-grade rigor through{' '}
-          <strong>Deterministic Orchestration</strong>—ensuring agentic intelligence follows strict
-          architectural logic rather than &quot;Prompt-and-Pray&quot; patterns.
+          AI systems architect and full-stack engineer with <strong>15 years</strong> in enterprise
+          software, specializing in the stabilization and modernization of complex Sitecore and .NET
+          ecosystems. I bridge the gap between generative AI speed and enterprise-grade rigor
+          through <strong>Deterministic Orchestration</strong>—ensuring agentic intelligence follows
+          strict architectural logic rather than &quot;Prompt-and-Pray&quot; patterns.
         </p>
         <p className="text-sm leading-relaxed mt-2">
           Proven track record of shipping <strong>30+ production-ready projects</strong> with a

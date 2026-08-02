@@ -8,7 +8,7 @@
 
 ### Who I Am
 
-- Dakota Smith, Principal Architect, writing at `daksmith.dev`.
+- Dakota Smith, AI Systems Architect and Full-Stack Engineer, writing at `daksmith.dev`.
 - I build accountable AI systems, delivery harnesses, and enterprise platforms that survive contact with production.
 - I connect AI systems, innovation strategy, and accountable delivery. Architecture decisions are tied to operating mechanisms and business outcomes.
 - Working systems are the evidence. Posts distinguish source-backed capability, local verification, and production proof.

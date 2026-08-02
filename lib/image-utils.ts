@@ -330,7 +330,7 @@ export async function compositeThumbnail(
     <text x="${width - padding}" y="${brandY}"
       font-family="${fontFamily}" font-size="${brandFontSize}" font-weight="600"
        fill="#D4CEC2" text-anchor="end">
-      Dakota Smith · Principal Architect · daksmith.dev
+      Dakota Smith · AI Systems Architect &amp; Full-Stack Engineer · daksmith.dev
     </text>
   </svg>`;
 

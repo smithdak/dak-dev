@@ -11,10 +11,10 @@ import { getMdxOptions } from '@/lib/mdx-options';
 import { generateBreadcrumbSchema } from '@/lib/schema';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { CodeBlockWrapper } from '@/components/blog/CodeBlockWrapper';
-import { TableOfContents } from '@/components/blog/TableOfContents';
 import { extractTableOfContents } from '@/lib/toc';
 import { SectionKicker } from '@/components/learn/SectionKicker';
 import { MobileTableOfContents } from '@/components/learn/MobileTableOfContents';
+import { StickyTableOfContents } from '@/components/learn/StickyTableOfContents';
 
 import { SITE_URL as siteUrl } from '@/lib/site';
 
@@ -118,9 +118,7 @@ export default async function ExplainerPage({ params }: { params: Promise<{ slug
           </div>
         </article>
 
-        <aside className="hidden lg:block">
-          {toc.length > 0 && <TableOfContents items={toc} />}
-        </aside>
+        <StickyTableOfContents items={toc} />
       </div>
     </PageTransition>
   );

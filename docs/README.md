@@ -45,6 +45,8 @@ file into every session and re-creates the bloat we are removing.
 
 - **`docs/content-ops.md`** — content, brand-voice, and SEO operating manual.
   Orients the work; defers to `.content/` for the actual data.
+- **`docs/brand-kit.md`** — usage guide and asset index for the deterministic
+  social, presentation, mark, lockup, link-preview, and site-icon exports.
 - **`docs/ui-workflow.md`** — the tool-neutral implementation and verification
   workflow for the executive-editorial UI, including responsive, theme, and
   accessibility proof.
