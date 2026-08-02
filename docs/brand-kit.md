@@ -102,3 +102,7 @@ verified Space Grotesk files and remove embedded font definitions before Sharp
 rasterizes them, removing host Pango and Fontconfig from the reproducibility
 boundary.
 The default Open Graph image and site icons are outputs of the same pipeline.
+Generated brand and post-image outputs are excluded from out-of-band image optimizers in
+`.imgbotconfig`. Compression changes belong in the generators and must produce new canonical bytes
+through the normal validation path. `.gitattributes` pins generated SVG and manifest files to LF so
+the byte check is invariant under Windows `core.autocrlf` settings.
